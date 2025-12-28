@@ -16,8 +16,10 @@ This repository contains Terraform code for:
 ```console
 terraform/
 ├── modules/
-│   ├── network/
-│   └── vpn-gateway/
+│   ├── environment/    # Shared environment module (eliminates code duplication)
+│   ├── network/        # Network module (VNet, Subnets, NSGs)
+│   └── vpn-gateway/    # VPN Gateway module
+├── templates/          # Template files for backend.tf and providers.tf
 └── environments/
     ├── dev/
     ├── test/
@@ -25,9 +27,37 @@ terraform/
     └── prod/
 ```
 
+Each environment directory contains:
+
+- `backend.tf` - Backend configuration (state storage)
+- `providers.tf` - Provider configuration (AzureRM)
+- `main.tf` - Calls the `environment` module
+- `variables.tf` - Environment-specific variables
+- `outputs.tf` - Re-exports outputs from the `environment` module
+- `terraform.tfvars` - Environment-specific values (not committed to git)
+
 ## Getting Started
 
 1. Review infra documentation [README.md](https://github.com/funmagsoft/infra-documentation/blob/main/README.md)
+
+## Architecture
+
+This repository uses a modular architecture to eliminate code duplication:
+
+- **Environment Module** (`modules/environment/`): Shared module that encapsulates all common infrastructure configuration for an environment. This module eliminates ~90% of code duplication across environments by providing a single source of truth.
+- **Network Module** (`modules/network/`): Creates Virtual Network, subnets, NSGs, and NSG rules.
+- **VPN Gateway Module** (`modules/vpn-gateway/`): Creates optional VPN Gateway for site-to-site and point-to-site connectivity.
+
+Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
+
+- `backend.tf` - Backend configuration pointing to environment-specific state storage
+- `providers.tf` - Provider configuration (required in root module)
+- `main.tf` - Calls the `environment` module with environment-specific variables
+- `variables.tf` - Environment-specific input variables
+- `outputs.tf` - Re-exports outputs from the `environment` module
+- `terraform.tfvars` - Environment-specific values (not committed to git)
+
+**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
 
 ## Prerequisites: Setup Phase 0 Infrastructure
 
@@ -125,14 +155,14 @@ pip install pre-commit
 brew install pre-commit
 ```
 
-2. Install the hooks in this repository:
+1. Install the hooks in this repository:
 
 ```bash
 cd /path/to/infra-foundation
 pre-commit install
 ```
 
-3. Install hook dependencies (downloads tools automatically):
+1. Install hook dependencies (downloads tools automatically):
 
 ```bash
 pre-commit install-hooks
@@ -277,3 +307,5 @@ This will create an NSG rule `AllowSSHInbound` (priority 200) that allows SSH (p
 - **Environment Isolation**: Each environment (dev, test, stage, prod) has separate state files and Resource Groups, ensuring complete isolation.
 - **Authentication**: Terraform uses Azure AD authentication (configured via `use_azuread_auth = true` in `backend.tf`). Ensure you're logged in via `az login` or that GitHub Actions has proper OIDC configuration.
 - **Backend Configuration**: The backend configuration in `backend.tf` points to the Storage Accounts created by `setup-state-storage.sh`. If you change the Storage Account names, update `backend.tf` accordingly.
+- **Provider Configuration**: Each environment must have a `providers.tf` file with the AzureRM provider configuration. This is required in the root module (environment directory), not in child modules. See `terraform/templates/providers.tf.template` for the template.
+- **Module Architecture**: All environments use the shared `environment` module, which eliminates code duplication. Changes to the module automatically propagate to all environments.
