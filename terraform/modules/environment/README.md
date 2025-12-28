@@ -189,10 +189,3 @@ This module integrates with:
 - **AzureRM Provider**: `~> 3.80`
 - **Kubernetes Provider**: `~> 2.0`
 
-## Notes
-
-- **Resource Group**: Resource Group name is automatically constructed as `rg-${var.project_name}-${var.environment}`. The Resource Group must exist (created in Phase 0) before deploying this module.
-- **Remote State**: This module depends on remote state from `infra-foundation` and `infra-platform`. Ensure these are deployed and accessible before deploying this module.
-- **Conditional Resources**: UAMI and FIC are only created when Azure access is needed. This reduces unnecessary resource creation and costs.
-- **Service Accounts**: Kubernetes Service Accounts are always created, but Workload Identity annotations are only added when Azure access is enabled.
-
