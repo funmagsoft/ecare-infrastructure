@@ -1,5 +1,5 @@
-module "platform" {
-  source = "../../modules/platform"
+module "environment" {
+  source = "../../modules/environment"
 
   environment       = var.environment
   organization_name = var.organization_name

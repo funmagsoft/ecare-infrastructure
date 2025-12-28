@@ -21,7 +21,7 @@ This repository contains Terraform code for:
 ```console
 terraform/
 ├── modules/
-│   ├── platform/         # Shared platform module (eliminates code duplication)
+│   ├── environment/      # Shared environment module (eliminates code duplication)
 │   ├── aks/              # AKS cluster module
 │   ├── aks-namespace/    # Kubernetes namespace module
 │   ├── bastion/          # Bastion VM module
@@ -57,7 +57,7 @@ Each environment directory contains:
 
 This repository uses a modular architecture to eliminate code duplication:
 
-- **Platform Module** (`modules/platform/`): Shared module that encapsulates all common platform infrastructure configuration for an environment. This module eliminates ~95% of code duplication across environments by providing a single source of truth. The module is organized into topic-specific files:
+- **Environment Module** (`modules/environment/`): Shared module that encapsulates all common platform infrastructure configuration for an environment. This module eliminates ~95% of code duplication across environments by providing a single source of truth. The module is organized into topic-specific files:
   - `data.tf` - Data sources (resource group, remote state, client config)
   - `locals.tf` - Local variables, tags, and validation checks
   - `monitoring.tf` - Monitoring module (Log Analytics + Application Insights)

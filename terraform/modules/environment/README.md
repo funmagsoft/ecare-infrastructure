@@ -1,4 +1,4 @@
-# Platform Module
+# Environment Module
 
 Terraform module that encapsulates all common platform infrastructure configuration for an environment, eliminating code duplication across environments by providing a single source of truth for platform-specific infrastructure.
 
@@ -30,8 +30,8 @@ Terraform module that encapsulates all common platform infrastructure configurat
 ## Usage
 
 ```hcl
-module "platform" {
-  source = "../../modules/platform"
+module "environment" {
+  source = "../../modules/environment"
 
   environment       = "dev"
   organization_name = "hycom"
@@ -248,7 +248,7 @@ The Kubernetes provider must be configured in the root module (environment direc
 
 ```hcl
 locals {
-  aks_kube_config = yamldecode(module.platform.aks_kube_config)
+  aks_kube_config = yamldecode(module.environment.aks_kube_config)
 }
 
 provider "kubernetes" {
@@ -288,8 +288,8 @@ Resources follow this naming pattern:
 ### Development Environment
 
 ```hcl
-module "platform" {
-  source = "../../modules/platform"
+module "environment" {
+  source = "../../modules/environment"
 
   environment       = "dev"
   organization_name = "hycom"
@@ -308,8 +308,8 @@ module "platform" {
 ### Production Environment
 
 ```hcl
-module "platform" {
-  source = "../../modules/platform"
+module "environment" {
+  source = "../../modules/environment"
 
   environment       = "prod"
   organization_name = "hycom"
@@ -334,7 +334,7 @@ This module integrates with the following modules:
 
 ### Monitoring Module
 
-The platform module calls the `monitoring` module to create Log Analytics Workspace and Application Insights:
+The environment module calls the `monitoring` module to create Log Analytics Workspace and Application Insights:
 
 ```hcl
 module "monitoring" {
@@ -345,7 +345,7 @@ module "monitoring" {
 
 ### AKS Module
 
-The platform module calls the `aks` module to create the Kubernetes cluster:
+The environment module calls the `aks` module to create the Kubernetes cluster:
 
 ```hcl
 module "aks" {
@@ -356,7 +356,7 @@ module "aks" {
 
 ### Storage Module
 
-The platform module calls the `storage` module to create the Storage Account with Private Endpoint:
+The environment module calls the `storage` module to create the Storage Account with Private Endpoint:
 
 ```hcl
 module "storage" {
@@ -367,7 +367,7 @@ module "storage" {
 
 ### PostgreSQL Module
 
-The platform module calls the `postgresql` module to create the database with Private Endpoint:
+The environment module calls the `postgresql` module to create the database with Private Endpoint:
 
 ```hcl
 module "postgresql" {
@@ -378,7 +378,7 @@ module "postgresql" {
 
 ### Key Vault Module
 
-The platform module calls the `key-vault` module to create Key Vault with Private Endpoint:
+The environment module calls the `key-vault` module to create Key Vault with Private Endpoint:
 
 ```hcl
 module "key_vault" {
@@ -389,7 +389,7 @@ module "key_vault" {
 
 ### ACR Module
 
-The platform module calls the `acr` module to create the Container Registry with Private Endpoint:
+The environment module calls the `acr` module to create the Container Registry with Private Endpoint:
 
 ```hcl
 module "acr" {
@@ -400,7 +400,7 @@ module "acr" {
 
 ### Service Bus Module
 
-The platform module calls the `service-bus` module to create the Service Bus namespace with Private Endpoint:
+The environment module calls the `service-bus` module to create the Service Bus namespace with Private Endpoint:
 
 ```hcl
 module "service_bus" {
@@ -411,7 +411,7 @@ module "service_bus" {
 
 ### Bastion Module
 
-The platform module calls the `bastion` module to create the Bastion VM:
+The environment module calls the `bastion` module to create the Bastion VM:
 
 ```hcl
 module "bastion" {
@@ -422,7 +422,7 @@ module "bastion" {
 
 ### AKS Namespace Module
 
-The platform module calls the `aks-namespace` module to create the shared Kubernetes namespace:
+The environment module calls the `aks-namespace` module to create the shared Kubernetes namespace:
 
 ```hcl
 module "aks_namespace" {

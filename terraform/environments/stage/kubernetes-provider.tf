@@ -5,7 +5,7 @@
 # This provider is configured after AKS cluster is created to enable Kubernetes resources
 
 locals {
-  aks_kube_config = yamldecode(module.platform.aks_kube_config)
+  aks_kube_config = yamldecode(module.environment.aks_kube_config)
 }
 
 provider "kubernetes" {
