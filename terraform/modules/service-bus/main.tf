@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-  }
-}
-
 # Service Bus Namespace
 resource "azurerm_servicebus_namespace" "this" {
   name                         = "sb-${var.project_name}-${var.environment}"

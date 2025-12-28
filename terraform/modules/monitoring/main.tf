@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-  }
-}
-
 # Log Analytics Workspace
 resource "azurerm_log_analytics_workspace" "this" {
   name                = "log-${var.project_name}-${var.environment}"

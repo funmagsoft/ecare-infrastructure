@@ -1,17 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-    tls = {
-      source  = "hashicorp/tls"
-      version = "~> 4.0"
-    }
-  }
-}
-
 # Generate SSH key if not provided
 resource "tls_private_key" "ssh" {
   count = var.admin_ssh_public_key == null ? 1 : 0

@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-  }
-}
-
 # PostgreSQL Flexible Server
 resource "azurerm_postgresql_flexible_server" "this" {
   name                = "psql-${var.project_name}-${var.environment}"

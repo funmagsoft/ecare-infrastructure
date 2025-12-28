@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-  }
-}
-
 # Azure Container Registry
 resource "azurerm_container_registry" "this" {
   name                          = "acr${var.project_name}${var.environment}"

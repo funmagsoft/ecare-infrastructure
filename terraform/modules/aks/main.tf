@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-  }
-}
-
 locals {
   dns_prefix = var.dns_prefix != null ? var.dns_prefix : "aks-${var.project_name}-${var.environment}"
 }
