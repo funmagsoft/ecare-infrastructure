@@ -3,28 +3,43 @@ data "azurerm_resource_group" "main" {
   name = var.resource_group_name
 }
 
+# Local variables for tags
+locals {
+  # Required tags - these must always be present
+  required_tags = {
+    Environment   = var.environment
+    Project       = var.project_name
+    ManagedBy     = "Terraform"
+    Phase         = "GitHubOIDCIntegration"
+    GitRepository = "infra-identity"
+    TerraformPath = "terraform/environments/${var.environment}"
+  }
+
+  # Merge required tags with additional tags
+  # Required tags take precedence (merge order: var.tags first, then required_tags)
+  merged_tags = merge(
+    var.tags,
+    local.required_tags
+  )
+
+  # Convert map to list of strings for Azure AD resources (format: "Key:Value")
+  ad_tags = [
+    for key, value in local.merged_tags : "${key}:${value}"
+  ]
+}
+
 # Application Registration for Service Principal
 resource "azuread_application" "gha" {
   display_name = "sp-gha-${var.project_name}-${var.environment}"
 
-  tags = [
-    "Environment:${var.environment}",
-    "Project:${var.project_name}",
-    "ManagedBy:Terraform",
-    "Phase:GitHubOIDCIntegration"
-  ]
+  tags = local.ad_tags
 }
 
 # Service Principal
 resource "azuread_service_principal" "gha" {
   application_id = azuread_application.gha.application_id
 
-  tags = [
-    "Environment:${var.environment}",
-    "Project:${var.project_name}",
-    "ManagedBy:Terraform",
-    "Phase:GitHubOIDCIntegration"
-  ]
+  tags = local.ad_tags
 }
 
 # Federated Identity Credentials for service repositories
