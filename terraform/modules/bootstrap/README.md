@@ -111,6 +111,15 @@ Resources follow this naming pattern:
 - **Application Registration**: Same as Service Principal (display name)
 - **Federated Identity Credential**: `GitHub{RepositoryName}Env-{environment}` (e.g., `GitHubHycomInfraFoundationEnv-dev`)
 
+### Why the `-infra-` Suffix?
+
+The `-infra-` suffix in the Service Principal name (`sp-gha-{project_name}-infra-{environment}`) distinguishes bootstrap Service Principals from service deployment Service Principals:
+
+- **Bootstrap SPs** (this module): `sp-gha-{project_name}-infra-{environment}` - for Terraform repositories
+- **Service SPs** (`infra-identity`): `sp-gha-{project_name}-{environment}` - for service repositories
+
+This naming convention makes it immediately clear which Service Principal is used for infrastructure management (Terraform operations) versus application deployment (CI/CD workflows).
+
 ## Security Features
 
 - **OIDC Authentication**: Passwordless authentication using OpenID Connect (OIDC)

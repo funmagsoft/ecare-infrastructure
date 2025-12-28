@@ -40,6 +40,26 @@ This repository establishes the **foundational layer** that all other infrastruc
 - **`infra-foundation` bootstrap**: SP/FIC for Terraform repositories → Infrastructure management
 - **`infra-identity`**: UAMI/FIC for service repositories → Application deployment to AKS/ACR
 
+### Service Principal Naming Convention
+
+The naming convention for Service Principals reflects their purpose:
+
+- **Bootstrap Service Principals** (created by this repository): `sp-gha-{project_name}-infra-{environment}`
+  - Example: `sp-gha-ecare-infra-dev`
+  - The `-infra-` suffix distinguishes these SPs as infrastructure management identities
+  - Used by Terraform repositories (`infra-foundation`, `infra-platform`, `infra-identity`)
+
+- **Service Deployment Service Principals** (created by `infra-identity`): `sp-gha-{project_name}-{environment}`
+  - Example: `sp-gha-ecare-dev`
+  - No `-infra-` suffix, as these are for application service deployments
+  - Used by service repositories (application code repositories)
+
+**Why the difference?**
+
+- The `-infra-` suffix in bootstrap SPs makes it clear these are for infrastructure management (Terraform operations)
+- Service SPs without `-infra-` are for application build and deployment workflows
+- This naming distinction helps identify the purpose of each Service Principal at a glance
+
 ## What This Repository Creates
 
 ### Infrastructure Resources
