@@ -3,8 +3,9 @@
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 # IMPORTANT: For production, consider using Key Vault or environment variables for sensitive data
 
-environment  = "prod"
-project_name = "ecare"
+environment       = "prod"
+organization_name = "hycom"
+project_name      = "ecare"
 
 #------------------------------------------------------------------------------
 # Monitoring Configuration

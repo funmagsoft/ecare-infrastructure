@@ -2,8 +2,9 @@
 # Copy this file to terraform.tfvars and fill in your values
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 
-environment  = "dev"
-project_name = "ecare"
+environment       = "dev"
+organization_name = "hycom"
+project_name      = "ecare"
 
 #------------------------------------------------------------------------------
 # Monitoring Configuration
