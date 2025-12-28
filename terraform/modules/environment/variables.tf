@@ -1,6 +1,11 @@
 variable "environment" {
   description = "Environment name (dev, test, stage, prod)"
   type        = string
+
+  validation {
+    condition     = contains(["dev", "test", "stage", "prod"], var.environment)
+    error_message = "Environment must be one of: dev, test, stage, prod."
+  }
 }
 
 variable "project" {
@@ -74,4 +79,17 @@ variable "mgmt_subnet_allowed_ssh_ips" {
   description = "List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet"
   type        = list(string)
   default     = []
+}
+
+variable "additional_tags" {
+  description = "Additional tags to merge with required tags. Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden."
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition = alltrue([
+      for key in keys(var.additional_tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"], key)
+    ])
+    error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+  }
 }

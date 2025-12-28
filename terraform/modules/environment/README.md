@@ -65,6 +65,7 @@ module "environment" {
 | vpn_root_cert_name | Name of the root certificate for VPN | `string` | `"VPN-Root-Cert"` | no |
 | vpn_root_cert_data | Root certificate data (base64) | `string` | `""` | no |
 | mgmt_subnet_allowed_ssh_ips | List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet | `list(string)` | `[]` | no |
+| additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
 
 ## Outputs
 
@@ -112,6 +113,31 @@ The VPN Gateway is optional and can be enabled by setting `enable_vpn_gateway = 
 - Creates a Public IP for the VPN Gateway
 - Configures point-to-site VPN with root certificate authentication
 - Supports site-to-site VPN connectivity
+
+### Tags Validation
+
+The module enforces tag validation to ensure all required tags are present:
+
+**Required Tags** (automatically set, cannot be overridden):
+
+- `Environment` - Environment name (dev, test, stage, prod)
+- `Project` - Project name
+- `ManagedBy` - Always set to "Terraform"
+- `Phase` - Always set to "Foundation"
+- `GitRepository` - Always set to "infra-foundation"
+- `TerraformPath` - Path to Terraform configuration (e.g., "terraform/environments/dev")
+
+**Additional Tags**:
+
+- Use `additional_tags` variable to add custom tags
+- Required tags cannot be overridden via `additional_tags`
+- Validation ensures all required tags are present and non-empty
+
+**Validation**:
+
+- The module uses Terraform `check` blocks to validate that all required tags are present
+- If any required tag is missing or empty, Terraform will fail with a clear error message
+- The `additional_tags` variable has validation to prevent overriding required tags
 
 ## Naming Convention
 

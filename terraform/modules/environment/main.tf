@@ -9,13 +9,37 @@ locals {
   project     = var.project
   location    = data.azurerm_resource_group.main.location
 
-  common_tags = {
+  # Required tags - these must always be present
+  required_tags = {
     Environment   = local.environment
     Project       = local.project
     ManagedBy     = "Terraform"
     Phase         = "Foundation"
     GitRepository = "infra-foundation"
     TerraformPath = "terraform/environments/${local.environment}"
+  }
+
+  # Merge required tags with additional tags
+  # Required tags take precedence (merge order: additional_tags first, then required_tags)
+  common_tags = merge(
+    var.additional_tags,
+    local.required_tags
+  )
+}
+
+# Validation: Ensure all required tags are present
+# This precondition will fail if any required tag is missing or empty
+check "required_tags_validation" {
+  assert {
+    condition = alltrue([
+      local.common_tags["Environment"] != null && local.common_tags["Environment"] != "",
+      local.common_tags["Project"] != null && local.common_tags["Project"] != "",
+      local.common_tags["ManagedBy"] != null && local.common_tags["ManagedBy"] != "",
+      local.common_tags["Phase"] != null && local.common_tags["Phase"] != "",
+      local.common_tags["GitRepository"] != null && local.common_tags["GitRepository"] != "",
+      local.common_tags["TerraformPath"] != null && local.common_tags["TerraformPath"] != ""
+    ])
+    error_message = "All required tags must be present and non-empty: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
   }
 }
 
