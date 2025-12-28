@@ -14,17 +14,35 @@ alwaysApply: true
 ### Formatting Rules
 
 - Use proper heading hierarchy (H1 → H2 → H3)
-- Use code blocks with language tags for code examples
-- Use backticks for inline code and file names
-- Use lists for multiple items
-- Use tables for structured data
+- Titles must be in Title Case
+- Wrap lines at 120 characters where possible
 - Keep line length reasonable (max 120 characters)
+- Always add empty trailing lines at the end of files
+- Avoid passive voice; keep sentences short
+- Bold key terms using **double asterisks**
+- Do not auto-generate table of contents unless explicitly requested
+- Do not use icons too much
+
+### Lists
+
+- Use (`-`) for bullet lists
+- Always put a single empty line before and after bullet lists
+- Always put a single empty line before and after numbered lists
+- Use lists for multiple items
 
 ### Code Blocks
 
 - Always specify language for code blocks
+- Place code blocks using triple backticks with language annotations
 - Use triple backticks with language identifier
+- Always put a single empty line before and after code blocks
 - Example: ` ```python ` for Python code
+- Use backticks for inline code and file names
+
+### Tables
+
+- Use tables for structured data
+- Always format tables in GitHub-compatible format
 
 ### Links
 
