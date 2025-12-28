@@ -92,5 +92,9 @@ module "vpn_gateway" {
 
   tags = local.common_tags
 
+  # Explicit dependency on network module ensures gateway subnet is fully created
+  # before VPN Gateway attempts to use it. While gateway_subnet_id already creates
+  # an implicit dependency, this explicit depends_on provides clarity and ensures
+  # proper resource creation order, especially during initial deployments.
   depends_on = [module.network]
 }

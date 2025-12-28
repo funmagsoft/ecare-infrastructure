@@ -7,9 +7,8 @@
 # Use 'az account set --subscription <subscription-id>' to switch subscriptions
 
 # Environment Configuration
-environment       = "stage"
-organization_name = "hycom"
-project_name      = "ecare"
+environment  = "stage"
+project_name = "ecare"
 
 # Network Configuration
 vnet_cidr           = "10.3.0.0/16"

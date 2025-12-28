@@ -57,6 +57,15 @@ Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
 - `outputs.tf` - Re-exports outputs from the `environment` module
 - `terraform.tfvars` - Environment-specific values (not committed to git)
 
+**Note on File Duplication:** The `outputs.tf` and `variables.tf` files are intentionally duplicated across all environments. While they contain nearly identical content, this design decision provides:
+
+- **Environment-specific visibility** - Each environment's outputs and variables are clearly visible when working within that environment directory
+- **Environment-specific defaults** - Variables can have different default values per environment (e.g., `environment = "dev"` vs `environment = "prod"`)
+- **Clarity and maintainability** - Developers working on a specific environment can see all relevant configuration without navigating to shared modules
+- **Flexibility** - Future environment-specific customizations can be made without affecting other environments
+
+This minimal duplication (~56 lines per `outputs.tf`, ~80 lines per `variables.tf`) is acceptable and provides better developer experience than attempting to eliminate it through shared templates or complex abstractions.
+
 **Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
 
 ## Prerequisites: Setup Phase 0 Infrastructure
