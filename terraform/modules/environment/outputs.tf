@@ -1,55 +1,54 @@
-# Re-export outputs from the environment module
 output "vnet_id" {
   description = "ID of the Virtual Network"
-  value       = module.environment.vnet_id
+  value       = module.network.vnet_id
 }
 
 output "vnet_name" {
   description = "Name of the Virtual Network"
-  value       = module.environment.vnet_name
+  value       = module.network.vnet_name
 }
 
 output "aks_subnet_id" {
   description = "ID of the AKS subnet"
-  value       = module.environment.aks_subnet_id
+  value       = module.network.aks_subnet_id
 }
 
 output "data_subnet_id" {
   description = "ID of the Data subnet"
-  value       = module.environment.data_subnet_id
+  value       = module.network.data_subnet_id
 }
 
 output "mgmt_subnet_id" {
   description = "ID of the Management subnet"
-  value       = module.environment.mgmt_subnet_id
+  value       = module.network.mgmt_subnet_id
 }
 
 output "gateway_subnet_id" {
   description = "ID of the Gateway subnet"
-  value       = module.environment.gateway_subnet_id
+  value       = module.network.gateway_subnet_id
 }
 
 output "aks_nsg_id" {
   description = "ID of the AKS NSG"
-  value       = module.environment.aks_nsg_id
+  value       = module.network.aks_nsg_id
 }
 
 output "data_nsg_id" {
   description = "ID of the Data NSG"
-  value       = module.environment.data_nsg_id
+  value       = module.network.data_nsg_id
 }
 
 output "mgmt_nsg_id" {
   description = "ID of the Management NSG"
-  value       = module.environment.mgmt_nsg_id
+  value       = module.network.mgmt_nsg_id
 }
 
 output "vpn_gateway_id" {
   description = "ID of the VPN Gateway"
-  value       = module.environment.vpn_gateway_id
+  value       = var.enable_vpn_gateway ? module.vpn_gateway[0].vpn_gateway_id : null
 }
 
 output "vpn_public_ip" {
   description = "Public IP address of VPN Gateway"
-  value       = module.environment.vpn_public_ip
+  value       = var.enable_vpn_gateway ? module.vpn_gateway[0].public_ip_address : null
 }
