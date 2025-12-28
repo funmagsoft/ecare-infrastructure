@@ -10,17 +10,17 @@ output "vnet_name" {
 
 output "aks_subnet_id" {
   description = "ID of the AKS subnet"
-  value       = azurerm_subnet.aks.id
+  value       = azurerm_subnet.subnets["aks"].id
 }
 
 output "data_subnet_id" {
   description = "ID of the Data subnet"
-  value       = azurerm_subnet.data.id
+  value       = azurerm_subnet.subnets["data"].id
 }
 
 output "mgmt_subnet_id" {
   description = "ID of the Management subnet"
-  value       = azurerm_subnet.mgmt.id
+  value       = azurerm_subnet.subnets["mgmt"].id
 }
 
 output "gateway_subnet_id" {
