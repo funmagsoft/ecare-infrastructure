@@ -14,7 +14,7 @@ This repository contains Terraform code and helper scripts to:
 
 ## Structure
 
-```
+```console
 terraform/
 ├── modules/
 │   ├── environment/                  # Shared environment module (eliminates code duplication)
@@ -97,6 +97,7 @@ locals {
 ```
 
 The `environment` module automatically:
+
 - Creates Service Principal and FIC for GitHub Actions (via `github-oidc` module) using `repo` and `branch` from each service
 - Creates UAMI and FIC for AKS pods (via `workload-identity` module) using service configuration
 - Pulls IDs of ACR, AKS, KV/Storage/SB from `infra-platform` remote state
@@ -107,16 +108,38 @@ If a flag is `true` but the corresponding ID is missing, a precondition will fai
 ### Important: Two Types of Identities
 
 **GitHub OIDC Integration** (`github-oidc` module):
+
 - Creates **one Service Principal per environment** (`sp-gha-{project}-{env}`)
 - Creates **FIC per service repository** for GitHub Actions workflows
 - Used for: building container images (`az acr build`), deploying to AKS (`az aks get-credentials`, Helm/kubectl)
 - RBAC: Contributor on ACR, Azure Kubernetes Service Cluster User Role on AKS, optional RBAC Writer
 
 **Workload Identity** (`workload-identity` module):
+
 - Creates **one UAMI per service** (`mi-{project}-{service}-{env}`)
 - Creates **FIC per service** for AKS pods (Workload Identity)
 - Used for: AKS pods accessing Azure resources (Key Vault, Storage, Service Bus)
 - RBAC: Key Vault Secrets User, Storage Blob Data Contributor, Service Bus Data Owner (per service needs)
+
+### Service Principal Naming Convention
+
+**Important:** This repository creates Service Principals with a different naming pattern than the bootstrap Service Principals in `infra-foundation`:
+
+- **Service Deployment Service Principals** (this repository): `sp-gha-{project_name}-{environment}`
+  - Example: `sp-gha-ecare-dev`
+  - **No `-infra-` suffix** - these are for application service deployments
+  - Used by service repositories (application code repositories) for CI/CD workflows
+
+- **Bootstrap Service Principals** (`infra-foundation` repository): `sp-gha-{project_name}-infra-{environment}`
+  - Example: `sp-gha-ecare-infra-dev`
+  - **Has `-infra-` suffix** - these are for infrastructure management (Terraform operations)
+  - Used by Terraform repositories (`infra-foundation`, `infra-platform`, `infra-identity`)
+
+**Why the difference?**
+
+- The `-infra-` suffix in bootstrap SPs clearly identifies them as infrastructure management identities
+- Service SPs without `-infra-` are for application build and deployment workflows
+- This naming distinction helps identify the purpose of each Service Principal at a glance and prevents confusion between infrastructure and application deployment identities
 
 ## Scripts
 
@@ -124,7 +147,7 @@ If a flag is `true` but the corresponding ID is missing, a precondition will fai
 
 Add or update a service entry in `services.tf`:
 
-```
+```bash
 scripts/add-service.sh --env dev --service billing --repo funmagsoft/billing-service --kv --storage --sb
 ```
 
@@ -198,7 +221,7 @@ This repository uses a modular architecture to eliminate code duplication:
 
 To remove identities/RBAC for an environment:
 
-```
+```bash
 cd terraform/environments/<env>
 terraform destroy
 ```
