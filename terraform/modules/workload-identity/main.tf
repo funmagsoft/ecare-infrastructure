@@ -1,13 +1,16 @@
 
 locals {
+  # Resource naming patterns
   managed_identity_name = "mi-${var.project_name}-${var.service_name}-${var.environment}"
   service_account_name  = "sa-${var.service_name}"
   federated_cred_name   = "fic-${var.project_name}-${var.service_name}-${var.environment}"
   fic_subject           = "system:serviceaccount:${var.namespace}:${local.service_account_name}"
 
+  # Determine if Azure access is needed (UAMI and FIC are only created when needed)
   needs_azure_access = var.enable_key_vault_access || var.enable_storage_access || var.enable_service_bus_access || length(var.additional_roles) > 0
 
   # Default tags merged with provided tags
+  # Required tags ensure consistency across all resources and enable traceability
   tags = merge(
     {
       Environment   = var.environment
@@ -16,6 +19,7 @@ locals {
       ManagedBy     = "Terraform"
       Phase         = "WorkloadIdentity"
       GitRepository = "infra-identity"
+      TerraformPath = "terraform/environments/${var.environment}"
     },
     var.tags
   )
@@ -46,6 +50,10 @@ resource "azurerm_federated_identity_credential" "service" {
 }
 
 # Key Vault Secrets User (conditional)
+# Precondition Pattern:
+# Each conditional RBAC assignment includes a precondition to ensure
+# the required resource ID is provided when access is enabled.
+# This prevents silent failures and provides clear error messages.
 resource "azurerm_role_assignment" "keyvault_secrets_user" {
   count = var.enable_key_vault_access ? 1 : 0
 
@@ -62,6 +70,10 @@ resource "azurerm_role_assignment" "keyvault_secrets_user" {
 }
 
 # Storage Blob Data Contributor (conditional)
+# Precondition Pattern:
+# Each conditional RBAC assignment includes a precondition to ensure
+# the required resource ID is provided when access is enabled.
+# This prevents silent failures and provides clear error messages.
 resource "azurerm_role_assignment" "storage_blob_contributor" {
   count = var.enable_storage_access ? 1 : 0
 
@@ -78,6 +90,10 @@ resource "azurerm_role_assignment" "storage_blob_contributor" {
 }
 
 # Service Bus Data Owner (conditional)
+# Precondition Pattern:
+# Each conditional RBAC assignment includes a precondition to ensure
+# the required resource ID is provided when access is enabled.
+# This prevents silent failures and provides clear error messages.
 resource "azurerm_role_assignment" "service_bus_data_owner" {
   count = var.enable_service_bus_access ? 1 : 0
 
@@ -120,3 +136,4 @@ resource "kubernetes_service_account_v1" "service" {
     }
   }
 }
+

@@ -3,7 +3,7 @@ data "azurerm_resource_group" "main" {
   name = var.resource_group_name
 }
 
-# Local variables for tags
+# Local variables for tags and GitHub OIDC configuration
 locals {
   # Required tags - these must always be present
   required_tags = {
@@ -26,6 +26,31 @@ locals {
   ad_tags = [
     for key, value in local.merged_tags : "${key}:${value}"
   ]
+
+  # GitHub OIDC configuration constants
+  # These are used for all Federated Identity Credentials in this module
+  github_oidc_issuer   = "https://token.actions.githubusercontent.com"
+  github_oidc_audience = ["api://AzureADTokenExchange"]
+
+  # Helper to format repository name for display (removes slashes and formats)
+  format_repo_display_name = {
+    for repo in var.gitops_repos :
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}"
+  }
+
+  # Service repository display names
+  # Format: GitHub{RepositoryName}Branch-{branch}
+  service_repo_display_names = {
+    for name, cfg in var.service_repos :
+    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}"
+  }
+
+  # GitOps repository display names
+  # Format: GitHub{RepositoryName}Env-{environment}
+  gitops_repo_display_names = {
+    for repo in var.gitops_repos :
+    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}"
+  }
 }
 
 # Application Registration for Service Principal
@@ -49,10 +74,10 @@ resource "azuread_application_federated_identity_credential" "service_repos" {
   for_each = var.service_repos
 
   application_object_id = azuread_application.gha.object_id
-  display_name          = "GitHub${replace(title(replace(each.value.repo, "/", "-")), "-", "")}Branch-${replace(each.value.branch, "/", "-")}"
-  issuer                = "https://token.actions.githubusercontent.com"
+  display_name          = local.service_repo_display_names[each.key]
+  issuer                = local.github_oidc_issuer
   subject               = "repo:${each.value.repo}:ref:refs/heads/${each.value.branch}"
-  audiences             = ["api://AzureADTokenExchange"]
+  audiences             = local.github_oidc_audience
 }
 
 # Federated Identity Credentials for GitOps repositories
@@ -62,10 +87,10 @@ resource "azuread_application_federated_identity_credential" "gitops_repos" {
   for_each = toset(var.gitops_repos)
 
   application_object_id = azuread_application.gha.object_id
-  display_name          = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
-  issuer                = "https://token.actions.githubusercontent.com"
+  display_name          = local.gitops_repo_display_names[each.value]
+  issuer                = local.github_oidc_issuer
   subject               = "repo:${each.value}:environment:${var.environment}"
-  audiences             = ["api://AzureADTokenExchange"]
+  audiences             = local.github_oidc_audience
 }
 
 # RBAC: Contributor on ACR
@@ -93,5 +118,4 @@ resource "azurerm_role_assignment" "aks_rbac_writer" {
   role_definition_name = "Azure Kubernetes Service RBAC Writer"
   principal_id         = azuread_service_principal.gha.object_id
 }
-
 

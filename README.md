@@ -51,9 +51,10 @@ The `github-oidc` module creates:
 
 - **Service Principal** (one per environment)  
   Name: `sp-gha-{project_name}-{environment}` (e.g., `sp-gha-ecare-dev`)
-- **Federated Identity Credentials (FIC)** for GitHub OIDC (one per service repository)  
+- **Federated Identity Credentials (FIC)** for GitHub OIDC:
+  - One per service repository (branch-based: `repo:{org}/{repo}:ref:refs/heads/{branch}`, default branch = `main`)
+  - One per GitOps repository (environment-based: `repo:{org}/{repo}:environment:{environment}`)
   Issuer: `https://token.actions.githubusercontent.com`  
-  Subject: `repo:{org}/{repo}:ref:refs/heads/{branch}` (default branch = `main`)
 - **RBAC Role Assignments**:
   - **Contributor** on Azure Container Registry (ACR) - Required for `az acr build`
   - **Azure Kubernetes Service Cluster User Role** on AKS - Required for `az aks get-credentials`

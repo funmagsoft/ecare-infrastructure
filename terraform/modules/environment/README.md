@@ -41,6 +41,7 @@ module "environment" {
 | project_name | Project name | `string` | `"ecare"` | no |
 | organization_name | Organization name for resource naming | `string` | `"hycom"` | no |
 | services | Map of services to create workload identities for | `map(object)` | `{}` | no |
+| gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
 | additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
 
 ### Services Object Structure

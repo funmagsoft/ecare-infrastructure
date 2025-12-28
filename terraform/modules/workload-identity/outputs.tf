@@ -4,8 +4,8 @@ output "identity_id" {
 }
 
 output "managed_identity_name" {
-  value       = try(azurerm_user_assigned_identity.service[0].name, null)
   description = "Name of the Managed Identity (null if Azure access is not enabled)"
+  value       = try(azurerm_user_assigned_identity.service[0].name, null)
 }
 
 output "identity_client_id" {
@@ -19,13 +19,13 @@ output "identity_principal_id" {
 }
 
 output "service_account_name" {
-  value       = kubernetes_service_account_v1.service.metadata[0].name
   description = "Name of the Kubernetes ServiceAccount"
+  value       = kubernetes_service_account_v1.service.metadata[0].name
 }
 
 output "service_account_namespace" {
-  value       = kubernetes_service_account_v1.service.metadata[0].namespace
   description = "Namespace of the Kubernetes ServiceAccount"
+  value       = kubernetes_service_account_v1.service.metadata[0].namespace
 }
 
 output "federated_credential_id" {
@@ -34,16 +34,17 @@ output "federated_credential_id" {
 }
 
 output "federated_credential_name" {
-  value       = try(azurerm_federated_identity_credential.service[0].name, null)
   description = "Name of the Federated Identity Credential (null if Azure access is not enabled)"
+  value       = try(azurerm_federated_identity_credential.service[0].name, null)
 }
 
 output "enabled_services" {
+  description = "Information about which Azure services are enabled for this identity"
   value = {
     key_vault              = var.enable_key_vault_access
     storage                = var.enable_storage_access
     service_bus            = var.enable_service_bus_access
     additional_roles_count = length(var.additional_roles)
   }
-  description = "Information about which Azure services are enabled for this identity"
 }
+
