@@ -1,5 +1,30 @@
 #!/bin/bash
 
+# ============================================================================
+# DEPRECATED: This script is replaced by Terraform bootstrap module
+# ============================================================================
+# This script is kept for backward compatibility and migration purposes.
+# For new deployments, use Terraform bootstrap module instead:
+#
+#   cd terraform/environments/dev
+#   terraform init
+#   terraform apply -target=module.bootstrap
+#
+# Configure users_with_state_access in terraform.tfvars:
+#
+#   users_with_state_access = [
+#     "12345678-1234-1234-1234-123456789012"  # User Object ID
+#   ]
+#
+# To get a user's Object ID:
+#   az ad user show --id <user-email> --query id --output tsv
+#
+# The bootstrap module creates Storage Blob Data Contributor role assignments
+# for all specified users on the Terraform state Storage Account.
+#
+# See: terraform/modules/bootstrap/README.md for details
+# ============================================================================
+
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"

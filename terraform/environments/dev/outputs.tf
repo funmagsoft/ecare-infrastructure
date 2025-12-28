@@ -1,3 +1,24 @@
+# ============================================================================
+# Bootstrap Outputs
+# ============================================================================
+output "bootstrap_service_principal_app_id" {
+  description = "Application (Client) ID of the Service Principal for GitHub Actions"
+  value       = var.enable_bootstrap ? module.bootstrap[0].service_principal_app_id : null
+}
+
+output "bootstrap_service_principal_object_id" {
+  description = "Object ID of the Service Principal for GitHub Actions"
+  value       = var.enable_bootstrap ? module.bootstrap[0].service_principal_object_id : null
+}
+
+output "bootstrap_federated_identity_credentials" {
+  description = "Map of repository names to their Federated Identity Credential IDs"
+  value       = var.enable_bootstrap ? module.bootstrap[0].federated_identity_credentials : null
+}
+
+# ============================================================================
+# Environment Outputs
+# ============================================================================
 # Re-export outputs from the environment module
 output "vnet_id" {
   description = "ID of the Virtual Network"

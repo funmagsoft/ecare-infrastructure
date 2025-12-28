@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# ============================================================================
+# DEPRECATED: This script is replaced by Terraform bootstrap module
+# ============================================================================
+# This script is kept for backward compatibility and migration purposes.
+# For new deployments, use Terraform bootstrap module instead:
+#
+#   cd terraform/environments/dev
+#   terraform init
+#   terraform apply -target=module.bootstrap
+#
+# The bootstrap module automatically assigns Storage Blob Data Contributor
+# role to Service Principals on their respective Storage Accounts.
+#
+# See: terraform/modules/bootstrap/README.md for details
+# ============================================================================
+
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"

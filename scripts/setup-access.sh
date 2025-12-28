@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# ============================================================================
+# DEPRECATED: This script is replaced by Terraform bootstrap module
+# ============================================================================
+# This script is kept for backward compatibility and migration purposes.
+# For new deployments, use Terraform bootstrap module instead:
+#
+#   cd terraform/environments/dev
+#   terraform init
+#   terraform apply -target=module.bootstrap
+#
+# The bootstrap module creates:
+# - Service Principals (sp-gha-{project}-infra-{env})
+# - Federated Identity Credentials (FIC) for Terraform repos
+# - RBAC role assignments (Contributor, User Access Administrator, Storage Blob Data Contributor)
+#
+# See: terraform/modules/bootstrap/README.md for details
+# ============================================================================
+
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"

@@ -1,21 +1,74 @@
 # Infrastructure Foundation
 
-Networking and foundational infrastructure for the ecare project.
+Networking, foundational infrastructure, and Terraform state authentication for the ecare project.
 
 ## Purpose
 
-This repository contains Terraform code for:
+This repository is the **first phase** of the infrastructure setup and serves as the foundation for all subsequent infrastructure deployments. It provides:
 
-- Virtual Networks
-- Subnets
-- Network Security Groups (NSG) with SSH access rules for management subnet
-- VPN Gateway (optional)
+1. **Core Networking Infrastructure**: Virtual Networks, Subnets, Network Security Groups (NSG), and optional VPN Gateway that form the network foundation for all Azure resources in the project.
+
+2. **Terraform State Authentication**: Service Principals, Federated Identity Credentials (FIC), and RBAC role assignments that enable GitHub Actions workflows in Terraform repositories (`infra-foundation`, `infra-platform`, `infra-identity`) to authenticate to Azure and manage infrastructure using Terraform.
+
+### Why This Repository Exists
+
+This repository establishes the **foundational layer** that all other infrastructure depends on:
+
+- **Network Foundation**: All Azure resources (AKS, Storage, Key Vault, PostgreSQL, etc.) require network connectivity. This repository creates the Virtual Network, subnets, and network security rules that enable secure communication between resources.
+
+- **Terraform State Management**: Before any infrastructure can be deployed via Terraform in GitHub Actions, authentication must be configured. This repository's `bootstrap` module creates Service Principals and Federated Identity Credentials specifically for **Terraform state management** - allowing GitHub Actions workflows in Terraform repositories to:
+  - Authenticate to Azure using OIDC (passwordless)
+  - Read and write Terraform state files stored in Azure Storage Accounts
+  - Create, modify, and delete Azure resources via Terraform
+
+### Important Distinction: Bootstrap vs. Service Identity
+
+**This repository's `bootstrap` module** creates Service Principals and FIC for **Terraform repositories** (`infra-foundation`, `infra-platform`, `infra-identity`) to manage infrastructure. These Service Principals are used by GitHub Actions workflows to:
+
+- Run `terraform plan` and `terraform apply`
+- Access Terraform state files in Storage Accounts
+- Manage Azure resources (networks, AKS, databases, etc.)
+
+**The `infra-identity` repository** (see [infra-identity](https://github.com/hycom/infra-identity)) creates **analogous objects** (User Assigned Managed Identities, FIC, RBAC) but for a **different purpose**: enabling GitHub Actions workflows in **service repositories** to deploy application services to AKS and push container images to ACR. These identities are used by:
+
+- Application build and deployment pipelines
+- Container image push operations to Azure Container Registry (ACR)
+- Service deployments to Azure Kubernetes Service (AKS)
+
+**Summary**:
+
+- **`infra-foundation` bootstrap**: SP/FIC for Terraform repositories → Infrastructure management
+- **`infra-identity`**: UAMI/FIC for service repositories → Application deployment to AKS/ACR
+
+## What This Repository Creates
+
+### Infrastructure Resources
+
+- **Virtual Networks** - Base network infrastructure for all environments
+- **Subnets** - Segmented network spaces (AKS, Data, Management, Gateway)
+- **Network Security Groups (NSG)** - Network traffic filtering and security rules
+- **SSH Access Rules** - Configurable SSH access to management subnet
+- **VPN Gateway** - Optional site-to-site and point-to-site VPN connectivity
+
+### Authentication & Access (Bootstrap Module)
+
+The `bootstrap` module creates Service Principals and authentication for **Terraform state management**:
+
+- **Service Principals** - Azure AD identities for GitHub Actions OIDC authentication (`sp-gha-{project}-infra-{env}`)
+- **Federated Identity Credentials (FIC)** - OIDC credentials for Terraform repositories (one per repository per environment)
+- **RBAC Role Assignments**:
+
+  - **Contributor** on Resource Group - Allows Terraform to manage infrastructure resources
+  - **User Access Administrator** on Resource Group - Allows Terraform to assign roles to Managed Identities
+  - **Storage Blob Data Contributor** on Storage Account - Allows Terraform to read/write state files
+  - **Storage Blob Data Contributor** for users (optional) - Allows users to view state files in Azure Portal
 
 ## Structure
 
 ```console
 terraform/
 ├── modules/
+│   ├── bootstrap/      # Bootstrap module (SP, FIC, RBAC for Terraform repos)
 │   ├── environment/    # Shared environment module (eliminates code duplication)
 │   ├── network/        # Network module (VNet, Subnets, NSGs)
 │   └── vpn-gateway/    # VPN Gateway module
@@ -30,15 +83,75 @@ terraform/
 Each environment directory contains:
 
 - `backend.tf` - Backend configuration (state storage)
-- `providers.tf` - Provider configuration (AzureRM)
+- `providers.tf` - Provider configuration (AzureRM, AzureAD)
+- `bootstrap.tf` - Bootstrap module call (SP, FIC, RBAC for Terraform repos)
 - `main.tf` - Calls the `environment` module
 - `variables.tf` - Environment-specific variables
-- `outputs.tf` - Re-exports outputs from the `environment` module
+- `outputs.tf` - Re-exports outputs from the `environment` and `bootstrap` modules
 - `terraform.tfvars` - Environment-specific values (not committed to git)
 
 ## Getting Started
 
 1. Review infra documentation [README.md](https://github.com/funmagsoft/infra-documentation/blob/main/README.md)
+
+## Bootstrap Module
+
+The `bootstrap` module (located in `terraform/modules/bootstrap/`) is a critical component that creates authentication and access control for **Terraform state management**. This module replaces the deprecated bash scripts (`setup-access.sh`, `setup-access-sp.sh`, `setup-access-user.sh`) and provides Infrastructure as Code (IaC) management of these foundational resources.
+
+### What the Bootstrap Module Creates
+
+**Service Principals** (one per environment):
+
+- Azure AD identities for GitHub Actions OIDC authentication
+- Named: `sp-gha-{project}-infra-{env}` (e.g., `sp-gha-ecare-infra-dev`)
+- Used by GitHub Actions workflows in Terraform repositories to authenticate to Azure
+
+**Federated Identity Credentials (FIC)**:
+
+- Enables passwordless authentication using OpenID Connect (OIDC)
+- Creates one FIC per Terraform repository per environment (12 total: 3 repos × 4 environments)
+- Scoped to: `repo:{organization}/{repo}:environment:{environment}`
+- Allows GitHub Actions workflows to request Azure access tokens without storing secrets
+
+**RBAC Role Assignments**:
+
+- **Contributor** on Resource Group - Allows Terraform to create/modify/delete infrastructure resources
+- **User Access Administrator** on Resource Group - Allows Terraform to assign roles to Managed Identities it creates
+- **Storage Blob Data Contributor** on Storage Account (for Service Principal) - Allows Terraform to read/write state files
+- **Storage Blob Data Contributor** on Storage Account (for users, optional) - Allows users to view state files in Azure Portal
+
+### Important: Bootstrap is for Terraform State, Not Service Deployment
+
+**The bootstrap module in this repository creates Service Principals and FIC for Terraform repositories** (`infra-foundation`, `infra-platform`, `infra-identity`) to manage infrastructure via Terraform. These identities are used by GitHub Actions workflows to:
+
+- Run `terraform plan` and `terraform apply`
+- Access Terraform state files in Azure Storage Accounts
+- Create and manage Azure resources (networks, AKS, databases, etc.)
+
+**For service deployment authentication**, see the [`infra-identity` repository](https://github.com/hycom/infra-identity), which creates User Assigned Managed Identities (UAMI) and FIC for **service repositories** to:
+
+- Push container images to Azure Container Registry (ACR)
+- Deploy services to Azure Kubernetes Service (AKS)
+- Access Azure resources (Key Vault, Storage, Service Bus) from running services
+
+### Configuration
+
+The bootstrap module is configured in each environment's `terraform.tfvars`:
+
+```hcl
+# Bootstrap Configuration
+organization        = "hycom"
+organization_for_sa = "hycom"
+enable_bootstrap    = true
+
+# Users with access to Terraform state Storage Account
+users_with_state_access = [
+  "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # User Object ID
+  "c655dbb9-e52b-45c3-8b96-e37a1c35aa7e"   # User Object ID
+]
+```
+
+See `terraform/environments/{env}/bootstrap.tf` and `terraform/modules/bootstrap/README.md` for detailed documentation.
 
 ## Architecture
 
@@ -104,39 +217,11 @@ Before running Terraform, you must set up the foundational infrastructure using 
 
 - **`setup-state-storage.sh`** - Creates Storage Accounts for Terraform state with blob versioning, soft delete, and secure access settings. These Storage Accounts store Terraform's state files (`.tfstate`) which track the current state of your infrastructure. The state files are critical - they allow Terraform to know what resources exist, their configuration, and dependencies. Without proper state storage, Terraform cannot manage your infrastructure correctly. Each environment has its own Storage Account with a dedicated `tfstate` container.
 
-- **`setup-access.sh`** - Creates Service Principals for GitHub Actions OIDC authentication, configures Federated Identity Credentials (FIC) for all repos, and assigns RBAC roles.
-  
-  **Service Principals:**
-  - Creates 4 Service Principals (one per environment: dev, test, stage, prod)
-  - Azure AD identities that allow automated access to Azure resources
-  - GitHub Actions workflows use these to authenticate to Azure
-  - Named: `sp-gha-${PROJECT}-infra-${ENV}`
-  
-  **Federated Identity Credentials (FIC):**
-  - Enables passwordless authentication using OpenID Connect (OIDC)
-  - GitHub Actions can request Azure access tokens without storing secrets
-  - Creates 12 FIC total (3 repos × 4 environments):
-    - `infra-foundation` repository for each environment
-    - `infra-platform` repository for each environment
-    - `infra-identity` repository for each environment
-  - Each FIC is scoped to a specific GitHub repository and environment
-  
-  **RBAC Role Assignments:**
-  - **Contributor** (on Resource Group and Subscription):
-    - Allows Terraform to create/modify/delete resources
-    - Required for all Terraform operations on infrastructure
-  - **User Access Administrator** (on Resource Group):
-    - Allows Terraform to assign roles to Managed Identities it creates
-    - Required when Terraform creates resources that need role assignments (e.g., Managed Identities)
-  - **Storage Blob Data Contributor** (on Storage Account):
-    - Allows reading/writing Terraform state files
-    - Required for Terraform to access and update state in remote backend
-  
-  These roles are essential for Terraform to manage infrastructure and state files in GitHub Actions workflows.
+- **`setup-access.sh`** - **DEPRECATED**: This script's functionality has been replaced by the Terraform `bootstrap` module. The bootstrap module creates Service Principals, Federated Identity Credentials (FIC), and RBAC role assignments for Terraform repositories. See the [Bootstrap Module](#bootstrap-module) section below for details.
 
-- **`setup-access-user.sh`** - Grants the current user Storage Blob Data Contributor role on all state storage accounts for Azure Portal access. This allows you (the subscription owner) to view and browse Terraform state files directly in Azure Portal, which is useful for debugging, auditing, and understanding the current infrastructure state. Without this role, you cannot access the state files through the portal, even though you own the subscription.
+- **`setup-access-user.sh`** - **DEPRECATED**: This script's functionality has been replaced by the Terraform `bootstrap` module. User access to state Storage Accounts is now managed via the `users_with_state_access` variable in the bootstrap module configuration.
 
-- **`setup-access-sp.sh`** - Grants Service Principals Storage Blob Data Contributor role on their respective state storage accounts for Terraform state access. This is a critical role assignment - it allows the Service Principals created by `setup-access.sh` to read and write Terraform state files stored in the Storage Accounts. When Terraform runs in GitHub Actions, it needs to authenticate as the Service Principal and access the state files to track infrastructure changes. Without this role, Terraform cannot read or update the state, causing deployments to fail.
+- **`setup-access-sp.sh`** - **DEPRECATED**: This script's functionality has been replaced by the Terraform `bootstrap` module. Service Principal access to state Storage Accounts is now automatically configured by the bootstrap module.
 
 All setup scripts support `--dry-run` option to preview changes without executing them.
 

@@ -10,6 +10,19 @@
 environment  = "stage"
 project_name = "ecare"
 
+# Bootstrap Configuration
+organization        = "hycom"
+organization_for_sa = "hycom"
+enable_bootstrap    = true
+# terraform_repos = ["infra-foundation", "infra-platform", "infra-identity"]  # Optional: override default repos
+
+# Users with access to Terraform state Storage Account
+# To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv
+users_with_state_access = [
+  "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # Dariusz Cydzik
+  "c655dbb9-e52b-45c3-8b96-e37a1c35aa7e"   # Marek Gmyrek
+]
+
 # Network Configuration
 vnet_cidr           = "10.3.0.0/16"
 aks_subnet_cidr     = "10.3.1.0/24"

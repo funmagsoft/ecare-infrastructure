@@ -18,12 +18,12 @@ TOTAL_ERRORS=0
 FAILED_SETUPS=()
 
 # Define setup scripts in order (dependencies must be created first)
+# Note: setup-access.sh, setup-access-sp.sh, and setup-access-user.sh are now replaced
+# by Terraform bootstrap module. They are kept for backward compatibility but should
+# not be used in new deployments.
 SETUP_SCRIPTS=(
   "setup-rg.sh"
   "setup-state-storage.sh"
-  "setup-access.sh"
-  "setup-access-user.sh"
-  "setup-access-sp.sh"
 )
 
 # Run each setup script
@@ -80,17 +80,20 @@ if [ $TOTAL_ERRORS -eq 0 ]; then
   echo "Created components:"
   echo "  ✓ Resource Groups (all environments)"
   echo "  ✓ Storage Accounts and containers (with versioning and soft delete)"
-  echo "  ✓ Service Principals (for GitHub Actions)"
-  echo "  ✓ Federated Identity Credentials (FIC)"
-  echo "  ✓ RBAC role assignments (Contributor, User Access Administrator, Storage Blob Data Contributor)"
-  echo "  ✓ Current user access (Storage Blob Data Contributor)"
-  echo "  ✓ Service Principal access (Storage Blob Data Contributor)"
+  echo ""
+  echo "Note: Service Principals, FIC, RBAC for GitHub Actions, and user access"
+  echo "      are now created by Terraform bootstrap module. Run Terraform to create them:"
+  echo "      cd terraform/environments/dev && terraform init && terraform apply"
+  echo ""
+  echo "      To grant users access to state files, configure users_with_state_access"
+  echo "      in terraform.tfvars with user Object IDs."
   echo ""
   if [ "$DRY_RUN" != true ]; then
     echo "Next steps:"
     echo "  1. Verify setup with: ./verify-all.sh"
-    echo "  2. Configure GitHub Secrets (see documentation)"
-    echo "  3. Proceed with Phase 1 deployment"
+    echo "  2. Deploy bootstrap with Terraform: cd terraform/environments/dev && terraform apply"
+    echo "  3. Configure GitHub Secrets (see documentation)"
+    echo "  4. Proceed with Phase 1 deployment"
   fi
   exit 0
 else
