@@ -1,6 +1,6 @@
-# Infra Platform
+# Infrastructure Platform
 
-Platform (AKS, PostgreSQL, Storage, Key Vault, Service Bus, ACR, Bastion) for the ecare project.
+Platform infrastructure (AKS, PostgreSQL, Storage, Key Vault, Service Bus, ACR, Bastion) for the ecare project.
 
 ## Purpose
 
@@ -14,21 +14,24 @@ This repository contains Terraform code for:
 - ACR with Private Endpoint
 - Bastion VM
 - Shared AKS namespace `ecare`
+- Monitoring (Log Analytics + Application Insights)
 
 ## Structure
 
 ```console
 terraform/
 ├── modules/
-│   ├── aks/
-│   ├── postgresql/
-│   ├── storage/
-│   ├── key-vault/
-│   ├── service-bus/
-│   ├── acr/
-│   ├── monitoring/
-│   ├── bastion/
-│   └── aks-namespace/
+│   ├── platform/         # Shared platform module (eliminates code duplication)
+│   ├── aks/              # AKS cluster module
+│   ├── aks-namespace/    # Kubernetes namespace module
+│   ├── bastion/          # Bastion VM module
+│   ├── acr/              # Container Registry module
+│   ├── key-vault/        # Key Vault module
+│   ├── monitoring/       # Monitoring module
+│   ├── postgresql/       # PostgreSQL module
+│   ├── service-bus/      # Service Bus module
+│   └── storage/          # Storage Account module
+├── templates/            # Template files for backend.tf and providers.tf
 └── environments/
     ├── dev/
     ├── test/
@@ -36,9 +39,46 @@ terraform/
     └── prod/
 ```
 
+Each environment directory contains:
+
+- `backend.tf` - Backend configuration (state storage)
+- `providers.tf` - Provider configuration (AzureRM, Kubernetes)
+- `kubernetes-provider.tf` - Kubernetes provider configuration
+- `main.tf` - Calls the `platform` module
+- `variables.tf` - Environment-specific variables
+- `outputs.tf` - Re-exports outputs from the `platform` module
+- `terraform.tfvars` - Environment-specific values (not committed to git)
+
 ## Getting Started
 
 1. Review infra documentation [README.md](https://github.com/funmagsoft/infra-documentation/blob/main/README.md)
+
+## Architecture
+
+This repository uses a modular architecture to eliminate code duplication:
+
+- **Platform Module** (`modules/platform/`): Shared module that encapsulates all common platform infrastructure configuration for an environment. This module eliminates ~95% of code duplication across environments by providing a single source of truth. The module is organized into topic-specific files:
+  - `data.tf` - Data sources (resource group, remote state, client config)
+  - `locals.tf` - Local variables, tags, and validation checks
+  - `monitoring.tf` - Monitoring module (Log Analytics + Application Insights)
+  - `compute.tf` - AKS, AKS Namespace, and Bastion modules
+  - `storage.tf` - Storage Account and PostgreSQL modules
+  - `security.tf` - Key Vault module and RBAC role assignments
+  - `container-registry.tf` - ACR module
+  - `messaging.tf` - Service Bus module
+- **Individual Modules**: Each service has its own module (AKS, PostgreSQL, Storage, Key Vault, Service Bus, ACR, Bastion, Monitoring, AKS Namespace) that can be reused independently.
+
+Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
+
+- `backend.tf` - Backend configuration pointing to environment-specific state storage
+- `providers.tf` - Provider configuration (required in root module)
+- `kubernetes-provider.tf` - Kubernetes provider configuration (required for AKS namespace creation)
+- `main.tf` - Calls the `platform` module with environment-specific variables
+- `variables.tf` - Environment-specific input variables
+- `outputs.tf` - Re-exports outputs from the `platform` module
+- `terraform.tfvars` - Environment-specific values (not committed to git)
+
+**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
 
 ## Prerequisites
 
@@ -47,6 +87,12 @@ Make sure Phase 0 (infra-foundation) is deployed (RG, state storage, access). Yo
 - Azure CLI logged in (`az login`)
 - Correct subscription selected (`az account set --subscription <id>`)
 - Terraform >= 1.5.0 installed
+- Phase 1 (infra-foundation) must be deployed first:
+  - Virtual Network must exist
+  - AKS subnet must exist
+  - Data subnet must exist (for Private Endpoints)
+  - Management subnet must exist (for Bastion VM)
+  - Network Security Groups must be configured
 
 ## Pre-commit Hooks
 
@@ -140,6 +186,7 @@ Edit `terraform.tfvars` and configure (per environment):
 - Key Vault settings (SKU, purge protection)
 - Service Bus SKU/capacity (Standard/Premium)
 - Bastion settings (vm_size, SSH source IPs)
+- Monitoring settings (retention days, application insights type)
 
 **Important**: `terraform.tfvars` is in `.gitignore` and should not be committed. Use `terraform.tfvars.example` as a template.
 
@@ -178,6 +225,8 @@ terraform apply
 - **Environment Isolation**: Each environment (dev, test, stage, prod) has separate state files and Resource Groups.
 - **Authentication**: Terraform uses Azure AD authentication (backend `use_azuread_auth = true`). Ensure `az login` or GitHub OIDC is configured.
 - **Backend Configuration**: `backend.tf` points to the Storage Accounts created by Phase 0. If names change, update `backend.tf`.
+- **Provider Configuration**: Provider configuration is in `providers.tf` (root module). Modules inherit provider configuration from the root module.
+- **Resource Group**: Resource Group name is automatically constructed as `rg-{project_name}-{environment}` (e.g., `rg-ecare-dev`). The Resource Group must exist (created in Phase 0).
 
 ## Networking and Private Access
 
@@ -189,17 +238,29 @@ terraform apply
 
 - Shared namespace `ecare` created in every environment (module `aks-namespace`).
 - Intended for workload identity-enabled workloads and application services.
+- Kubernetes provider must be configured in the root module (`kubernetes-provider.tf`) for namespace creation.
 
 ## Modules Overview
 
-- **aks**: AKS with OIDC, Workload Identity, monitoring, RBAC to ACR.
-- **postgresql**: Flexible Server + Private Endpoint + Private DNS.
-- **storage**: Storage Account + Private Endpoint + Private DNS.
-- **key-vault**: Key Vault + Private Endpoint + Private DNS + correct `enable_rbac_authorization`.
-- **service-bus**: Standard/Premium; Private Endpoint for Premium; public network access auto-adjusted by SKU.
-- **acr**: Container Registry + Private Endpoint + Private DNS.
-- **bastion**: Bastion VM (SSH key, tooling), NSG with allowed source IP list.
-- **aks-namespace**: Creates the shared `ecare` namespace.
+- **platform**: Shared module that encapsulates all platform infrastructure (eliminates ~95% code duplication)
+- **aks**: AKS with OIDC, Workload Identity, monitoring, RBAC to ACR
+- **postgresql**: Flexible Server + Private Endpoint + Private DNS
+- **storage**: Storage Account + Private Endpoint + Private DNS
+- **key-vault**: Key Vault + Private Endpoint + Private DNS + RBAC authorization
+- **service-bus**: Standard/Premium; Private Endpoint for Premium; public network access auto-adjusted by SKU
+- **acr**: Container Registry + Private Endpoint + Private DNS
+- **bastion**: Bastion VM (SSH key, tooling), NSG with allowed source IP list
+- **monitoring**: Log Analytics Workspace + Application Insights
+- **aks-namespace**: Creates the shared `ecare` namespace
+
+## Tag Validation
+
+The `platform` module enforces tag validation to ensure all required tags are present:
+
+- **Required Tags** (automatically set, cannot be overridden):
+  - `Environment`, `Project`, `ManagedBy`, `Phase`, `GitRepository`, `TerraformPath`
+- **Additional Tags**: Use `additional_tags` variable to add custom tags
+- **Validation**: `check` blocks validate all required tags are present and non-empty
 
 ## Cleanup
 

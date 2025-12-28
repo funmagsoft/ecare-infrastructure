@@ -131,6 +131,12 @@ postgresql://psqladmin:PASSWORD@psql-ecare-dev.postgres.database.azure.net:5432/
 export DATABASE_URL="postgresql://psqladmin:${DB_PASSWORD}@psql-ecare-dev.postgres.database.azure.net:5432/postgres"
 ```
 
+## Naming Convention
+
+Resources follow this naming pattern:
+
+- **PostgreSQL Server**: `psql-{project_name}-{environment}` (e.g., `psql-ecare-dev`)
+
 ## Security Features
 
 - **Network Isolation**: Public network access disabled by default, VNet integration via delegated subnet
@@ -202,12 +208,6 @@ module "postgresql" {
 - Point-in-time restore to any time within retention period
 - Geo-redundant backups replicate to paired region
 - Manual backups via `pg_dump`
-
-## Naming Convention
-
-Resources follow this naming pattern:
-
-- **PostgreSQL Server**: `psql-{project_name}-{environment}` (e.g., `psql-ecare-dev`)
 
 ## Integration with Other Modules
 
