@@ -104,3 +104,14 @@ repos:
           - '--disable=MD029'  # Allow ordered list item prefix variations
         files: '\.md$'
         exclude: '^docs/'
+
+  # Conventional Commits validation
+  - repo: local
+    hooks:
+      - id: validate-commit-msg
+        name: Validate Conventional Commits format
+        entry: bash scripts/validate-commit-msg.sh
+        language: system
+        stages: [commit-msg]
+        pass_filenames: true
+        always_run: true
