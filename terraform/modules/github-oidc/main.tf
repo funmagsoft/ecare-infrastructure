@@ -44,6 +44,7 @@ resource "azuread_service_principal" "gha" {
 
 # Federated Identity Credentials for service repositories
 # Creates one FIC per service repository per environment
+# Subject: repo:{repo}:ref:refs/heads/{branch}
 resource "azuread_application_federated_identity_credential" "service_repos" {
   for_each = var.service_repos
 
@@ -51,6 +52,19 @@ resource "azuread_application_federated_identity_credential" "service_repos" {
   display_name          = "GitHub${replace(title(replace(each.value.repo, "/", "-")), "-", "")}Branch-${replace(each.value.branch, "/", "-")}"
   issuer                = "https://token.actions.githubusercontent.com"
   subject               = "repo:${each.value.repo}:ref:refs/heads/${each.value.branch}"
+  audiences             = ["api://AzureADTokenExchange"]
+}
+
+# Federated Identity Credentials for GitOps repositories
+# Creates one FIC per GitOps repository per environment
+# Subject: repo:{repo}:environment:{environment}
+resource "azuread_application_federated_identity_credential" "gitops_repos" {
+  for_each = toset(var.gitops_repos)
+
+  application_object_id = azuread_application.gha.object_id
+  display_name          = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
+  issuer                = "https://token.actions.githubusercontent.com"
+  subject               = "repo:${each.value}:environment:${var.environment}"
   audiences             = ["api://AzureADTokenExchange"]
 }
 

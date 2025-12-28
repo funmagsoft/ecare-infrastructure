@@ -54,6 +54,20 @@ variable "service_repos" {
   default = {}
 }
 
+variable "gitops_repos" {
+  description = <<-EOT
+    List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration.
+    Creates one FIC per repository per environment with subject: repo:{repo}:environment:{environment}
+    
+    Example:
+    gitops_repos = [
+      "hycom/gitops"
+    ]
+  EOT
+  type        = list(string)
+  default     = []
+}
+
 variable "enable_aks_rbac_writer" {
   description = "Enable Azure Kubernetes Service RBAC Writer role (for deployments)"
   type        = bool

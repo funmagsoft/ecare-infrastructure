@@ -36,6 +36,20 @@ variable "services" {
   default = {}
 }
 
+variable "gitops_repos" {
+  description = <<-EOT
+    List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration.
+    Creates one FIC per repository per environment with subject: repo:{repo}:environment:{environment}
+    
+    Example:
+    gitops_repos = [
+      "hycom/gitops"
+    ]
+  EOT
+  type        = list(string)
+  default     = []
+}
+
 variable "additional_tags" {
   description = "Additional tags to merge with required tags. Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden."
   type        = map(string)

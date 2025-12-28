@@ -10,8 +10,13 @@ output "github_oidc_service_principal_object_id" {
 }
 
 output "github_oidc_federated_identity_credentials" {
-  description = "Map of service names to their Federated Identity Credential IDs (GitHub OIDC)"
+  description = "Map of service names to their Federated Identity Credential IDs (GitHub OIDC for service repositories)"
   value       = module.github_oidc_integration.federated_identity_credentials
+}
+
+output "github_oidc_gitops_federated_identity_credentials" {
+  description = "Map of GitOps repository names to their Federated Identity Credential IDs (GitHub OIDC for GitOps repositories per environment)"
+  value       = module.github_oidc_integration.gitops_federated_identity_credentials
 }
 
 # Workload Identity Outputs

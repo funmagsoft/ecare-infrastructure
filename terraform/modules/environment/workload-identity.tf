@@ -20,6 +20,9 @@ module "github_oidc_integration" {
     }
   }
 
+  # GitOps repositories for environment-based OIDC integration
+  gitops_repos = var.gitops_repos
+
   enable_aks_rbac_writer = true
 
   tags = local.common_tags

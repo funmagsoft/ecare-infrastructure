@@ -63,6 +63,7 @@ module "github_oidc_integration" {
 | acr_id | ID of the Azure Container Registry | `string` | - | yes |
 | aks_id | ID of the Azure Kubernetes Service cluster | `string` | - | yes |
 | service_repos | Map of service repositories for GitHub OIDC integration | `map(object({repo=string, branch=optional(string, "main")}))` | `{}` | no |
+| gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
 | enable_aks_rbac_writer | Enable Azure Kubernetes Service RBAC Writer role | `bool` | `false` | no |
 | tags | Tags to apply to all resources | `map(string)` | `{}` | no |
 
@@ -72,7 +73,8 @@ module "github_oidc_integration" {
 |------|-------------|-----------|
 | service_principal_app_id | Application (Client) ID of the Service Principal | no |
 | service_principal_object_id | Object ID of the Service Principal | no |
-| federated_identity_credentials | Map of service names to their FIC IDs | no |
+| federated_identity_credentials | Map of service names to their FIC IDs (for service repositories) | no |
+| gitops_federated_identity_credentials | Map of GitOps repository names to their FIC IDs (for GitOps repositories per environment) | no |
 
 ## Module-Specific Configuration
 
@@ -85,6 +87,18 @@ The module creates Federated Identity Credentials for each service repository de
 - **Audience**: `api://AzureADTokenExchange`
 
 This allows GitHub Actions workflows in the specified repository and branch to authenticate to Azure using OIDC.
+
+### GitOps Repository Configuration
+
+The module creates Federated Identity Credentials for each GitOps repository defined in `gitops_repos`. Each FIC is scoped to a specific GitHub repository and environment:
+
+- **Issuer**: `https://token.actions.githubusercontent.com`
+- **Subject**: `repo:{org}/{repo}:environment:{environment}`
+- **Audience**: `api://AzureADTokenExchange`
+
+This allows GitHub Actions workflows in the specified repository and environment to authenticate to Azure using OIDC. For example, in the `dev` environment, a workflow in the `hycom/gitops` repository with `environment: dev` can authenticate using this FIC.
+
+**Note**: GitOps repositories use environment-based authentication (one FIC per repository per environment), while service repositories use branch-based authentication (one FIC per repository per branch).
 
 ### Important: This Module is for Service Deployment, Not Terraform State
 
@@ -120,13 +134,14 @@ Resources follow this naming pattern:
 
 - **Service Principal**: `sp-gha-{project_name}-{environment}` (e.g., `sp-gha-ecare-dev`)
 - **Application Registration**: Same as Service Principal (display name)
-- **Federated Identity Credential**: `GitHub{RepositoryName}Branch-{branch}` (e.g., `GitHubHycomBillingServiceBranch-main`)
+- **Federated Identity Credential (Service Repos)**: `GitHub{RepositoryName}Branch-{branch}` (e.g., `GitHubHycomBillingServiceBranch-main`)
+- **Federated Identity Credential (GitOps Repos)**: `GitHub{RepositoryName}Env-{environment}` (e.g., `GitHubHycomGitopsEnv-dev`)
 
 ## Security Features
 
 - **OIDC Authentication**: Passwordless authentication using OpenID Connect (OIDC)
 - **No Secrets Required**: GitHub Actions workflows authenticate without storing credentials
-- **Scoped Access**: FIC are scoped to specific repositories and branches
+- **Scoped Access**: FIC are scoped to specific repositories, branches (service repos), or environments (GitOps repos)
 - **Least Privilege**: Service Principals have only the minimum required permissions
 - **RBAC Enforcement**: Role assignments follow Azure RBAC best practices
 
@@ -152,6 +167,10 @@ module "github_oidc_integration" {
       branch = "main"
     }
   }
+
+  gitops_repos = [
+    "hycom/gitops"
+  ]
 
   enable_aks_rbac_writer = true
 
@@ -183,6 +202,10 @@ module "github_oidc_integration" {
       branch = "main"
     }
   }
+
+  gitops_repos = [
+    "hycom/gitops"
+  ]
 
   enable_aks_rbac_writer = true
 
