@@ -1,0 +1,27 @@
+# Environment Configuration for STAGE
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+
+# Environment Configuration
+environment       = "stage"
+organization_name = "hycom"
+project_name      = "ecare"
+
+# GitOps Repositories
+# List of GitOps repositories for environment-based OIDC integration
+# Creates FIC with subject: repo:{repo}:environment:{environment}
+gitops_repos = [
+  # "hycom/gitops"
+]
+
+# Additional Tags
+# Additional tags to merge with required tags
+# Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden
+additional_tags = {
+  # CostCenter = "engineering"
+  # Owner      = "platform-team@company.com"
+}
+
+# Note: Service configuration is managed in services.tf file
+# Use scripts/add-service.sh to add or update services
+
