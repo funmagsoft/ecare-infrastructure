@@ -260,5 +260,5 @@ From Phase 2 (infra-platform):
 ## Terraform Version
 
 - Terraform >= 1.5.0
-- AzureRM Provider ~> 3.0
+- AzureRM Provider ~> 3.80
 - Kubernetes Provider ~> 2.0

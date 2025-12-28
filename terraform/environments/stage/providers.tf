@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = "~> 3.80"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -15,4 +15,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+
+  # subscription_id is not set - Terraform will use the active subscription from Azure CLI
+  # Use 'az account set --subscription <subscription-id>' to switch subscriptions
 }

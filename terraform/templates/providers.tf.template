@@ -1,3 +1,11 @@
+# Provider Configuration Template
+#
+# This template documents the provider configuration pattern used across all environments.
+# Copy this file to <environment>/providers.tf - the content is identical for all environments.
+#
+# Note: Provider configuration must be in the root module (environment directory), not in child modules.
+# Child modules inherit the provider configuration from the root module.
+
 terraform {
   required_version = ">= 1.5.0"
 
@@ -19,3 +27,4 @@ provider "azurerm" {
   # subscription_id is not set - Terraform will use the active subscription from Azure CLI
   # Use 'az account set --subscription <subscription-id>' to switch subscriptions
 }
+

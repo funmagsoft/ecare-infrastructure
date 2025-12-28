@@ -1,7 +1,8 @@
+# Remote state: infra-foundation
 data "terraform_remote_state" "foundation" {
   backend = "azurerm"
   config = {
-    resource_group_name  = "rg-ecare-${var.environment}"
+    resource_group_name  = "rg-${var.project_name}-${var.environment}"
     storage_account_name = "tfstatehycomecare${var.environment}"
     container_name       = "tfstate"
     key                  = "infra-foundation/terraform.tfstate"
@@ -9,10 +10,11 @@ data "terraform_remote_state" "foundation" {
   }
 }
 
+# Remote state: infra-platform
 data "terraform_remote_state" "platform" {
   backend = "azurerm"
   config = {
-    resource_group_name  = "rg-ecare-${var.environment}"
+    resource_group_name  = "rg-${var.project_name}-${var.environment}"
     storage_account_name = "tfstatehycomecare${var.environment}"
     container_name       = "tfstate"
     key                  = "infra-platform/terraform.tfstate"

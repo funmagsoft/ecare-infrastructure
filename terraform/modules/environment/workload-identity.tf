@@ -1,14 +1,7 @@
-provider "kubernetes" {
-  host                   = local.aks_kube_config["clusters"][0]["cluster"]["server"]
-  client_certificate     = base64decode(local.aks_kube_config["users"][0]["user"]["client-certificate-data"])
-  client_key             = base64decode(local.aks_kube_config["users"][0]["user"]["client-key-data"])
-  cluster_ca_certificate = base64decode(local.aks_kube_config["clusters"][0]["cluster"]["certificate-authority-data"])
-}
-
 module "workload_identity" {
   for_each = local.services_expanded
 
-  source = "../../modules/workload-identity"
+  source = "../workload-identity"
 
   project_name        = var.project_name
   service_name        = each.key
