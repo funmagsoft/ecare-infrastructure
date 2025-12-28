@@ -228,4 +228,4 @@ From Phase 0 (initial setup):
 ## Terraform Version
 
 - Terraform >= 1.5.0
-- AzureRM Provider ~> 3.0
+- AzureRM Provider ~> 3.80
