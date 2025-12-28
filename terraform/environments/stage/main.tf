@@ -1,7 +1,7 @@
 module "platform" {
   source = "../../modules/platform"
 
-  environment       = "stage"
+  environment       = var.environment
   organization_name = var.organization_name
   project_name      = var.project_name
 
