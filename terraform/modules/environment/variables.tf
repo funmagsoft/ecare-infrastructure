@@ -8,15 +8,10 @@ variable "environment" {
   }
 }
 
-variable "project" {
+variable "project_name" {
   description = "Project name"
   type        = string
   default     = "ecare"
-}
-
-variable "resource_group_name" {
-  description = "Name of the Resource Group"
-  type        = string
 }
 
 variable "vnet_cidr" {

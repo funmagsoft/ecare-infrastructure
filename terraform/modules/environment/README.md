@@ -27,10 +27,8 @@ Terraform module that encapsulates all common infrastructure configuration for a
 module "environment" {
   source = "../../modules/environment"
 
-  environment = "dev"
-  project     = "ecare"
-
-  resource_group_name = var.resource_group_name
+  environment  = var.environment
+  project_name = var.project_name
 
   vnet_cidr           = var.vnet_cidr
   aks_subnet_cidr     = var.aks_subnet_cidr
@@ -52,8 +50,7 @@ module "environment" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project | Project name | `string` | `"ecare"` | no |
-| resource_group_name | Name of the Resource Group | `string` | - | yes |
+| project_name | Project name | `string` | `"ecare"` | no |
 | vnet_cidr | CIDR block for VNet | `string` | - | yes |
 | aks_subnet_cidr | CIDR block for AKS subnet | `string` | - | yes |
 | data_subnet_cidr | CIDR block for Data subnet | `string` | - | yes |
@@ -143,11 +140,14 @@ The module enforces tag validation to ensure all required tags are present:
 
 Resources follow this naming pattern:
 
-- **Virtual Network**: `vnet-{project}-{environment}` (e.g., `vnet-ecare-dev`)
-- **Subnets**: `snet-{project}-{environment}-{purpose}` (e.g., `snet-ecare-dev-aks`)
-- **Network Security Groups**: `nsg-{project}-{environment}-{purpose}` (e.g., `nsg-ecare-dev-aks`)
-- **VPN Gateway**: `vgw-{project}-{environment}` (e.g., `vgw-ecare-dev`)
-- **Public IP**: `pip-vgw-{project}-{environment}` (e.g., `pip-vgw-ecare-dev`)
+- **Resource Group**: `rg-{project_name}-{environment}` (e.g., `rg-ecare-dev`) - automatically constructed from `project_name` and `environment` variables
+- **Virtual Network**: `vnet-{project_name}-{environment}` (e.g., `vnet-ecare-dev`)
+- **Subnets**: `snet-{project_name}-{environment}-{purpose}` (e.g., `snet-ecare-dev-aks`)
+- **Network Security Groups**: `nsg-{project_name}-{environment}-{purpose}` (e.g., `nsg-ecare-dev-aks`)
+- **VPN Gateway**: `vgw-{project_name}-{environment}` (e.g., `vgw-ecare-dev`)
+- **Public IP**: `pip-vgw-{project_name}-{environment}` (e.g., `pip-vgw-ecare-dev`)
+
+**Note**: The Resource Group name is hardcoded within the module as `rg-${var.project_name}-${var.environment}`. The Resource Group must exist (created in Phase 0) before deploying this module.
 
 **Note**: Gateway subnet must be named `GatewaySubnet` (fixed name required by Azure).
 
@@ -169,10 +169,8 @@ Resources follow this naming pattern:
 module "environment" {
   source = "../../modules/environment"
 
-  environment = "dev"
-  project     = "ecare"
-
-  resource_group_name = "rg-ecare-dev"
+  environment  = "dev"
+  project_name = "ecare"
 
   vnet_cidr           = "10.1.0.0/16"
   aks_subnet_cidr     = "10.1.1.0/24"
@@ -192,10 +190,8 @@ module "environment" {
 module "environment" {
   source = "../../modules/environment"
 
-  environment = "prod"
-  project     = "ecare"
-
-  resource_group_name = "rg-ecare-prod"
+  environment  = "prod"
+  project_name = "ecare"
 
   vnet_cidr           = "10.4.0.0/16"
   aks_subnet_cidr     = "10.4.1.0/24"
@@ -247,10 +243,11 @@ The VPN Gateway module depends on the network module's gateway subnet output.
 From Phase 0 (initial setup):
 
 - Resource Group must exist (created in Phase 0)
+- Resource Group naming: `rg-{project_name}-{environment}` (e.g., `rg-ecare-dev`)
 - Storage Account for Terraform state must exist
 - Service Principal with appropriate permissions must be configured
 
-**Note**: This module replaces the previously duplicated configuration files (`data.tf`, `locals.tf`, `network.tf`, `vpn.tf`, `outputs.tf`, `variables.tf`, `providers.tf`) that were duplicated across all environment directories.
+**Note**: This module replaces the previously duplicated configuration files (`data.tf`, `locals.tf`, `network.tf`, `vpn.tf`, `outputs.tf`, `variables.tf`, `providers.tf`) that were duplicated across all environment directories. The Resource Group name is automatically constructed as `rg-${var.project_name}-${var.environment}`.
 
 ## Terraform Version
 

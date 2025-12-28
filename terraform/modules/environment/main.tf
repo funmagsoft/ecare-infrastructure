@@ -1,12 +1,12 @@
 # Reference existing Resource Group (created in Phase 0)
 data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
+  name = "rg-${var.project_name}-${var.environment}"
 }
 
 # Local variables
 locals {
   environment = var.environment
-  project     = var.project
+  project     = var.project_name
   location    = data.azurerm_resource_group.main.location
 
   # Required tags - these must always be present

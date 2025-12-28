@@ -1,10 +1,8 @@
 module "environment" {
   source = "../../modules/environment"
 
-  environment = "test"
-  project     = "ecare"
-
-  resource_group_name = var.resource_group_name
+  environment  = var.environment
+  project_name = var.project_name
 
   vnet_cidr           = var.vnet_cidr
   aks_subnet_cidr     = var.aks_subnet_cidr
