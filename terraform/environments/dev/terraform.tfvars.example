@@ -5,7 +5,11 @@
 # Azure Configuration
 # subscription_id is not needed - Terraform uses active subscription from Azure CLI
 # Use 'az account set --subscription <subscription-id>' to switch subscriptions
-resource_group_name = "rg-ecare-dev"
+
+# Environment Configuration
+environment       = "dev"
+organization_name = "hycom"
+project_name      = "ecare"
 
 # Network Configuration
 vnet_cidr           = "10.1.0.0/16"
