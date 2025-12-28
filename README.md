@@ -209,6 +209,95 @@ This repository uses a modular architecture to eliminate code duplication:
 - **GitHub OIDC Azure Integration Module** (`modules/github-oidc/`): Creates Service Principal, Federated Identity Credentials for service repositories, and RBAC role assignments for GitHub Actions workflows (ACR build, AKS deployment).
 - **Workload Identity Module** (`modules/workload-identity/`): Creates User Assigned Managed Identities, Federated Identity Credentials for AKS pods, RBAC role assignments, and Kubernetes Service Accounts per service.
 
+## Pre-commit Hooks
+
+This repository uses pre-commit hooks to ensure code quality and consistency. The hooks automatically:
+
+- **Validate Conventional Commits format** - Ensures all commit messages follow the Conventional Commits standard
+- Format Terraform files (`terraform fmt`)
+- Validate Terraform syntax (`terraform validate`)
+- Lint Terraform code (`tflint`)
+- Ensure files end with exactly one newline
+- Remove trailing whitespace
+- Validate YAML/JSON syntax
+- Lint Markdown documentation
+
+### Installation
+
+1. Install pre-commit:
+
+```bash
+# Using pip (recommended)
+pip install pre-commit
+
+# Or using Homebrew (macOS)
+brew install pre-commit
+```
+
+1. Install the hooks in this repository:
+
+```bash
+cd /path/to/infra-identity
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+1. Install hook dependencies (downloads tools automatically):
+
+```bash
+pre-commit install-hooks
+```
+
+### Usage
+
+Hooks run automatically on `git commit`. To run manually:
+
+```bash
+# Run on all files
+pre-commit run --all-files
+
+# Run only on staged files
+pre-commit run
+
+# Run a specific hook
+pre-commit run terraform_fmt --all-files
+```
+
+### Conventional Commits Format
+
+All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```text
+<type>[optional scope]: <description>
+```
+
+**Valid types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
+
+**Examples:**
+
+- `feat: add new feature`
+- `fix(github-oidc): fix tags handling`
+- `docs: update README`
+- `refactor(code-quality): implement improvements`
+
+Invalid commit messages will be rejected by the pre-commit hook.
+
+### Updating Hooks
+
+To update hooks to the latest versions:
+
+```bash
+pre-commit autoupdate
+```
+
+### Skipping Hooks (Not Recommended)
+
+Only skip hooks in exceptional circumstances:
+
+```bash
+git commit --no-verify -m "message"
+```
+
 ## Important Notes
 
 - Do not commit `terraform.tfvars` or `.tfstate`. State is remote; config stays in `services.tf`.
@@ -227,4 +316,3 @@ terraform destroy
 ```
 
 Be mindful of shared platform resources; the destroy will remove only the identities/RBAC created here.
-
