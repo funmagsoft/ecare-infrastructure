@@ -1,36 +1,37 @@
+# Re-export outputs from the platform module
 #------------------------------------------------------------------------------
 # Monitoring Outputs
 #------------------------------------------------------------------------------
 
 output "log_analytics_workspace_id" {
   description = "ID of the Log Analytics Workspace"
-  value       = module.monitoring.log_analytics_workspace_id
+  value       = module.platform.log_analytics_workspace_id
 }
 
 output "log_analytics_workspace_name" {
   description = "Name of the Log Analytics Workspace"
-  value       = module.monitoring.log_analytics_workspace_name
+  value       = module.platform.log_analytics_workspace_name
 }
 
 output "application_insights_id" {
   description = "ID of Application Insights"
-  value       = module.monitoring.application_insights_id
+  value       = module.platform.application_insights_id
 }
 
 output "application_insights_name" {
   description = "Name of Application Insights"
-  value       = module.monitoring.application_insights_name
+  value       = module.platform.application_insights_name
 }
 
 output "application_insights_instrumentation_key" {
   description = "Instrumentation Key for Application Insights"
-  value       = module.monitoring.application_insights_instrumentation_key
+  value       = module.platform.application_insights_instrumentation_key
   sensitive   = true
 }
 
 output "application_insights_connection_string" {
   description = "Connection String for Application Insights"
-  value       = module.monitoring.application_insights_connection_string
+  value       = module.platform.application_insights_connection_string
   sensitive   = true
 }
 
@@ -40,17 +41,17 @@ output "application_insights_connection_string" {
 
 output "storage_account_id" {
   description = "ID of the Storage Account"
-  value       = module.storage.storage_account_id
+  value       = module.platform.storage_account_id
 }
 
 output "storage_account_name" {
   description = "Name of the Storage Account"
-  value       = module.storage.storage_account_name
+  value       = module.platform.storage_account_name
 }
 
 output "storage_account_primary_blob_endpoint" {
   description = "Primary blob endpoint of the Storage Account"
-  value       = module.storage.storage_account_primary_blob_endpoint
+  value       = module.platform.storage_account_primary_blob_endpoint
 }
 
 #------------------------------------------------------------------------------
@@ -59,17 +60,17 @@ output "storage_account_primary_blob_endpoint" {
 
 output "key_vault_id" {
   description = "ID of the Key Vault"
-  value       = module.key_vault.key_vault_id
+  value       = module.platform.key_vault_id
 }
 
 output "key_vault_name" {
   description = "Name of the Key Vault"
-  value       = module.key_vault.key_vault_name
+  value       = module.platform.key_vault_name
 }
 
 output "key_vault_uri" {
   description = "URI of the Key Vault"
-  value       = module.key_vault.key_vault_uri
+  value       = module.platform.key_vault_uri
 }
 
 #------------------------------------------------------------------------------
@@ -78,17 +79,17 @@ output "key_vault_uri" {
 
 output "acr_id" {
   description = "ID of the Azure Container Registry"
-  value       = module.acr.acr_id
+  value       = module.platform.acr_id
 }
 
 output "acr_name" {
   description = "Name of the Azure Container Registry"
-  value       = module.acr.acr_name
+  value       = module.platform.acr_name
 }
 
 output "acr_login_server" {
   description = "Login server of the Azure Container Registry"
-  value       = module.acr.acr_login_server
+  value       = module.platform.acr_login_server
 }
 
 #------------------------------------------------------------------------------
@@ -97,22 +98,22 @@ output "acr_login_server" {
 
 output "postgresql_server_id" {
   description = "ID of the PostgreSQL server"
-  value       = module.postgresql.postgresql_server_id
+  value       = module.platform.postgresql_server_id
 }
 
 output "postgresql_server_name" {
   description = "Name of the PostgreSQL server"
-  value       = module.postgresql.postgresql_server_name
+  value       = module.platform.postgresql_server_name
 }
 
 output "postgresql_fqdn" {
   description = "FQDN of the PostgreSQL server"
-  value       = module.postgresql.postgresql_fqdn
+  value       = module.platform.postgresql_fqdn
 }
 
 output "postgresql_administrator_login" {
   description = "Administrator login for PostgreSQL"
-  value       = module.postgresql.postgresql_administrator_login
+  value       = module.platform.postgresql_administrator_login
 }
 
 #------------------------------------------------------------------------------
@@ -121,17 +122,17 @@ output "postgresql_administrator_login" {
 
 output "servicebus_namespace_id" {
   description = "ID of the Service Bus Namespace"
-  value       = module.service_bus.servicebus_namespace_id
+  value       = module.platform.servicebus_namespace_id
 }
 
 output "servicebus_namespace_name" {
   description = "Name of the Service Bus Namespace"
-  value       = module.service_bus.servicebus_namespace_name
+  value       = module.platform.servicebus_namespace_name
 }
 
 output "servicebus_endpoint" {
   description = "Endpoint of the Service Bus Namespace"
-  value       = module.service_bus.servicebus_endpoint
+  value       = module.platform.servicebus_endpoint
 }
 
 #------------------------------------------------------------------------------
@@ -140,42 +141,42 @@ output "servicebus_endpoint" {
 
 output "aks_cluster_id" {
   description = "ID of the AKS cluster"
-  value       = module.aks.aks_cluster_id
+  value       = module.platform.aks_cluster_id
 }
 
 output "aks_cluster_name" {
   description = "Name of the AKS cluster"
-  value       = module.aks.aks_cluster_name
+  value       = module.platform.aks_cluster_name
 }
 
 output "aks_fqdn" {
   description = "FQDN of the AKS cluster"
-  value       = module.aks.aks_fqdn
+  value       = module.platform.aks_fqdn
 }
 
 output "aks_kubelet_identity_object_id" {
   description = "Object ID of the AKS kubelet identity"
-  value       = module.aks.aks_kubelet_identity_object_id
+  value       = module.platform.aks_kubelet_identity_object_id
 }
 
 output "aks_kubelet_identity_client_id" {
   description = "Client ID of the AKS kubelet identity"
-  value       = module.aks.aks_kubelet_identity_client_id
+  value       = module.platform.aks_kubelet_identity_client_id
 }
 
 output "aks_oidc_issuer_url" {
   description = "OIDC Issuer URL for AKS (for Workload Identity in Phase 3)"
-  value       = module.aks.aks_oidc_issuer_url
+  value       = module.platform.aks_oidc_issuer_url
 }
 
 output "aks_namespace_name" {
   description = "Name of the shared AKS namespace for workloads"
-  value       = module.aks_namespace.namespace_name
+  value       = module.platform.aks_namespace_name
 }
 
 output "aks_node_resource_group" {
   description = "Resource group containing AKS node resources"
-  value       = module.aks.aks_node_resource_group
+  value       = module.platform.aks_node_resource_group
 }
 
 #------------------------------------------------------------------------------
@@ -184,32 +185,32 @@ output "aks_node_resource_group" {
 
 output "bastion_vm_id" {
   description = "ID of the Bastion VM"
-  value       = module.bastion.bastion_vm_id
+  value       = module.platform.bastion_vm_id
 }
 
 output "bastion_vm_name" {
   description = "Name of the Bastion VM"
-  value       = module.bastion.bastion_vm_name
+  value       = module.platform.bastion_vm_name
 }
 
 output "bastion_public_ip" {
   description = "Public IP address of the Bastion VM"
-  value       = module.bastion.bastion_public_ip
+  value       = module.platform.bastion_public_ip
 }
 
 output "bastion_private_ip" {
   description = "Private IP address of the Bastion VM"
-  value       = module.bastion.bastion_private_ip
+  value       = module.platform.bastion_private_ip
 }
 
 output "bastion_admin_username" {
   description = "Admin username for Bastion VM"
-  value       = module.bastion.bastion_admin_username
+  value       = module.platform.bastion_admin_username
 }
 
 output "bastion_ssh_private_key" {
   description = "SSH private key for Bastion VM (if generated)"
-  value       = module.bastion.bastion_ssh_private_key
+  value       = module.platform.bastion_ssh_private_key
   sensitive   = true
 }
 
@@ -219,16 +220,5 @@ output "bastion_ssh_private_key" {
 
 output "deployment_summary" {
   description = "Summary of deployed platform resources"
-  value = {
-    environment          = var.environment
-    aks_cluster          = module.aks.aks_cluster_name
-    aks_oidc_issuer      = module.aks.aks_oidc_issuer_url
-    acr_login_server     = module.acr.acr_login_server
-    postgresql_fqdn      = module.postgresql.postgresql_fqdn
-    key_vault_uri        = module.key_vault.key_vault_uri
-    storage_account      = module.storage.storage_account_name
-    servicebus_namespace = module.service_bus.servicebus_namespace_name
-    bastion_public_ip    = module.bastion.bastion_public_ip
-    log_analytics        = module.monitoring.log_analytics_workspace_name
-  }
+  value       = module.platform.deployment_summary
 }
