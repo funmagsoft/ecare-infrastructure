@@ -249,6 +249,7 @@ All setup scripts support `--dry-run` option to preview changes without executin
 
 This repository uses pre-commit hooks to ensure code quality and consistency. The hooks automatically:
 
+- **Validate Conventional Commits format** - Ensures all commit messages follow the Conventional Commits standard
 - Format Terraform files (`terraform fmt`)
 - Validate Terraform syntax (`terraform validate`)
 - Lint Terraform code (`tflint`)
@@ -274,6 +275,7 @@ brew install pre-commit
 ```bash
 cd /path/to/infra-foundation
 pre-commit install
+pre-commit install --hook-type commit-msg
 ```
 
 1. Install hook dependencies (downloads tools automatically):
@@ -304,6 +306,25 @@ To update hooks to the latest versions:
 ```bash
 pre-commit autoupdate
 ```
+
+### Conventional Commits Format
+
+All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```text
+<type>[optional scope]: <description>
+```
+
+**Valid types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
+
+**Examples:**
+
+- `feat: add new feature`
+- `fix(github-oidc): fix tags handling`
+- `docs: update README`
+- `refactor(code-quality): implement improvements`
+
+Invalid commit messages will be rejected by the pre-commit hook.
 
 ### Skipping Hooks (Not Recommended)
 
