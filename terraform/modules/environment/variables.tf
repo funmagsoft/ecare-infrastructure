@@ -23,12 +23,12 @@ variable "project_name" {
 variable "services" {
   description = "Map of services to create workload identities for"
   type = map(object({
-    repo                    = string
-    branch                  = optional(string, "main")
-    enable_key_vault_access = optional(bool, false)
-    enable_storage_access   = optional(bool, false)
+    repo                      = string
+    branch                    = optional(string, "main")
+    enable_key_vault_access   = optional(bool, false)
+    enable_storage_access     = optional(bool, false)
     enable_service_bus_access = optional(bool, false)
-    additional_roles        = optional(list(object({
+    additional_roles = optional(list(object({
       role  = string
       scope = string
     })), [])

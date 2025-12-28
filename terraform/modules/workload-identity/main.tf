@@ -32,7 +32,7 @@ resource "azurerm_user_assigned_identity" "service" {
   tags = local.tags
 }
 
-# Federated Identity Credential for GitHub OIDC
+# Federated Identity Credential for AKS Workload Identity
 resource "azurerm_federated_identity_credential" "service" {
   count = local.needs_azure_access ? 1 : 0
 

@@ -1,3 +1,32 @@
+# GitHub OIDC Azure Integration Module
+# Creates Service Principal and FIC for service repositories to build images and deploy to AKS
+module "github_oidc_integration" {
+  source = "../github-oidc"
+
+  environment         = var.environment
+  project_name        = var.project_name
+  resource_group_name = data.azurerm_resource_group.main.name
+  location            = data.azurerm_resource_group.main.location
+
+  acr_id = data.terraform_remote_state.platform.outputs.acr_id
+  aks_id = data.terraform_remote_state.platform.outputs.aks_cluster_id
+
+  # Extract service repositories for GitHub OIDC (repo and branch)
+  service_repos = {
+    for name, cfg in var.services :
+    name => {
+      repo   = cfg.repo
+      branch = lookup(cfg, "branch", "main")
+    }
+  }
+
+  enable_aks_rbac_writer = true
+
+  tags = local.common_tags
+}
+
+# Workload Identity Module
+# Creates UAMI and FIC for AKS pods to access Azure resources (Key Vault, Storage, Service Bus)
 module "workload_identity" {
   for_each = local.services_expanded
 
@@ -11,9 +40,6 @@ module "workload_identity" {
 
   namespace       = data.terraform_remote_state.platform.outputs.aks_namespace_name
   aks_oidc_issuer = data.terraform_remote_state.platform.outputs.aks_oidc_issuer_url
-
-  repo   = each.value.repo
-  branch = lookup(each.value, "branch", "main")
 
   enable_key_vault_access   = lookup(each.value, "enable_key_vault_access", false)
   enable_storage_access     = lookup(each.value, "enable_storage_access", false)

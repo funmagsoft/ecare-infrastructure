@@ -1,11 +1,11 @@
 # Workload Identity Module
 
-Terraform module for creating User Assigned Managed Identity (UAMI), GitHub OIDC Federated Identity Credential (FIC), Kubernetes ServiceAccount, and optional RBAC role assignments for a single service.
+Terraform module for creating User Assigned Managed Identity (UAMI), AKS Workload Identity Federated Identity Credential (FIC), Kubernetes ServiceAccount, and optional RBAC role assignments for a single service.
 
 ## Resources Created
 
 - **User Assigned Managed Identity (UAMI)** - Azure Managed Identity for service authentication (conditional, created only if any access/role is needed)
-- **Federated Identity Credential (FIC)** - GitHub OIDC credential bound to the UAMI for passwordless authentication
+- **Federated Identity Credential (FIC)** - AKS Workload Identity credential bound to the UAMI for passwordless authentication from AKS pods
 - **Kubernetes ServiceAccount** - ServiceAccount in the specified namespace for workload identity binding
 - **RBAC Role Assignments** - Conditional role assignments:
   - Key Vault: `Key Vault Secrets User` role
@@ -16,7 +16,7 @@ Terraform module for creating User Assigned Managed Identity (UAMI), GitHub OIDC
 ## Features
 
 - Creates User Assigned Managed Identity only when needed (conditional creation)
-- GitHub OIDC Federated Identity Credential for passwordless authentication
+- AKS Workload Identity Federated Identity Credential for passwordless authentication from AKS pods
 - Kubernetes ServiceAccount creation with proper annotations for workload identity
 - Conditional RBAC role assignments based on service requirements
 - Support for additional custom RBAC roles with flexible scope
@@ -37,9 +37,6 @@ module "workload_identity" {
 
   namespace       = data.terraform_remote_state.platform.outputs.aks_namespace_name
   aks_oidc_issuer = data.terraform_remote_state.platform.outputs.aks_oidc_issuer_url
-
-  repo   = "funmagsoft/billing-service"
-  branch = "main"
 
   enable_key_vault_access   = true
   enable_storage_access     = true
@@ -64,8 +61,6 @@ module "workload_identity" {
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
 | resource_group_name | Resource group where the User Assigned Managed Identity will be created | `string` | - | yes |
 | location | Azure region | `string` | - | yes |
-| repo | GitHub repository in org/repo format (e.g. funmagsoft/billing-service) | `string` | - | yes |
-| branch | Git branch used for deployments (for OIDC subject) | `string` | `"main"` | no |
 | namespace | Kubernetes namespace for the service account | `string` | `"ecare"` | no |
 | aks_oidc_issuer | AKS OIDC issuer URL (from AKS output) | `string` | - | yes |
 | enable_key_vault_access | If true, assign Key Vault Secrets User role on key_vault_id | `bool` | `false` | no |
@@ -104,13 +99,15 @@ The module creates the User Assigned Managed Identity and Federated Identity Cre
 
 If none of these conditions are met, the Managed Identity and FIC are not created, and the corresponding outputs will be `null`.
 
-### GitHub OIDC Configuration
+### AKS Workload Identity Configuration
 
-The Federated Identity Credential uses GitHub OIDC with the following configuration:
+The Federated Identity Credential uses AKS Workload Identity with the following configuration:
 
-- **Issuer:** `https://token.actions.githubusercontent.com`
-- **Subject:** `repo:{repo}:ref:refs/heads/{branch}` (for GitHub Actions)
+- **Issuer:** AKS OIDC Issuer URL (from `aks_oidc_issuer` variable)
+- **Subject:** `system:serviceaccount:{namespace}:sa-{service_name}` (Kubernetes ServiceAccount)
 - **Audience:** `api://AzureADTokenExchange`
+
+This allows AKS pods using the ServiceAccount to authenticate to Azure resources without storing credentials.
 
 ### Kubernetes ServiceAccount
 
@@ -152,7 +149,7 @@ Resources follow this naming pattern:
 
 ## Security Features
 
-- **Passwordless Authentication:** Uses GitHub OIDC Federated Identity Credentials for secure, secret-free authentication
+- **Passwordless Authentication:** Uses AKS Workload Identity Federated Identity Credentials for secure, secret-free authentication from AKS pods
 - **Least Privilege:** RBAC roles are assigned only when explicitly enabled
 - **Conditional Creation:** Managed Identity is created only when needed, reducing unnecessary resources
 - **Workload Identity Integration:** Kubernetes ServiceAccount is automatically configured for Azure Workload Identity
@@ -175,9 +172,6 @@ module "workload_identity" {
 
   namespace       = data.terraform_remote_state.platform.outputs.aks_namespace_name
   aks_oidc_issuer = data.terraform_remote_state.platform.outputs.aks_oidc_issuer_url
-
-  repo   = "funmagsoft/billing-service"
-  branch = "main"
 
   enable_key_vault_access = true
   enable_storage_access   = true
@@ -203,9 +197,6 @@ module "workload_identity" {
 
   namespace       = data.terraform_remote_state.platform.outputs.aks_namespace_name
   aks_oidc_issuer = data.terraform_remote_state.platform.outputs.aks_oidc_issuer_url
-
-  repo   = "funmagsoft/billing-service"
-  branch = "main"
 
   enable_key_vault_access   = true
   enable_storage_access     = true

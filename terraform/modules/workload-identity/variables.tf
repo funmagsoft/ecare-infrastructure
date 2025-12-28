@@ -23,17 +23,6 @@ variable "location" {
   type        = string
 }
 
-variable "repo" {
-  description = "GitHub repository in org/repo format (e.g. funmagsoft/billing-service)"
-  type        = string
-}
-
-variable "branch" {
-  description = "Git branch used for deployments (for OIDC subject)"
-  type        = string
-  default     = "main"
-}
-
 variable "namespace" {
   description = "Kubernetes namespace for the service account"
   type        = string
