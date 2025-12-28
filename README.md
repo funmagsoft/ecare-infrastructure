@@ -236,10 +236,14 @@ cp terraform.tfvars.example terraform.tfvars
 
 Edit `terraform.tfvars` and configure:
 
-- `resource_group_name` - Resource Group name (e.g., "rg-ecare-dev")
+- `environment` - Environment name (dev, test, stage, prod)
+- `organization_name` - Organization name for resource naming (default: "hycom")
+- `project_name` - Project name (default: "ecare")
 - Network CIDR blocks for VNet and subnets
 - `mgmt_subnet_allowed_ssh_ips` - List of IP addresses/CIDR blocks allowed for SSH access to management subnet (e.g., `["91.150.222.105"]`)
 - VPN Gateway settings (if needed)
+
+**Note**: Resource Group name is automatically constructed as `rg-{project_name}-{environment}` (e.g., `rg-ecare-dev`). The Resource Group must exist (created in Phase 0).
 
 **Important**: `terraform.tfvars` is in `.gitignore` and should not be committed. Use `terraform.tfvars.example` as a template.
 
