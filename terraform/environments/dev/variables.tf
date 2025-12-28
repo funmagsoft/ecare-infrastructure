@@ -10,7 +10,7 @@ variable "project_name" {
   default     = "ecare"
 }
 
-variable "organization" {
+variable "organization_name" {
   description = "GitHub organization name"
   type        = string
   default     = "hycom"
@@ -42,7 +42,7 @@ variable "enable_bootstrap" {
 variable "terraform_repos" {
   description = <<-EOT
     List of Terraform repository names (without organization prefix).
-    Full repository names will be constructed as: organization/repo-name
+    Full repository names will be constructed as: organization_name/repo-name
 
     Default repositories:
     - infra-foundation

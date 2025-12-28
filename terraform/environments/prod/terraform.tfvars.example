@@ -12,7 +12,7 @@ environment  = "prod"
 project_name = "ecare"
 
 # Bootstrap Configuration
-organization        = "hycom"
+organization_name   = "hycom"
 organization_for_sa = "hycom"
 enable_bootstrap    = true
 # terraform_repos = ["infra-foundation", "infra-platform", "infra-identity"]  # Optional: override default repos

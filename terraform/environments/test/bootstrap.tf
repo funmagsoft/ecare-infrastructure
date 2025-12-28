@@ -18,7 +18,7 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   environment         = var.environment
-  organization        = var.organization
+  organization_name   = var.organization_name
   organization_for_sa = var.organization_for_sa
   project_name        = var.project_name
 

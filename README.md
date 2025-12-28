@@ -110,7 +110,7 @@ The `bootstrap` module (located in `terraform/modules/bootstrap/`) is a critical
 
 - Enables passwordless authentication using OpenID Connect (OIDC)
 - Creates one FIC per Terraform repository per environment (12 total: 3 repos × 4 environments)
-- Scoped to: `repo:{organization}/{repo}:environment:{environment}`
+- Scoped to: `repo:{organization_name}/{repo}:environment:{environment}`
 - Allows GitHub Actions workflows to request Azure access tokens without storing secrets
 
 **RBAC Role Assignments**:
@@ -140,7 +140,7 @@ The bootstrap module is configured in each environment's `terraform.tfvars`:
 
 ```hcl
 # Bootstrap Configuration
-organization        = "hycom"
+organization_name   = "hycom"
 organization_for_sa = "hycom"
 enable_bootstrap    = true
 

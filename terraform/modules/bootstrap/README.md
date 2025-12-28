@@ -29,7 +29,7 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   environment         = "dev"
-  organization        = "hycom"
+  organization_name   = "hycom"
   organization_for_sa = "hycom"
   project_name        = "ecare"
 
@@ -51,7 +51,7 @@ module "bootstrap" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| organization | GitHub organization name | `string` | - | yes |
+| organization_name | GitHub organization name | `string` | - | yes |
 | organization_for_sa | Organization name for Storage Account naming | `string` | - | yes |
 | project_name | Project name | `string` | - | yes |
 | terraform_repos | List of Terraform repository names (without organization prefix) | `list(string)` | `["infra-foundation", "infra-platform", "infra-identity"]` | no |
@@ -75,9 +75,9 @@ Repository names are stored in the module with default values:
 - `infra-platform`
 - `infra-identity`
 
-Full repository names are constructed as: `"${var.organization}/${repo}"`
+Full repository names are constructed as: `"${var.organization_name}/${repo}"`
 
-For example, with `organization = "hycom"` and default repos:
+For example, with `organization_name = "hycom"` and default repos:
 
 - `hycom/infra-foundation`
 - `hycom/infra-platform`
@@ -128,7 +128,7 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   environment         = "dev"
-  organization        = "hycom"
+  organization_name   = "hycom"
   organization_for_sa = "hycom"
   project_name        = "ecare"
 
@@ -151,7 +151,7 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   environment         = "prod"
-  organization        = "hycom"
+  organization_name   = "hycom"
   organization_for_sa = "hycom"
   project_name        = "ecare"
 
@@ -187,7 +187,7 @@ This module is standalone and does not depend on other modules. However, it crea
 For each repository in `terraform_repos`, the module creates a Federated Identity Credential with:
 
 - **Issuer**: `https://token.actions.githubusercontent.com`
-- **Subject**: `repo:{organization}/{repo}:environment:{environment}`
+- **Subject**: `repo:{organization_name}/{repo}:environment:{environment}`
 - **Audience**: `api://AzureADTokenExchange`
 
 This allows GitHub Actions workflows in the specified repository and environment to authenticate to Azure using OIDC.

@@ -11,9 +11,9 @@ data "azurerm_storage_account" "state" {
 
 # Local: Construct full repository names
 locals {
-  # Construct full repository names: "organization/repo-name"
+  # Construct full repository names: "organization_name/repo-name"
   terraform_repos_full = [
-    for repo in var.terraform_repos : "${var.organization}/${repo}"
+    for repo in var.terraform_repos : "${var.organization_name}/${repo}"
   ]
 }
 
