@@ -97,6 +97,23 @@ This allows GitHub Actions workflows in the specified repository and branch to a
 
 **For Terraform state authentication**, see the [`infra-foundation` repository](https://github.com/hycom/infra-foundation) bootstrap module, which creates Service Principals and FIC for Terraform repositories (`infra-foundation`, `infra-platform`, `infra-identity`) to manage infrastructure via Terraform.
 
+### RBAC Roles
+
+The Service Principal is assigned the following roles:
+
+1. **Contributor** on Azure Container Registry
+   - Required for `az acr build` (managing ACR Tasks)
+   - Allows building container images in ACR
+
+2. **Azure Kubernetes Service Cluster User Role** on AKS
+   - Required for `az aks get-credentials` (retrieving kubeconfig)
+   - Allows GitHub Actions to authenticate to AKS cluster
+
+3. **Azure Kubernetes Service RBAC Writer** on AKS (optional)
+   - Required for deployments (creating deployments, services, configmaps, etc.)
+   - Allows GitHub Actions to deploy resources to AKS
+   - Enable via `enable_aks_rbac_writer = true`
+
 ## Naming Convention
 
 Resources follow this naming pattern:
@@ -189,23 +206,6 @@ From Phase 1 (infra-foundation) and Phase 2 (infra-platform):
 - Azure Kubernetes Service (AKS) cluster must exist (created by infra-platform)
 - Azure AD permissions to create Service Principals and App Registrations
 - Azure CLI authenticated (`az login`)
-
-## RBAC Roles
-
-The Service Principal is assigned the following roles:
-
-1. **Contributor** on Azure Container Registry
-   - Required for `az acr build` (managing ACR Tasks)
-   - Allows building container images in ACR
-
-2. **Azure Kubernetes Service Cluster User Role** on AKS
-   - Required for `az aks get-credentials` (retrieving kubeconfig)
-   - Allows GitHub Actions to authenticate to AKS cluster
-
-3. **Azure Kubernetes Service RBAC Writer** on AKS (optional)
-   - Required for deployments (creating deployments, services, configmaps, etc.)
-   - Allows GitHub Actions to deploy resources to AKS
-   - Enable via `enable_aks_rbac_writer = true`
 
 ## Terraform Version
 
