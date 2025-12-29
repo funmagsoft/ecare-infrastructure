@@ -51,4 +51,3 @@ if ! echo "$commit_msg" | grep -qE "$pattern"; then
 fi
 
 exit 0
-

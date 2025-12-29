@@ -32,4 +32,3 @@ output "workload_identities" {
     }
   }
 }
-

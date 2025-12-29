@@ -209,4 +209,3 @@ This module integrates with:
 - **Terraform**: `>= 1.5.0`
 - **AzureRM Provider**: `~> 3.80`
 - **Kubernetes Provider**: `~> 2.0`
-

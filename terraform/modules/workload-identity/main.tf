@@ -170,4 +170,3 @@ resource "kubernetes_service_account_v1" "service" {
     }
   }
 }
-

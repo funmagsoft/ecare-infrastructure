@@ -126,4 +126,3 @@ resource "azurerm_resource" "name" {
 - Always run `terraform fmt` on suggested changes before committing.
 - Ensure all resources follow the project's region-specific standards (e.g., West Europe).
 - Verify that all files end with exactly one empty line.
-

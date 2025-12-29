@@ -117,4 +117,3 @@ resource "azurerm_role_assignment" "aks_rbac_writer" {
   role_definition_name = "Azure Kubernetes Service RBAC Writer"
   principal_id         = azuread_service_principal.gha.object_id
 }
-

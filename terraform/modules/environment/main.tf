@@ -130,4 +130,3 @@ module "workload_identity" {
 
   tags = local.common_tags
 }
-

@@ -23,4 +23,3 @@ output "gitops_federated_identity_credentials" {
     repo => fic.id
   }
 }
-

@@ -148,4 +148,3 @@ refactor(cursor): reorganize configuration and add gitcc command
   - Re-stage the modified files: `git add -A`
   - Re-run the commit with the same message.
 - The `validate-commit-msg` hook will verify the commit message format. If it fails, the commit will be rejected. Fix the message format and try again.
-

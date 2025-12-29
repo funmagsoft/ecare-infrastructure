@@ -43,5 +43,3 @@ gitops_repos = [
 #   Team       = "DevOps"
 #   Compliance = "SOC2"
 # }
-
-

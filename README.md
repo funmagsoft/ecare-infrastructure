@@ -333,4 +333,3 @@ terraform destroy
 ```
 
 Be mindful of shared platform resources; the destroy will remove only the identities/RBAC created here.
-

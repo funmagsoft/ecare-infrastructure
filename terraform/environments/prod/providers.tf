@@ -8,5 +8,3 @@ provider "azurerm" {
 provider "azuread" {
   # Uses Azure CLI authentication by default
 }
-
-

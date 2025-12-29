@@ -33,4 +33,3 @@ terraform {
 # Example for 'prod' environment:
 # resource_group_name  = "rg-ecare-prod"
 # storage_account_name = "tfstatehycomecareprod"
-

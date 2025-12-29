@@ -52,4 +52,3 @@ test: add unit tests for OutboxRepository
 - Use `git add .` to stage all changes
 - Use `git commit -m "type: description"` for commits
 - Use `git log --oneline` to view commit history
-

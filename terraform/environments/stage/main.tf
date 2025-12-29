@@ -9,4 +9,3 @@ module "environment" {
 
   additional_tags = var.additional_tags
 }
-
