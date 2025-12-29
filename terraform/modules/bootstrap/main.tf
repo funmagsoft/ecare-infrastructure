@@ -46,11 +46,11 @@ resource "azuread_service_principal" "gha" {
 resource "azuread_application_federated_identity_credential" "terraform_repos" {
   for_each = toset(local.terraform_repos_full)
 
-  application_id        = azuread_application.gha.id
-  display_name          = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
-  issuer                = "https://token.actions.githubusercontent.com"
-  subject               = "repo:${each.value}:environment:${var.environment}"
-  audiences             = ["api://AzureADTokenExchange"]
+  application_id = azuread_application.gha.id
+  display_name   = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:${each.value}:environment:${var.environment}"
+  audiences      = ["api://AzureADTokenExchange"]
 }
 
 # RBAC: Contributor on Resource Group
