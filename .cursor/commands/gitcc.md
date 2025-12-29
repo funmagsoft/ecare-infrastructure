@@ -16,7 +16,7 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
 ## Conventional Commits requirements
 
 - See rules file `.cursor/rules/conventional-commits.mdc` for complete specification.
-- Format: `<type>[optional scope]: <description>`
+- Format: `<type>(optional scope): <description>`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
 - Use `scope` only when obvious (module name, top-level folder, bounded component).
 
@@ -25,18 +25,19 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
 The commit message must follow this exact format:
 
 ```text
-<type>[optional scope]: <subject>
+<type>(optional scope): <subject>
 
-    - <change description 1>
-    - <change description 2>
-    - <change description 3>
+- <change description 1>
+- <change description 2>
+- <change description 3>
 ```
 
 **Rules:**
 
 - Subject line: concise description (max 72 characters recommended)
 - Empty line after subject (required)
-- Body: unordered list starting with `-` (no indentation)
+- **No indentation between subject and body** - body starts at column 0
+- Body: unordered list starting with `-`
 - No empty lines between list items
 - Each list item describes one change made in the commit
 - If only subject is needed (single simple change), omit the body
@@ -59,9 +60,9 @@ feat(github-oidc): add GitOps repositories support
 ```text
 refactor(cursor): reorganize configuration and add gitcc command
 
-    - Add gitcc command for Conventional Commits workflow
-    - Rename git-commands.mdc to conventional-commits.mdc
-    - Update .gitignore to include commands/ directory
+- Add gitcc command for Conventional Commits workflow
+- Rename git-commands.mdc to conventional-commits.mdc
+- Update .gitignore to include commands/ directory
 ```
 
 ## Execution steps (must follow)
@@ -94,17 +95,17 @@ refactor(cursor): reorganize configuration and add gitcc command
    - Write a concise subject line (max 72 characters recommended).
    - If multiple changes were made, create an unordered list in the body:
      - Start with empty line after subject
-     - Each list item starts with `-` (4 spaces indentation)
+     - **No indentation** - each list item starts with `-` at column 0
      - No empty lines between list items
      - Each item describes one change made in the commit
    - Example format:
 
      ```text
-     <type>[scope]: <subject>
+     <type>(scope): <subject>
 
-         - <change 1>
-         - <change 2>
-         - <change 3>
+     - <change 1>
+     - <change 2>
+     - <change 3>
      ```
 
 5. Commit (no approval):
@@ -112,10 +113,10 @@ refactor(cursor): reorganize configuration and add gitcc command
 
      ```bash
      cat > /tmp/commit_msg.txt << 'EOF'
-     <type>[scope]: <subject>
+     <type>(scope): <subject>
 
-         - <change 1>
-         - <change 2>
+     - <change 1>
+     - <change 2>
      EOF
      ```
 
