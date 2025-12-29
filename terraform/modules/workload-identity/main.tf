@@ -7,7 +7,12 @@ locals {
   fic_subject           = "system:serviceaccount:${var.namespace}:${local.service_account_name}"
 
   # Determine if Azure access is needed (UAMI and FIC are only created when needed)
-  needs_azure_access = var.enable_key_vault_access || var.enable_storage_access || var.enable_service_bus_access || length(var.additional_roles) > 0
+  needs_azure_access = (
+    var.enable_key_vault_access
+    || var.enable_storage_access
+    || var.enable_service_bus_access
+    || length(var.additional_roles) > 0
+  )
 
   # Default tags merged with provided tags
   # Required tags ensure consistency across all resources and enable traceability
@@ -23,6 +28,14 @@ locals {
     },
     var.tags
   )
+
+  # Stable keys for additional role assignments to avoid churn on list reordering
+  additional_roles_map = local.needs_azure_access ? {
+    for r in var.additional_roles : "${trimspace(r.scope)}|${trimspace(r.role)}" => {
+      role  = trimspace(r.role)
+      scope = trimspace(r.scope)
+    }
+  } : {}
 }
 
 # User Assigned Managed Identity (only if access is needed)
@@ -34,6 +47,13 @@ resource "azurerm_user_assigned_identity" "service" {
   location            = var.location
 
   tags = local.tags
+
+  lifecycle {
+    precondition {
+      condition     = !local.needs_azure_access || (trimspace(var.resource_group_name) != "" && trimspace(var.location) != "")
+      error_message = "resource_group_name and location must be provided when Azure access is required."
+    }
+  }
 }
 
 # Federated Identity Credential for AKS Workload Identity
@@ -47,6 +67,13 @@ resource "azurerm_federated_identity_credential" "service" {
   audience = ["api://AzureADTokenExchange"]
   issuer   = var.aks_oidc_issuer
   subject  = local.fic_subject
+
+  lifecycle {
+    precondition {
+      condition     = !local.needs_azure_access || trimspace(var.aks_oidc_issuer) != ""
+      error_message = "aks_oidc_issuer must be a non-empty URL when Azure access is required."
+    }
+  }
 }
 
 # Key Vault Secrets User (conditional)
@@ -63,8 +90,8 @@ resource "azurerm_role_assignment" "keyvault_secrets_user" {
 
   lifecycle {
     precondition {
-      condition     = !var.enable_key_vault_access || var.key_vault_id != null
-      error_message = "key_vault_id must be provided when enable_key_vault_access is true"
+      condition     = var.key_vault_id != null && trimspace(var.key_vault_id) != ""
+      error_message = "key_vault_id must be provided (non-empty) when enable_key_vault_access is true."
     }
   }
 }
@@ -83,8 +110,8 @@ resource "azurerm_role_assignment" "storage_blob_contributor" {
 
   lifecycle {
     precondition {
-      condition     = !var.enable_storage_access || var.storage_account_id != null
-      error_message = "storage_account_id must be provided when enable_storage_access is true"
+      condition     = var.storage_account_id != null && trimspace(var.storage_account_id) != ""
+      error_message = "storage_account_id must be provided (non-empty) when enable_storage_access is true."
     }
   }
 }
@@ -103,19 +130,26 @@ resource "azurerm_role_assignment" "service_bus_data_owner" {
 
   lifecycle {
     precondition {
-      condition     = !var.enable_service_bus_access || var.service_bus_namespace_id != null
-      error_message = "service_bus_namespace_id must be provided when enable_service_bus_access is true"
+      condition     = var.service_bus_namespace_id != null && trimspace(var.service_bus_namespace_id) != ""
+      error_message = "service_bus_namespace_id must be provided (non-empty) when enable_service_bus_access is true."
     }
   }
 }
 
-# Additional custom roles
+# Additional custom roles (stable for_each keys)
 resource "azurerm_role_assignment" "additional" {
-  for_each = local.needs_azure_access ? { for idx, role in var.additional_roles : idx => role } : {}
+  for_each = local.additional_roles_map
 
   scope                = each.value.scope
   role_definition_name = each.value.role
   principal_id         = azurerm_user_assigned_identity.service[0].principal_id
+
+  lifecycle {
+    precondition {
+      condition     = trimspace(each.value.scope) != "" && trimspace(each.value.role) != ""
+      error_message = "additional_roles entries must have non-empty scope and role."
+    }
+  }
 }
 
 # Kubernetes ServiceAccount (always created; annotation only if MI exists)
@@ -136,4 +170,3 @@ resource "kubernetes_service_account_v1" "service" {
     }
   }
 }
-

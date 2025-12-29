@@ -45,6 +45,6 @@ output "enabled_services" {
     storage                = var.enable_storage_access
     service_bus            = var.enable_service_bus_access
     additional_roles_count = length(var.additional_roles)
+    azure_access_required  = local.needs_azure_access
   }
 }
-
