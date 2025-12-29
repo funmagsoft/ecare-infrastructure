@@ -27,9 +27,9 @@ The commit message must follow this exact format:
 ```text
 <type>[optional scope]: <subject>
 
-    - <change description 1>
-    - <change description 2>
-    - <change description 3>
+- <change description 1>
+- <change description 2>
+- <change description 3>
 ```
 
 **Rules:**
