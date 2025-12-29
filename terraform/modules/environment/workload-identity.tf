@@ -6,7 +6,6 @@ module "github_oidc_integration" {
   environment         = var.environment
   project_name        = var.project_name
   resource_group_name = data.azurerm_resource_group.main.name
-  location            = data.azurerm_resource_group.main.location
 
   acr_id = data.terraform_remote_state.platform.outputs.acr_id
   aks_id = data.terraform_remote_state.platform.outputs.aks_cluster_id

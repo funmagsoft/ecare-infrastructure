@@ -1,8 +1,3 @@
-# Data source: Resource Group
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
-}
-
 # Local variables for tags and GitHub OIDC configuration
 locals {
   # Required tags - these must always be present
@@ -16,15 +11,17 @@ locals {
   }
 
   # Merge required tags with additional tags
-  # Required tags take precedence (merge order: var.tags first, then required_tags)
+  # Required tags take precedence (merge order: var.tags first, then required_tags overwrite)
+  # This ensures required tags cannot be overridden by var.tags
   merged_tags = merge(
     var.tags,
     local.required_tags
   )
 
-  # Convert map to list of strings for Azure AD resources (format: "Key:Value")
+  # Convert map to list of strings for Azure AD resources (format: "Key=Value")
+  # Using "=" instead of ":" for better compatibility with Entra ID tag filtering
   ad_tags = [
-    for key, value in local.merged_tags : "${key}:${value}"
+    for key, value in local.merged_tags : "${key}=${value}"
   ]
 
   # GitHub OIDC configuration constants
@@ -39,17 +36,19 @@ locals {
   }
 
   # Service repository display names
-  # Format: GitHub{RepositoryName}Branch-{branch}
+  # Format: GitHub{RepositoryName}Branch-{branch}-{hash}
+  # Adding 4-character hash ensures uniqueness even if repo/branch combinations collide
   service_repo_display_names = {
     for name, cfg in var.service_repos :
-    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}"
+    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 4)}"
   }
 
   # GitOps repository display names
-  # Format: GitHub{RepositoryName}Env-{environment}
+  # Format: GitHub{RepositoryName}Env-{environment}-{hash}
+  # Adding 4-character hash ensures uniqueness if multiple repos transform to same name
   gitops_repo_display_names = {
     for repo in var.gitops_repos :
-    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}"
+    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}-${substr(sha256(repo), 0, 4)}"
   }
 }
 
@@ -62,7 +61,7 @@ resource "azuread_application" "gha" {
 
 # Service Principal
 resource "azuread_service_principal" "gha" {
-  application_id = azuread_application.gha.application_id
+  client_id = azuread_application.gha.client_id
 
   tags = local.ad_tags
 }
@@ -73,11 +72,11 @@ resource "azuread_service_principal" "gha" {
 resource "azuread_application_federated_identity_credential" "service_repos" {
   for_each = var.service_repos
 
-  application_object_id = azuread_application.gha.object_id
-  display_name          = local.service_repo_display_names[each.key]
-  issuer                = local.github_oidc_issuer
-  subject               = "repo:${each.value.repo}:ref:refs/heads/${each.value.branch}"
-  audiences             = local.github_oidc_audience
+  application_id = azuread_application.gha.id
+  display_name   = local.service_repo_display_names[each.key]
+  issuer         = local.github_oidc_issuer
+  subject        = "repo:${each.value.repo}:ref:refs/heads/${each.value.branch}"
+  audiences      = local.github_oidc_audience
 }
 
 # Federated Identity Credentials for GitOps repositories
@@ -86,11 +85,11 @@ resource "azuread_application_federated_identity_credential" "service_repos" {
 resource "azuread_application_federated_identity_credential" "gitops_repos" {
   for_each = toset(var.gitops_repos)
 
-  application_object_id = azuread_application.gha.object_id
-  display_name          = local.gitops_repo_display_names[each.value]
-  issuer                = local.github_oidc_issuer
-  subject               = "repo:${each.value}:environment:${var.environment}"
-  audiences             = local.github_oidc_audience
+  application_id = azuread_application.gha.id
+  display_name   = local.gitops_repo_display_names[each.value]
+  issuer         = local.github_oidc_issuer
+  subject        = "repo:${each.value}:environment:${var.environment}"
+  audiences      = local.github_oidc_audience
 }
 
 # RBAC: Contributor on ACR

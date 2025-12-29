@@ -30,7 +30,6 @@ module "github_oidc_integration" {
   environment         = "dev"
   project_name        = "ecare"
   resource_group_name = "rg-ecare-dev"
-  location            = "West Europe"
 
   acr_id = data.terraform_remote_state.platform.outputs.acr_id
   aks_id = data.terraform_remote_state.platform.outputs.aks_id
@@ -55,13 +54,12 @@ module "github_oidc_integration" {
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| --- | --- | --- | --- | :---: |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
 | project_name | Project name | `string` | - | yes |
 | resource_group_name | Name of the Resource Group | `string` | - | yes |
-| location | Azure region for resources | `string` | - | yes |
-| acr_id | ID of the Azure Container Registry | `string` | - | yes |
-| aks_id | ID of the Azure Kubernetes Service cluster | `string` | - | yes |
+| acr_id | ID of the Azure Container Registry (full Azure resource ID) | `string` | - | yes |
+| aks_id | ID of the Azure Kubernetes Service cluster (full Azure resource ID) | `string` | - | yes |
 | service_repos | Map of service repositories for GitHub OIDC integration | `map(object({repo=string, branch=optional(string, "main")}))` | `{}` | no |
 | gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
 | enable_aks_rbac_writer | Enable Azure Kubernetes Service RBAC Writer role | `bool` | `false` | no |
@@ -70,7 +68,7 @@ module "github_oidc_integration" {
 ## Outputs
 
 | Name | Description | Sensitive |
-|------|-------------|-----------|
+| --- | --- | --- |
 | service_principal_app_id | Application (Client) ID of the Service Principal | no |
 | service_principal_object_id | Object ID of the Service Principal | no |
 | federated_identity_credentials | Map of service names to their FIC IDs (for service repositories) | no |
@@ -134,8 +132,8 @@ Resources follow this naming pattern:
 
 - **Service Principal**: `sp-gha-{project_name}-{environment}` (e.g., `sp-gha-ecare-dev`)
 - **Application Registration**: Same as Service Principal (display name)
-- **Federated Identity Credential (Service Repos)**: `GitHub{RepositoryName}Branch-{branch}` (e.g., `GitHubHycomBillingServiceBranch-main`)
-- **Federated Identity Credential (GitOps Repos)**: `GitHub{RepositoryName}Env-{environment}` (e.g., `GitHubHycomGitopsEnv-dev`)
+- **Federated Identity Credential (Service Repos)**: `GitHub{RepositoryName}Branch-{branch}-{hash}` (e.g., `GitHubHycomBillingServiceBranch-main-a1b2`)
+- **Federated Identity Credential (GitOps Repos)**: `GitHub{RepositoryName}Env-{environment}-{hash}` (e.g., `GitHubHycomGitopsEnv-dev-c3d4`)
 
 ### Why No `-infra-` Suffix?
 
@@ -165,7 +163,6 @@ module "github_oidc_integration" {
   environment         = "dev"
   project_name        = "ecare"
   resource_group_name = "rg-ecare-dev"
-  location            = "West Europe"
 
   acr_id = data.terraform_remote_state.platform.outputs.acr_id
   aks_id = data.terraform_remote_state.platform.outputs.aks_id
@@ -196,7 +193,6 @@ module "github_oidc_integration" {
   environment         = "prod"
   project_name        = "ecare"
   resource_group_name = "rg-ecare-prod"
-  location            = "West Europe"
 
   acr_id = data.terraform_remote_state.platform.outputs.acr_id
   aks_id = data.terraform_remote_state.platform.outputs.aks_id
@@ -243,6 +239,4 @@ From Phase 1 (infra-foundation) and Phase 2 (infra-platform):
 
 - Terraform >= 1.5.0
 - AzureRM Provider ~> 3.80
-- AzureAD Provider ~> 2.40
-
-
+- AzureAD Provider ~> 2.44
