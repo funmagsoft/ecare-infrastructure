@@ -61,6 +61,7 @@ module "environment" {
   aks_user_node_pool_min_count         = var.aks_user_node_pool_min_count
   aks_user_node_pool_max_count         = var.aks_user_node_pool_max_count
   aks_user_node_pool_os_disk_size_gb   = var.aks_user_node_pool_os_disk_size_gb
+  aks_user_node_pool_node_count        = var.aks_user_node_pool_node_count
   aks_enable_auto_scaling              = var.aks_enable_auto_scaling
   aks_oidc_issuer_enabled              = var.aks_oidc_issuer_enabled
   aks_workload_identity_enabled        = var.aks_workload_identity_enabled

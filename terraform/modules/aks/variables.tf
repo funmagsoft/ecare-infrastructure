@@ -20,21 +20,27 @@ variable "project_name" {
 }
 
 variable "kubernetes_version" {
-  description = "Kubernetes version"
+  description = "Kubernetes version (null = use latest supported)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "dns_prefix" {
-  description = "DNS prefix for the cluster"
+  description = "DNS prefix for the cluster (null = auto-generate)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "sku_tier" {
   description = "SKU tier (Free, Standard, Premium)"
   type        = string
   default     = "Standard"
+  validation {
+    condition     = contains(["Free", "Standard", "Premium"], var.sku_tier)
+    error_message = "sku_tier must be one of: Free, Standard, Premium."
+  }
 }
 
 # Network configuration
@@ -115,18 +121,36 @@ variable "user_node_pool_min_count" {
   description = "Minimum number of nodes in user pool"
   type        = number
   default     = 1
+  validation {
+    condition     = var.user_node_pool_min_count >= 1
+    error_message = "user_node_pool_min_count must be >= 1."
+  }
 }
 
 variable "user_node_pool_max_count" {
   description = "Maximum number of nodes in user pool"
   type        = number
   default     = 3
+  validation {
+    condition     = var.user_node_pool_max_count >= var.user_node_pool_min_count
+    error_message = "user_node_pool_max_count must be >= user_node_pool_min_count."
+  }
 }
 
 variable "user_node_pool_os_disk_size_gb" {
   description = "OS disk size for user nodes"
   type        = number
   default     = 128
+}
+
+variable "user_node_pool_node_count" {
+  description = "Fixed node count for AKS user node pool when autoscaling is disabled"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.user_node_pool_node_count >= 1
+    error_message = "user_node_pool_node_count must be >= 1."
+  }
 }
 
 # Identity
@@ -166,6 +190,7 @@ variable "log_analytics_workspace_id" {
   description = "Log Analytics Workspace ID for monitoring"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "enable_container_insights" {

@@ -306,6 +306,12 @@ variable "aks_user_node_pool_os_disk_size_gb" {
   default     = 128
 }
 
+variable "aks_user_node_pool_node_count" {
+  description = "Fixed node count for AKS user node pool when autoscaling is disabled"
+  type        = number
+  default     = 1
+}
+
 variable "aks_enable_auto_scaling" {
   description = "Enable auto-scaling for AKS user node pool"
   type        = bool

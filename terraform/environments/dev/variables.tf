@@ -219,15 +219,20 @@ variable "service_bus_zone_redundant" {
 #------------------------------------------------------------------------------
 
 variable "aks_kubernetes_version" {
-  description = "Kubernetes version for AKS"
+  description = "Kubernetes version for AKS (null = use latest supported)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "aks_sku_tier" {
   description = "SKU tier for AKS"
   type        = string
   default     = "Standard"
+  validation {
+    condition     = contains(["Free", "Standard", "Premium"], var.aks_sku_tier)
+    error_message = "aks_sku_tier must be one of: Free, Standard, Premium."
+  }
 }
 
 variable "aks_network_plugin" {
@@ -288,18 +293,36 @@ variable "aks_user_node_pool_min_count" {
   description = "Minimum node count for AKS user node pool"
   type        = number
   default     = 1
+  validation {
+    condition     = var.aks_user_node_pool_min_count >= 1
+    error_message = "aks_user_node_pool_min_count must be >= 1."
+  }
 }
 
 variable "aks_user_node_pool_max_count" {
   description = "Maximum node count for AKS user node pool"
   type        = number
   default     = 3
+  validation {
+    condition     = var.aks_user_node_pool_max_count >= var.aks_user_node_pool_min_count
+    error_message = "aks_user_node_pool_max_count must be >= aks_user_node_pool_min_count."
+  }
 }
 
 variable "aks_user_node_pool_os_disk_size_gb" {
   description = "OS disk size for AKS user nodes"
   type        = number
   default     = 128
+}
+
+variable "aks_user_node_pool_node_count" {
+  description = "Fixed node count for AKS user node pool when autoscaling is disabled"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.aks_user_node_pool_node_count >= 1
+    error_message = "aks_user_node_pool_node_count must be >= 1."
+  }
 }
 
 variable "aks_enable_auto_scaling" {

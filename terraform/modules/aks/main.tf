@@ -88,7 +88,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   enable_auto_scaling = var.enable_auto_scaling
   min_count           = var.enable_auto_scaling ? var.user_node_pool_min_count : null
   max_count           = var.enable_auto_scaling ? var.user_node_pool_max_count : null
-  node_count          = var.enable_auto_scaling ? null : var.user_node_pool_min_count
+  node_count          = var.enable_auto_scaling ? null : var.user_node_pool_node_count
 
   tags = merge(
     var.tags,

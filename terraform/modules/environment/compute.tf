@@ -31,6 +31,7 @@ module "aks" {
   user_node_pool_min_count       = var.aks_user_node_pool_min_count
   user_node_pool_max_count       = var.aks_user_node_pool_max_count
   user_node_pool_os_disk_size_gb = var.aks_user_node_pool_os_disk_size_gb
+  user_node_pool_node_count      = var.aks_user_node_pool_node_count
   enable_auto_scaling            = var.aks_enable_auto_scaling
 
   # Features
