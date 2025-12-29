@@ -4,6 +4,13 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "subscription_id" {
+  description = "Azure subscription ID. Optional locally; recommended in CI/CD."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "project_name" {
   description = "Project name"
   type        = string
@@ -69,31 +76,64 @@ variable "users_with_state_access" {
   EOT
   type        = list(string)
   default     = []
+
+  validation {
+    condition = alltrue([
+      for id in var.users_with_state_access :
+      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", id))
+    ])
+    error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
+  }
 }
 
 variable "vnet_cidr" {
   description = "CIDR block for VNet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.vnet_cidr, 0))
+    error_message = "vnet_cidr must be a valid CIDR notation (e.g., 10.1.0.0/16)."
+  }
 }
 
 variable "aks_subnet_cidr" {
   description = "CIDR block for AKS subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.aks_subnet_cidr, 0))
+    error_message = "aks_subnet_cidr must be a valid CIDR notation (e.g., 10.1.1.0/24)."
+  }
 }
 
 variable "data_subnet_cidr" {
   description = "CIDR block for Data subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.data_subnet_cidr, 0))
+    error_message = "data_subnet_cidr must be a valid CIDR notation (e.g., 10.1.2.0/24)."
+  }
 }
 
 variable "mgmt_subnet_cidr" {
   description = "CIDR block for Management subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.mgmt_subnet_cidr, 0))
+    error_message = "mgmt_subnet_cidr must be a valid CIDR notation (e.g., 10.1.3.0/24)."
+  }
 }
 
 variable "gateway_subnet_cidr" {
   description = "CIDR block for Gateway subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.gateway_subnet_cidr, 0))
+    error_message = "gateway_subnet_cidr must be a valid CIDR notation (e.g., 10.1.4.0/24)."
+  }
 }
 
 variable "enable_vpn_gateway" {
@@ -109,9 +149,14 @@ variable "vpn_gateway_sku" {
 }
 
 variable "vpn_client_address_space" {
-  description = "Address space for VPN clients"
+  description = "Address space for VPN clients (CIDR notation)"
   type        = string
   default     = "192.168.255.0/24"
+
+  validation {
+    condition     = can(cidrhost(var.vpn_client_address_space, 0))
+    error_message = "vpn_client_address_space must be a valid CIDR notation (e.g., 192.168.255.0/24)."
+  }
 }
 
 variable "vpn_root_cert_name" {
@@ -125,10 +170,36 @@ variable "vpn_root_cert_data" {
   type        = string
   default     = ""
   sensitive   = true
+
+  validation {
+    condition     = !var.enable_vpn_gateway || trimspace(var.vpn_root_cert_data) != ""
+    error_message = "vpn_root_cert_data must be provided (non-empty) when enable_vpn_gateway = true."
+  }
 }
 
 variable "mgmt_subnet_allowed_ssh_ips" {
   description = "List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet"
   type        = list(string)
   default     = []
+
+  validation {
+    condition = alltrue([
+      for ip in var.mgmt_subnet_allowed_ssh_ips :
+      can(cidrhost(ip, 0)) || can(regex("^\\d{1,3}(\\.\\d{1,3}){3}$", ip))
+    ])
+    error_message = "mgmt_subnet_allowed_ssh_ips must contain valid IP addresses or CIDR blocks."
+  }
+}
+
+variable "additional_tags" {
+  description = "Additional tags to merge with required tags. Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden."
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition = alltrue([
+      for key in keys(var.additional_tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"], key)
+    ])
+    error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+  }
 }

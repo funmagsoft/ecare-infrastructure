@@ -3,8 +3,9 @@
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 
 # Azure Configuration
-# subscription_id is not needed - Terraform uses active subscription from Azure CLI
-# Use 'az account set --subscription <subscription-id>' to switch subscriptions
+# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
+# Recommended to set explicitly in CI/CD: subscription_id = "your-subscription-id"
+# subscription_id = null  # Optional: set to null to use active subscription
 
 # Environment Configuration
 environment  = "stage"
@@ -30,6 +31,10 @@ data_subnet_cidr    = "10.3.2.0/24"
 mgmt_subnet_cidr    = "10.3.3.0/24"
 gateway_subnet_cidr = "10.3.4.0/24"
 
+# Management Subnet SSH Access
+# List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet
+# mgmt_subnet_allowed_ssh_ips = ["1.2.3.4"]
+
 # VPN Configuration (set to true if VPN needed)
 enable_vpn_gateway  = false
 
@@ -38,3 +43,10 @@ enable_vpn_gateway  = false
 # vpn_client_address_space = "192.168.255.0/24"
 # vpn_root_cert_name       = "VPN-Root-Cert"
 # vpn_root_cert_data       = "<base64-encoded-cert-data>"
+
+# Additional Tags (optional)
+# Additional tags to merge with required tags. Required tags cannot be overridden.
+# additional_tags = {
+#   CostCenter = "Engineering"
+#   Team       = "DevOps"
+# }
