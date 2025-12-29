@@ -16,11 +16,21 @@ variable "organization_name" {
 variable "organization_for_sa" {
   description = "Organization name for Storage Account naming (may differ from organization due to Azure naming constraints)"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]+$", var.organization_for_sa))
+    error_message = "organization_for_sa must contain only lowercase letters and digits (storage account naming constraint: 3-24 chars, lowercase alphanumeric only)."
+  }
 }
 
 variable "project_name" {
   description = "Project name"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]+$", var.project_name))
+    error_message = "project_name must contain only lowercase letters and digits (used in storage account naming)."
+  }
 }
 
 variable "terraform_repos" {
@@ -35,6 +45,13 @@ variable "terraform_repos" {
   EOT
   type        = list(string)
   default     = ["infra-foundation", "infra-platform", "infra-identity"]
+
+  validation {
+    condition = alltrue([
+      for r in var.terraform_repos : can(regex("^[A-Za-z0-9_.-]+$", r))
+    ])
+    error_message = "terraform_repos entries must be simple repo names (no slashes, spaces, or special characters except: _, ., -)."
+  }
 }
 
 variable "users_with_state_access" {
@@ -54,4 +71,12 @@ variable "users_with_state_access" {
   EOT
   type        = list(string)
   default     = []
+
+  validation {
+    condition = alltrue([
+      for id in var.users_with_state_access :
+      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", id))
+    ])
+    error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
+  }
 }

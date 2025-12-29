@@ -9,12 +9,20 @@ data "azurerm_storage_account" "state" {
   resource_group_name = data.azurerm_resource_group.main.name
 }
 
-# Local: Construct full repository names
+# Local: Construct full repository names and FIC display names
 locals {
   # Construct full repository names: "organization_name/repo-name"
   terraform_repos_full = [
     for repo in var.terraform_repos : "${var.organization_name}/${repo}"
   ]
+
+  # FIC display names with 4-character hash for uniqueness
+  # Format: GitHub{RepositoryName}Env-{environment}-{hash}
+  # Adding 4-character hash ensures uniqueness if multiple repos transform to same name
+  fic_display_names = {
+    for repo in local.terraform_repos_full :
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 4)}"
+  }
 }
 
 # Application Registration for Service Principal
@@ -47,7 +55,7 @@ resource "azuread_application_federated_identity_credential" "terraform_repos" {
   for_each = toset(local.terraform_repos_full)
 
   application_id = azuread_application.gha.id
-  display_name   = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
+  display_name   = local.fic_display_names[each.value]
   issuer         = "https://token.actions.githubusercontent.com"
   subject        = "repo:${each.value}:environment:${var.environment}"
   audiences      = ["api://AzureADTokenExchange"]
