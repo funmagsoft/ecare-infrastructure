@@ -59,6 +59,8 @@ Thumbs.db
 .cursor/**
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/commands/
+!.cursor/commands/**
 
 # VSCode IDE
 .vscode/**
