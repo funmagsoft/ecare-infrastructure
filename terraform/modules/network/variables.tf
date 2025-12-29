@@ -16,6 +16,11 @@ variable "vnet_name" {
 variable "vnet_cidr" {
   description = "CIDR block for the Virtual Network"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.vnet_cidr, 0))
+    error_message = "vnet_cidr must be a valid CIDR notation (e.g., 10.1.0.0/16)."
+  }
 }
 
 variable "aks_subnet_name" {
@@ -26,6 +31,11 @@ variable "aks_subnet_name" {
 variable "aks_subnet_cidr" {
   description = "CIDR block for AKS subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.aks_subnet_cidr, 0))
+    error_message = "aks_subnet_cidr must be a valid CIDR notation (e.g., 10.1.1.0/24)."
+  }
 }
 
 variable "data_subnet_name" {
@@ -36,6 +46,11 @@ variable "data_subnet_name" {
 variable "data_subnet_cidr" {
   description = "CIDR block for Data subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.data_subnet_cidr, 0))
+    error_message = "data_subnet_cidr must be a valid CIDR notation (e.g., 10.1.2.0/24)."
+  }
 }
 
 variable "mgmt_subnet_name" {
@@ -46,11 +61,21 @@ variable "mgmt_subnet_name" {
 variable "mgmt_subnet_cidr" {
   description = "CIDR block for Management subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.mgmt_subnet_cidr, 0))
+    error_message = "mgmt_subnet_cidr must be a valid CIDR notation (e.g., 10.1.3.0/24)."
+  }
 }
 
 variable "gateway_subnet_cidr" {
   description = "CIDR block for Gateway subnet"
   type        = string
+
+  validation {
+    condition     = can(cidrhost(var.gateway_subnet_cidr, 0))
+    error_message = "gateway_subnet_cidr must be a valid CIDR notation (e.g., 10.1.4.0/24)."
+  }
 }
 
 variable "aks_nsg_name" {

@@ -4,7 +4,12 @@ resource "azurerm_network_security_group" "aks" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  tags = var.tags
+  tags = merge(
+    var.tags,
+    {
+      Module = "network"
+    }
+  )
 }
 
 # NSG for Data Subnet
@@ -13,7 +18,12 @@ resource "azurerm_network_security_group" "data" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  tags = var.tags
+  tags = merge(
+    var.tags,
+    {
+      Module = "network"
+    }
+  )
 }
 
 # NSG for Management Subnet
@@ -22,7 +32,12 @@ resource "azurerm_network_security_group" "mgmt" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
-  tags = var.tags
+  tags = merge(
+    var.tags,
+    {
+      Module = "network"
+    }
+  )
 }
 
 # NSG Rules Configuration
@@ -35,6 +50,13 @@ locals {
   }
 
   nsg_rules = {
+    # AKS subnet NSG rules
+    # Note: This is a minimal deny-by-default configuration.
+    # For private AKS clusters, you may need additional rules for:
+    # - Control plane communication (if using private cluster)
+    # - Azure service endpoints (ACR, Key Vault, etc.)
+    # - Health probes from Azure Load Balancer
+    # Priority order: lower number = higher priority
     aks = {
       inbound = [
         {
@@ -96,6 +118,12 @@ locals {
         }
       ]
     }
+    # Data subnet NSG rules
+    # Outbound: Empty list means default Azure NSG rules apply:
+    # - AllowVNetOutbound (65000)
+    # - AllowInternetOutbound (65001)
+    # - DenyAllOutbound (65500)
+    # If you need to block outbound, add explicit DenyAllOutbound rule here.
     data = {
       inbound = [
         {
@@ -121,8 +149,11 @@ locals {
           destination_address_prefix = "*"
         }
       ]
-      outbound = []
+      outbound = [] # Uses Azure default rules (allows outbound)
     }
+    # Management subnet NSG rules
+    # Outbound: Empty list means default Azure NSG rules apply (allows outbound).
+    # If you need to block outbound, add explicit DenyAllOutbound rule here.
     mgmt = {
       # Use concat() to conditionally include SSH rule based on mgmt_subnet_allowed_ssh_ips
       # concat() is needed because Terraform doesn't allow conditional values directly in lists
@@ -169,7 +200,7 @@ locals {
           }
         ]
       )
-      outbound = []
+      outbound = [] # Uses Azure default rules (allows outbound)
     }
   }
 }
