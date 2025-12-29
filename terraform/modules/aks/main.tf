@@ -21,7 +21,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     os_disk_size_gb              = var.system_node_pool_os_disk_size_gb
     vnet_subnet_id               = var.vnet_subnet_id
     type                         = "VirtualMachineScaleSets"
-    enable_auto_scaling          = false
     only_critical_addons_enabled = true
 
     tags = merge(
@@ -84,6 +83,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   vm_size               = var.user_node_pool_vm_size
   os_disk_size_gb       = var.user_node_pool_os_disk_size_gb
   vnet_subnet_id        = var.vnet_subnet_id
+  mode                  = "User"
 
   enable_auto_scaling = var.enable_auto_scaling
   min_count           = var.enable_auto_scaling ? var.user_node_pool_min_count : null
