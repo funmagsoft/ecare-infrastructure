@@ -20,7 +20,7 @@ terraform/
 │   ├── environment/                  # Shared environment module (eliminates code duplication)
 │   ├── github-oidc/                  # SP + FIC + RBAC for service repositories (GitHub Actions)
 │   └── workload-identity/            # UAMI + FIC + RBAC per service (AKS pods)
-├── templates/                        # Template files for backend.tf and providers.tf
+├── templates/                        # Template files for versions.tf and providers.tf
 └── environments/
     ├── dev/
     ├── test/
@@ -34,14 +34,15 @@ scripts/
 
 Each environment directory contains:
 
-- `backend.tf` - Backend configuration (state storage)
-- `providers.tf` - Provider configuration (AzureRM, AzureAD, Kubernetes)
+- `versions.tf` - Terraform version, backend configuration, and required providers
+- `providers.tf` - Provider configurations (AzureRM, AzureAD)
+- `kubernetes-provider.tf` - Kubernetes provider configuration (required for AKS namespace creation)
 - `main.tf` - Calls the `environment` module
-- `services.tf` - Service configuration (environment-specific)
-- `variables.tf` - Environment-specific variables
+- `variables.tf` - Environment-specific variables (including services configuration)
 - `outputs.tf` - Re-exports outputs from the `environment` module
+- `terraform.tfvars.example` - Example variable values for the environment
 
-**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
+**Templates**: The `terraform/templates/` directory contains template files for `versions.tf` and `providers.tf` to help set up new environments.
 
 ## What is created
 
@@ -62,7 +63,7 @@ The `github-oidc` module creates:
 
 ### Per Service (Workload Identity)
 
-For each service declared in `terraform/environments/<env>/services.tf`, the `workload-identity` module creates:
+For each service declared in `terraform/environments/<env>/terraform.tfvars` (or `variables.tf`), the `workload-identity` module creates:
 
 - **User Assigned Managed Identity (UAMI)**  
   Name: `mi-ecare-<service>-<env>`
@@ -79,20 +80,31 @@ All tags are aligned with the platform/foundation conventions (`Environment`, `P
 
 ## Configuration per environment
 
-Each environment has a `services.tf` with a `local.services` map. Example (dev):
+Each environment has a `terraform.tfvars` file (or `variables.tf` with default values) that defines services configuration. Example (dev):
 
 ```hcl
-locals {
-  services = {
-    billing = {
-      repo                    = "funmagsoft/billing-service"
-      branch                  = "main"
-      enable_key_vault_access = true
-      enable_storage_access   = true
-      enable_service_bus_access = false
-      additional_roles        = []
-    }
+# terraform/environments/dev/terraform.tfvars
+environment  = "dev"
+project_name = "ecare"
+
+services = {
+  billing = {
+    repo                    = "funmagsoft/billing-service"
+    branch                  = "main"
+    enable_key_vault_access = true
+    enable_storage_access   = true
+    enable_service_bus_access = false
+    additional_roles = []
   }
+}
+
+gitops_repos = [
+  "hycom/gitops"
+]
+
+additional_tags = {
+  CostCenter = "Engineering"
+  Team       = "DevOps"
 }
 ```
 
@@ -145,7 +157,7 @@ If a flag is `true` but the corresponding ID is missing, a precondition will fai
 
 ### add-service.sh
 
-Add or update a service entry in `services.tf`:
+Add or update a service entry in `terraform.tfvars`:
 
 ```bash
 scripts/add-service.sh --env dev --service billing --repo funmagsoft/billing-service --kv --storage --sb
@@ -159,13 +171,13 @@ Options:
 - `--kv` – enable Key Vault access
 - `--storage` – enable Storage access
 - `--sb` – enable Service Bus access
-- `--dry-run` – show the resulting `services.tf` without writing
+- `--dry-run` – show the resulting configuration without writing
 
 Behavior:
 
-- Updates `terraform/environments/<env>/services.tf` (inserts/replaces a block `# Service: <name>`).
+- Updates `terraform/environments/<env>/terraform.tfvars` (inserts/replaces a service entry in the `services` map).
 - In `--dry-run` mode, prints the would-be file content and does not write.
-- If `services.tf` is missing and `--dry-run`, it only prints a template; otherwise it creates a template and appends the service.
+- If `terraform.tfvars` is missing and `--dry-run`, it only prints a template; otherwise it creates a template and appends the service.
 
 ### common.sh
 
@@ -179,7 +191,7 @@ Shared helpers: `parse_dry_run`, logging, optional `.env` loading (ignored if mi
    cd terraform/environments/dev
    ```
 
-2. Configure services in `services.tf` (or via `add-service.sh`).
+2. Configure services in `terraform.tfvars` (copy from `terraform.tfvars.example` and fill in values, or use `add-service.sh` script).
 3. Initialize:
 
    ```bash
@@ -300,10 +312,15 @@ git commit --no-verify -m "message"
 
 ## Important Notes
 
-- Do not commit `terraform.tfvars` or `.tfstate`. State is remote; config stays in `services.tf`.
+- Do not commit `terraform.tfvars` or `.tfstate`. State is remote; configuration is defined in `terraform.tfvars` (not committed) or `variables.tf` with default values.
 - Ensure `az login` and correct subscription before running Terraform, or use GitHub OIDC in CI.
 - RBAC scopes rely on outputs from `infra-platform`. Keep platform deployed and outputs available for each env.
-- **Provider Configuration**: Each environment must have a `providers.tf` file with the AzureRM, AzureAD, and Kubernetes provider configuration. This is required in the root module (environment directory), not in child modules. See `terraform/templates/providers.tf.template` for the template.
+- **Provider Configuration**: Each environment must have:
+  - `versions.tf` - Terraform version, backend configuration, and required providers
+  - `providers.tf` - Provider configurations (AzureRM, AzureAD)
+  - `kubernetes-provider.tf` - Kubernetes provider configuration (required for AKS namespace creation)
+  
+  These are required in the root module (environment directory), not in child modules. See `terraform/templates/` for templates.
 - **Module Architecture**: All environments use the shared `environment` module, which eliminates code duplication. Changes to the module automatically propagate to all environments.
 
 ## Cleanup
@@ -316,3 +333,4 @@ terraform destroy
 ```
 
 Be mindful of shared platform resources; the destroy will remove only the identities/RBAC created here.
+

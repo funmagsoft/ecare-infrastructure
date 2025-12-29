@@ -48,3 +48,5 @@ output "enabled_services" {
     azure_access_required  = local.needs_azure_access
   }
 }
+
+

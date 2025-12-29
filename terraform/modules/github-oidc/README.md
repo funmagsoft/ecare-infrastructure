@@ -240,3 +240,4 @@ From Phase 1 (infra-foundation) and Phase 2 (infra-platform):
 - Terraform >= 1.5.0
 - AzureRM Provider ~> 3.80
 - AzureAD Provider ~> 2.44
+

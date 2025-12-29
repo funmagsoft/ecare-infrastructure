@@ -85,7 +85,7 @@ variable "key_vault_id" {
   type        = string
   default     = null
   nullable    = true
-  
+
   validation {
     condition     = !var.enable_key_vault_access || (var.key_vault_id != null && trimspace(var.key_vault_id) != "")
     error_message = "key_vault_id is required (non-empty) when enable_key_vault_access = true."
@@ -139,3 +139,5 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+

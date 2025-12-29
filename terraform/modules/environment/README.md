@@ -71,6 +71,10 @@ services = {
 
 | Name | Description | Sensitive |
 |------|-------------|-----------|
+| github_oidc_service_principal_app_id | Application (Client) ID of the Service Principal for GitHub Actions (service repositories) | no |
+| github_oidc_service_principal_object_id | Object ID of the Service Principal for GitHub Actions (service repositories) | no |
+| github_oidc_federated_identity_credentials | Map of service names to their Federated Identity Credential IDs (GitHub OIDC for service repositories) | no |
+| github_oidc_gitops_federated_identity_credentials | Map of GitOps repository names to their Federated Identity Credential IDs (GitHub OIDC for GitOps repositories per environment) | no |
 | workload_identities | Map of workload identities per service with identity_id, identity_client_id, identity_principal_id, and federated_credential_id | no |
 
 ## Module-Specific Configuration
