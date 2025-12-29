@@ -19,11 +19,50 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
 - Format: `<type>[optional scope]: <description>`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
 - Use `scope` only when obvious (module name, top-level folder, bounded component).
-- Examples:
-  - `feat: add new feature`
-  - `fix(github-oidc): fix tags handling`
-  - `docs: update README`
-  - `refactor(code-quality): implement improvements`
+
+### Commit Message Format
+
+The commit message must follow this exact format:
+
+```text
+<type>[optional scope]: <subject>
+
+    - <change description 1>
+    - <change description 2>
+    - <change description 3>
+```
+
+**Rules:**
+
+- Subject line: concise description (max 72 characters recommended)
+- Empty line after subject (required)
+- Body: unordered list starting with `-` (no indentation)
+- No empty lines between list items
+- Each list item describes one change made in the commit
+- If only subject is needed (single simple change), omit the body
+
+**Examples:**
+
+```text
+docs: add terraform.tfvars.example for all environments
+
+- Add terraform.tfvars.example for dev, test, stage, and prod environments
+- Include environment configuration variables
+- Include gitops_repos and additional_tags examples
+- Add note about service configuration in services.tf
+```
+
+```text
+feat(github-oidc): add GitOps repositories support
+```
+
+```text
+refactor(cursor): reorganize configuration and add gitcc command
+
+    - Add gitcc command for Conventional Commits workflow
+    - Rename git-commands.mdc to conventional-commits.mdc
+    - Update .gitignore to include commands/ directory
+```
 
 ## Execution steps (must follow)
 
@@ -38,12 +77,8 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
      - `git diff --cached --stat`
      - `git diff --cached`
 
-3. Format Terraform files (if any changed):
-   - Run: `terraform fmt -recursive` (required by `.cursor/rules/code-style.mdc`)
-   - This ensures all Terraform files are properly formatted before commit.
-   - If formatting changes files, re-inspect with `git diff` to see what was auto-formatted.
-
-4. Decide what to stage (no user prompt):
+3. Decide what to stage (no user prompt):
+   - **Note:** Pre-commit hooks will automatically format Terraform files (`terraform_fmt`), fix file endings (`end-of-file-fixer`), and validate syntax. No manual formatting needed.
    - Default to staging **all changes**: `git add -A`
    - Exception: if you detect clearly unrelated groups of changes (e.g., formatting-only across many files + a feature fix), then stage only the most coherent group and leave the rest unstaged. You must:
      - Explain the grouping decision briefly
@@ -53,28 +88,52 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
      - `git diff --cached --stat`
      - `git diff --cached`
 
-5. Generate the commit message from the **staged diff**:
+4. Generate the commit message from the **staged diff**:
    - Determine `type` by primary intent (see types above).
    - Determine `scope` only when obvious (package name, top-level folder, bounded module).
-   - Write a concise subject. If needed, add body lines (wrapped reasonably) to clarify non-obvious behavior.
-   - If breaking, add the breaking footer.
+   - Write a concise subject line (max 72 characters recommended).
+   - If multiple changes were made, create an unordered list in the body:
+     - Start with empty line after subject
+     - Each list item starts with `-` (4 spaces indentation)
+     - No empty lines between list items
+     - Each item describes one change made in the commit
+   - Example format:
 
-6. Commit (no approval):
-   - If subject only:
-     - `git commit -m "<message>"`
-   - If body/footers are needed:
-     - use multiple `-m` flags:
-       - first `-m` is the subject
-       - second `-m` is the body (if any)
-       - last `-m` is the footer block (if any)
+     ```text
+     <type>[scope]: <subject>
+
+         - <change 1>
+         - <change 2>
+         - <change 3>
+     ```
+
+5. Commit (no approval):
+   - Create a temporary file with the commit message (to preserve exact formatting):
+
+     ```bash
+     cat > /tmp/commit_msg.txt << 'EOF'
+     <type>[scope]: <subject>
+
+         - <change 1>
+         - <change 2>
+     EOF
+     ```
+
+   - Commit using the file:
+
+     ```bash
+     git commit -F /tmp/commit_msg.txt
+     ```
+
    - **Note:** Pre-commit hooks will run automatically:
      - `terraform_fmt`: Formats Terraform files (may modify files)
      - `terraform_validate`: Validates Terraform syntax
      - `end-of-file-fixer`: Ensures files end with exactly one newline
      - `validate-commit-msg`: Validates commit message format (Conventional Commits)
+
    - If hooks modify files, you may need to re-stage and amend the commit.
 
-7. Post-commit report:
+6. Post-commit report:
    - Run: `git log -1 --oneline`
    - Run: `git status --porcelain`
    - Summarize what was staged and the final commit message.
