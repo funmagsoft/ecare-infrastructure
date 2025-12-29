@@ -31,7 +31,7 @@ resource "azuread_application" "gha" {
 
 # Service Principal
 resource "azuread_service_principal" "gha" {
-  application_id = azuread_application.gha.application_id
+  client_id = azuread_application.gha.client_id
 
   tags = [
     "Environment:${var.environment}",
@@ -46,7 +46,7 @@ resource "azuread_service_principal" "gha" {
 resource "azuread_application_federated_identity_credential" "terraform_repos" {
   for_each = toset(local.terraform_repos_full)
 
-  application_object_id = azuread_application.gha.object_id
+  application_id        = azuread_application.gha.object_id
   display_name          = "GitHub${replace(title(replace(each.value, "/", "-")), "-", "")}Env-${var.environment}"
   issuer                = "https://token.actions.githubusercontent.com"
   subject               = "repo:${each.value}:environment:${var.environment}"

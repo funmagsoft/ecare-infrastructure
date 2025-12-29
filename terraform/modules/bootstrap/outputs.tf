@@ -1,6 +1,6 @@
 output "service_principal_app_id" {
   description = "Application (Client) ID of the Service Principal for GitHub Actions"
-  value       = azuread_application.gha.application_id
+  value       = azuread_application.gha.client_id
 }
 
 output "service_principal_object_id" {
