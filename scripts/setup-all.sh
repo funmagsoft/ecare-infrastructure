@@ -24,6 +24,7 @@ FAILED_SETUPS=()
 SETUP_SCRIPTS=(
   "setup-rg.sh"
   "setup-state-storage.sh"
+  "setup-access-user.sh"
 )
 
 # Run each setup script
