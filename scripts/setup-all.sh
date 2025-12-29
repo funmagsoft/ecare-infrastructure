@@ -91,8 +91,8 @@ if [ $TOTAL_ERRORS -eq 0 ]; then
   echo ""
   if [ "$DRY_RUN" != true ]; then
     echo "Next steps:"
-    echo "  1. Verify setup with: ./verify-all.sh"
-    echo "  2. Deploy bootstrap with Terraform: cd terraform/environments/dev && terraform apply"
+    echo "  1. Deploy bootstrap with Terraform: cd terraform/environments/dev && terraform apply"
+    echo "  2. Verify setup with: ./verify-all.sh"
     echo "  3. Configure GitHub Secrets (see documentation)"
     echo "  4. Proceed with Phase 1 deployment"
   fi
