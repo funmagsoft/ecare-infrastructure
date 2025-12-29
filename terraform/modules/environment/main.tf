@@ -32,14 +32,14 @@ locals {
 check "required_tags_validation" {
   assert {
     condition = alltrue([
-      local.common_tags["Environment"] != null && local.common_tags["Environment"] != "",
-      local.common_tags["Project"] != null && local.common_tags["Project"] != "",
-      local.common_tags["ManagedBy"] != null && local.common_tags["ManagedBy"] != "",
-      local.common_tags["Phase"] != null && local.common_tags["Phase"] != "",
-      local.common_tags["GitRepository"] != null && local.common_tags["GitRepository"] != "",
-      local.common_tags["TerraformPath"] != null && local.common_tags["TerraformPath"] != ""
+      trimspace(local.common_tags["Environment"]) != "",
+      trimspace(local.common_tags["Project"]) != "",
+      trimspace(local.common_tags["ManagedBy"]) != "",
+      trimspace(local.common_tags["Phase"]) != "",
+      trimspace(local.common_tags["GitRepository"]) != "",
+      trimspace(local.common_tags["TerraformPath"]) != ""
     ])
-    error_message = "All required tags must be present and non-empty: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
   }
 }
 
