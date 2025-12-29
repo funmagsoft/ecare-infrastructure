@@ -25,11 +25,13 @@ Terraform module that encapsulates all workload identity configuration for an en
 module "environment" {
   source = "../../modules/environment"
 
-  environment      = var.environment
-  project_name     = var.project_name
-  organization_name = var.organization_name
+  environment  = var.environment
+  project_name = var.project_name
 
-  services = local.services
+  services = var.services
+  gitops_repos = var.gitops_repos
+
+  additional_tags = var.additional_tags
 }
 ```
 
@@ -39,7 +41,6 @@ module "environment" {
 |------|-------------|------|---------|:--------:|
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
 | project_name | Project name | `string` | `"ecare"` | no |
-| organization_name | Organization name for resource naming | `string` | `"hycom"` | no |
 | services | Map of services to create workload identities for | `map(object)` | `{}` | no |
 | gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
 | additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
@@ -116,6 +117,7 @@ Kubernetes Service Accounts are always created in the AKS namespace (from platfo
 - Precondition checks ensure required IDs are provided when access is enabled
 - Tags aligned with platform/foundation conventions
 - Workload Identity integration for secure, passwordless authentication
+- Tag validation ensures all required tags are present and non-empty
 
 ## Examples
 
@@ -125,9 +127,8 @@ Kubernetes Service Accounts are always created in the AKS namespace (from platfo
 module "environment" {
   source = "../../modules/environment"
 
-  environment      = "dev"
-  project_name     = "ecare"
-  organization_name = "hycom"
+  environment  = "dev"
+  project_name = "ecare"
 
   services = {
     billing = {
@@ -138,6 +139,13 @@ module "environment" {
       enable_service_bus_access = false
     }
   }
+
+  gitops_repos = ["hycom/gitops"]
+
+  additional_tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+  }
 }
 ```
 
@@ -147,9 +155,8 @@ module "environment" {
 module "environment" {
   source = "../../modules/environment"
 
-  environment      = "prod"
-  project_name     = "ecare"
-  organization_name = "hycom"
+  environment  = "prod"
+  project_name = "ecare"
 
   services = {
     billing = {
@@ -166,6 +173,14 @@ module "environment" {
       ]
     }
   }
+
+  gitops_repos = ["hycom/gitops"]
+
+  additional_tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+    Compliance = "SOC2"
+  }
 }
 ```
 
@@ -173,9 +188,10 @@ module "environment" {
 
 This module integrates with:
 
-- **infra-platform** (via remote state) - Retrieves Key Vault, Storage Account, Service Bus, AKS namespace, and OIDC issuer URL
+- **infra-platform** (via remote state) - Retrieves Key Vault, Storage Account, Service Bus, AKS namespace, ACR ID, AKS cluster ID, and OIDC issuer URL
 - **infra-foundation** (via remote state) - Retrieves Resource Group and location information
-- **workload-identity module** - Creates individual workload identities per service
+- **github-oidc module** - Creates Service Principal and FIC for service repositories (GitHub Actions OIDC)
+- **workload-identity module** - Creates individual workload identities per service (AKS Workload Identity)
 
 ## Prerequisites
 
