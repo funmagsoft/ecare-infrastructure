@@ -16,7 +16,7 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
 ## Conventional Commits requirements
 
 - See rules file `.cursor/rules/conventional-commits.mdc` for complete specification.
-- Format: `<type>[optional scope]: <description>`
+- Format: `<type>(optional scope): <description>`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
 - Use `scope` only when obvious (module name, top-level folder, bounded component).
 
@@ -25,7 +25,7 @@ You are an autonomous commit assistant. Execute a safe, deterministic Git commit
 The commit message must follow this exact format:
 
 ```text
-<type>[optional scope]: <subject>
+<type>(optional scope): <subject>
 
 - <change description 1>
 - <change description 2>
@@ -101,7 +101,7 @@ refactor(cursor): reorganize configuration and add gitcc command
    - Example format:
 
      ```text
-     <type>[scope]: <subject>
+     <type>(scope): <subject>
 
      - <change 1>
      - <change 2>
@@ -113,7 +113,7 @@ refactor(cursor): reorganize configuration and add gitcc command
 
      ```bash
      cat > /tmp/commit_msg.txt << 'EOF'
-     <type>[scope]: <subject>
+     <type>(scope): <subject>
 
      - <change 1>
      - <change 2>
