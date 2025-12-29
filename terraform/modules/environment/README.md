@@ -42,6 +42,8 @@ module "environment" {
   vpn_root_cert_name         = var.vpn_root_cert_name
   vpn_root_cert_data         = var.vpn_root_cert_data
   mgmt_subnet_allowed_ssh_ips = var.mgmt_subnet_allowed_ssh_ips
+
+  additional_tags = var.additional_tags
 }
 ```
 
@@ -181,6 +183,11 @@ module "environment" {
   mgmt_subnet_allowed_ssh_ips = ["91.150.222.105"]  # Office IP
 
   enable_vpn_gateway = false
+
+  additional_tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+  }
 }
 ```
 
@@ -206,6 +213,12 @@ module "environment" {
   vpn_client_address_space   = "192.168.255.0/24"
   vpn_root_cert_name         = "VPN-Root-Cert"
   vpn_root_cert_data         = var.vpn_root_cert_data  # Use environment variable for production
+
+  additional_tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+    Compliance = "SOC2"
+  }
 }
 ```
 

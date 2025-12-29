@@ -223,4 +223,4 @@ The Service Principal is assigned the following roles:
 
 - Terraform >= 1.5.0
 - AzureRM Provider ~> 3.80
-- AzureAD Provider ~> 2.40
+- AzureAD Provider ~> 2.44

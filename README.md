@@ -92,7 +92,7 @@ terraform/
 │   ├── environment/    # Shared environment module (eliminates code duplication)
 │   ├── network/        # Network module (VNet, Subnets, NSGs)
 │   └── vpn-gateway/    # VPN Gateway module
-├── templates/          # Template files for backend.tf and providers.tf
+├── templates/          # Template files for versions.tf and providers.tf
 └── environments/
     ├── dev/
     ├── test/
@@ -102,7 +102,7 @@ terraform/
 
 Each environment directory contains:
 
-- `backend.tf` - Backend configuration (state storage)
+- `versions.tf` - Terraform version, backend configuration, and required providers
 - `providers.tf` - Provider configuration (AzureRM, AzureAD)
 - `bootstrap.tf` - Bootstrap module call (SP, FIC, RBAC for Terraform repos)
 - `main.tf` - Calls the `environment` module
@@ -183,7 +183,7 @@ This repository uses a modular architecture to eliminate code duplication:
 
 Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
 
-- `backend.tf` - Backend configuration pointing to environment-specific state storage
+- `versions.tf` - Terraform version, backend configuration, and required providers
 - `providers.tf` - Provider configuration (required in root module)
 - `main.tf` - Calls the `environment` module with environment-specific variables
 - `variables.tf` - Environment-specific input variables
@@ -199,7 +199,7 @@ Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
 
 This minimal duplication (~56 lines per `outputs.tf`, ~80 lines per `variables.tf`) is acceptable and provides better developer experience than attempting to eliminate it through shared templates or complex abstractions.
 
-**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
+**Templates**: The `terraform/templates/` directory contains template files for `versions.tf` and `providers.tf` to help set up new environments.
 
 ## Prerequisites: Setup Phase 0 Infrastructure
 
@@ -442,9 +442,9 @@ This will create an NSG rule `AllowSSHInbound` (priority 200) that allows SSH (p
 
 ### Important Notes
 
-- **State Management**: Terraform state is stored remotely in the Storage Account configured in `backend.tf`. Never commit `.tfstate` files to git.
+- **State Management**: Terraform state is stored remotely in the Storage Account configured in `versions.tf`. Never commit `.tfstate` files to git.
 - **Environment Isolation**: Each environment (dev, test, stage, prod) has separate state files and Resource Groups, ensuring complete isolation.
-- **Authentication**: Terraform uses Azure AD authentication (configured via `use_azuread_auth = true` in `backend.tf`). Ensure you're logged in via `az login` or that GitHub Actions has proper OIDC configuration.
-- **Backend Configuration**: The backend configuration in `backend.tf` points to the Storage Accounts created by `setup-state-storage.sh`. If you change the Storage Account names, update `backend.tf` accordingly.
-- **Provider Configuration**: Each environment must have a `providers.tf` file with the AzureRM provider configuration. This is required in the root module (environment directory), not in child modules. See `terraform/templates/providers.tf.template` for the template.
+- **Authentication**: Terraform uses Azure AD authentication (configured via `use_azuread_auth = true` in `versions.tf`). Ensure you're logged in via `az login` or that GitHub Actions has proper OIDC configuration.
+- **Backend Configuration**: The backend configuration in `versions.tf` points to the Storage Accounts created by `setup-state-storage.sh`. If you change the Storage Account names, update `versions.tf` accordingly.
+- **Provider Configuration**: Each environment must have `versions.tf` (with backend and required_providers) and `providers.tf` (with provider definitions). These are required in the root module (environment directory), not in child modules. See `terraform/templates/` for templates.
 - **Module Architecture**: All environments use the shared `environment` module, which eliminates code duplication. Changes to the module automatically propagate to all environments.
