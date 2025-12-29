@@ -59,12 +59,14 @@ variable "vnet_id" {
   description = "Virtual Network ID for Private DNS Zone link (required for Premium SKU)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "vnet_name" {
   description = "Virtual Network name for Private DNS Zone link (required for Premium SKU)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "tags" {

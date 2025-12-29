@@ -219,9 +219,10 @@ variable "service_bus_zone_redundant" {
 #------------------------------------------------------------------------------
 
 variable "aks_kubernetes_version" {
-  description = "Kubernetes version for AKS"
+  description = "Kubernetes version for AKS (null = use latest supported)"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "aks_sku_tier" {

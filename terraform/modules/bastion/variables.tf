@@ -40,6 +40,7 @@ variable "admin_ssh_public_key" {
   description = "SSH public key for Bastion VM admin user"
   type        = string
   default     = null
+  nullable    = true
 }
 
 variable "disable_password_authentication" {
