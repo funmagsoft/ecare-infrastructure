@@ -1,9 +1,25 @@
 #!/bin/bash
+# Common functions and utilities for infra-identity scripts
+#
+# This file sources the shared scripts library and adds identity-specific functions.
 
-# Common helpers for infra-identity scripts
+# ============================================================================
+# Source Shared Scripts Library
+# ============================================================================
+# Get the monorepo root (2 levels up from infra-identity/scripts/)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ -f "${REPO_ROOT}/shared/scripts/common.sh" ]; then
+  source "${REPO_ROOT}/shared/scripts/common.sh"
+else
+  echo "ERROR: Shared scripts library not found at ${REPO_ROOT}/shared/scripts/common.sh"
+  exit 1
+fi
 
+# ============================================================================
+# Identity-Specific Configuration
+# ============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# REPO_ROOT is already set by shared/scripts/common.sh via get_project_root()
 
 load_dotenv() {
   local env_file="${REPO_ROOT}/.env"

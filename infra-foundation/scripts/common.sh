@@ -1,5 +1,19 @@
 #!/bin/bash
-# Common functions and utilities for phase0 scripts
+# Common functions and utilities for infra-foundation scripts
+#
+# This file sources the shared scripts library and adds foundation-specific functions.
+
+# ============================================================================
+# Source Shared Scripts Library
+# ============================================================================
+# Get the monorepo root (2 levels up from infra-foundation/scripts/)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [ -f "${REPO_ROOT}/shared/scripts/common.sh" ]; then
+  source "${REPO_ROOT}/shared/scripts/common.sh"
+else
+  echo "ERROR: Shared scripts library not found at ${REPO_ROOT}/shared/scripts/common.sh"
+  exit 1
+fi
 
 # ============================================================================
 # Load global project configuration
