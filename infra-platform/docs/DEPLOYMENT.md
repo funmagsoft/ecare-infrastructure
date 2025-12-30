@@ -337,4 +337,3 @@ Example workflow snippet:
 8. **Monitor costs and set up budget alerts**
 9. **Regularly review and update Kubernetes versions**
 10. **Test changes in dev/test before production**
-

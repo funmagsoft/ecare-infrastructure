@@ -284,4 +284,3 @@ az acr show --name acrecaredev --resource-group rg-ecare-dev
 - Private Endpoints require Premium SKU for some services (Service Bus)
 - AKS requires minimum /24 subnet for small clusters
 - PostgreSQL Flexible Server requires minimum /28 delegated subnet (if using VNet integration)
-
