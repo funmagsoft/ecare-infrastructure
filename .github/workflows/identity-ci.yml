@@ -1,0 +1,64 @@
+name: Identity CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'infra-identity/**'
+      - 'shared/**'
+      - '.github/workflows/identity-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'infra-identity/**'
+      - 'shared/**'
+
+jobs:
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, test, stage, prod]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.5"
+
+      - name: Terraform Format Check
+        working-directory: infra-identity/terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: infra-identity/terraform/environments/${{ matrix.environment }}
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: infra-identity/terraform/environments/${{ matrix.environment }}
+        run: terraform validate
+
+  scripts-test:
+    name: Test Scripts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on identity scripts
+        run: |
+          find infra-identity/scripts -name "*.sh" -type f -exec shellcheck {} \;
+
+      - name: Test shared scripts sourcing
+        run: |
+          cd infra-identity/scripts
+          bash -c "source ./common.sh && print_version"
+
