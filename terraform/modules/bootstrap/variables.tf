@@ -80,3 +80,9 @@ variable "users_with_state_access" {
     error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
   }
 }
+
+variable "tags" {
+  description = "Additional tags to apply to all resources (will be merged with required tags)"
+  type        = map(string)
+  default     = {}
+}

@@ -24,4 +24,6 @@ module "bootstrap" {
 
   terraform_repos         = var.terraform_repos
   users_with_state_access = var.users_with_state_access
+
+  tags = var.tags
 }

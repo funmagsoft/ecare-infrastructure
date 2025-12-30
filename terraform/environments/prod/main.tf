@@ -17,5 +17,5 @@ module "environment" {
   vpn_root_cert_data          = var.vpn_root_cert_data
   mgmt_subnet_allowed_ssh_ips = var.mgmt_subnet_allowed_ssh_ips
 
-  additional_tags = var.additional_tags
+  tags = var.tags
 }

@@ -19,8 +19,8 @@ enable_bootstrap    = true
 
 # Users with access to Terraform state Storage Account
 # To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv
-# Note: The user who initially creates the resource group and runs Terraform 
-# for the first time should remain commented out here, as they already have 
+# Note: The user who initially creates the resource group and runs Terraform
+# for the first time should remain commented out here, as they already have
 # the necessary permissions assigned manually. Uncommenting would cause
 # a conflict error due to duplicate role assignment.
 users_with_state_access = [
@@ -49,8 +49,8 @@ enable_vpn_gateway  = false
 # vpn_root_cert_data       = "<base64-encoded-cert-data>"
 
 # Additional Tags (optional)
-# Additional tags to merge with required tags. Required tags cannot be overridden.
-# additional_tags = {
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# tags = {
 #   CostCenter = "Engineering"
 #   Team       = "DevOps"
 # }

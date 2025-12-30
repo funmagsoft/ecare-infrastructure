@@ -45,8 +45,8 @@ enable_vpn_gateway  = false
 # vpn_root_cert_data       = "<base64-encoded-cert-data>"
 
 # Additional Tags (optional)
-# Additional tags to merge with required tags. Required tags cannot be overridden.
-# additional_tags = {
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# tags = {
 #   CostCenter = "Engineering"
 #   Team       = "DevOps"
 # }
