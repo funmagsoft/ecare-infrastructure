@@ -1,7 +1,7 @@
 # Infrastructure Operations Runbook
 
 This runbook describes operational procedures for deploying, verifying, and destroying infrastructure in the
-`infra-foundation` repository.
+`infra-foundation` component of the ecare-infrastructure monorepo.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This runbook describes operational procedures for deploying, verifying, and dest
 
 ## Overview
 
-The `infra-foundation` repository contains infrastructure code for Phase 0 prerequisites and Terraform modules for
+The `infra-foundation` component contains infrastructure code for Phase 0 prerequisites and Terraform modules for
 foundational Azure infrastructure (networking, VPN, GitHub OIDC integration).
 
 **Key Principles:**

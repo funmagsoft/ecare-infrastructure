@@ -2,27 +2,29 @@
 
 Networking, foundational infrastructure, and Terraform state authentication for the ecare project.
 
+> **Note**: This is part of the [ecare-infrastructure monorepo](../../README.md). All paths in this documentation are relative to the `infra-foundation` directory unless otherwise specified.
+
 ## Purpose
 
-This repository is the **first phase** of the infrastructure setup and provides:
+This component is the **first phase** of the infrastructure setup and provides:
 
 1. **Core Networking Infrastructure**: Virtual Networks, Subnets, Network Security Groups (NSG), and optional VPN Gateway
 
 2. **Terraform State Authentication**: Service Principals, Federated Identity Credentials (FIC), and RBAC role assignments that
 enable GitHub Actions workflows to authenticate to Azure and manage infrastructure using Terraform
 
-### Why This Repository Exists
+### Why This Component Exists
 
-This repository establishes the **foundational layer** that all other infrastructure depends on:
+This component establishes the **foundational layer** that all other infrastructure depends on:
 
-- **Network Foundation**: All Azure resources (AKS, Storage, Key Vault, PostgreSQL) require network connectivity. This repository
+- **Network Foundation**: All Azure resources (AKS, Storage, Key Vault, PostgreSQL) require network connectivity. This component
 creates the Virtual Network, subnets, and network security rules.
 
 - **Terraform State Management**: Before any infrastructure can be deployed via Terraform in GitHub Actions, authentication must be
-configured. This repository's `bootstrap` module creates Service Principals and Federated Identity Credentials for Terraform
-repositories to authenticate to Azure and manage state files.
+configured. The `bootstrap` module creates Service Principals and Federated Identity Credentials for Terraform components to
+authenticate to Azure and manage state files.
 
-## What This Repository Creates
+## What This Component Creates
 
 ### Infrastructure Resources
 
@@ -110,6 +112,8 @@ terraform apply
 cd ../../..
 ./scripts/verify-all.sh
 ```
+
+**Note**: In the monorepo structure, you may need to adjust paths relative to the repository root.
 
 **For detailed operational procedures, see [RUNBOOK.md](./docs/RUNBOOK.md)**
 
@@ -291,7 +295,7 @@ SSH access is simpler and cheaper than access via a VPN Gateway. If the VPN Gate
 
 ## Pre-commit Hooks
 
-This repository uses pre-commit hooks to ensure code quality:
+This component uses pre-commit hooks to ensure code quality:
 
 - Validate Conventional Commits format
 - Format Terraform files (`terraform fmt`)

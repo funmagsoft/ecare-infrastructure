@@ -1,10 +1,12 @@
-# Infra Workload Identity
+# Infrastructure Identity
 
 Workload Identities (UAMI), Federated Identity Credentials (FIC), and RBAC for application services running on AKS in the ecare project.
 
+> **Note**: This is part of the [ecare-infrastructure monorepo](../../README.md). All paths in this documentation are relative to the `infra-identity` directory unless otherwise specified.
+
 ## Purpose
 
-This repository contains Terraform code and helper scripts to:
+This component contains Terraform code and helper scripts to:
 
 - Create Service Principals and GitHub OIDC Federated Identity Credentials (FIC) for service repositories to enable passwordless deployments from GitHub Actions (building container images and deploying to AKS).
 - Create User Assigned Managed Identities (UAMI) per service for AKS pods to access Azure resources.
@@ -135,14 +137,14 @@ If a flag is `true` but the corresponding ID is missing, a precondition will fai
 
 ### Service Principal Naming Convention
 
-**Important:** This repository creates Service Principals with a different naming pattern than the bootstrap Service Principals in `infra-foundation`:
+**Important:** This component creates Service Principals with a different naming pattern than the bootstrap Service Principals in `infra-foundation`:
 
-- **Service Deployment Service Principals** (this repository): `sp-gha-{project_name}-{environment}`
+- **Service Deployment Service Principals** (this component): `sp-gha-{project_name}-{environment}`
   - Example: `sp-gha-ecare-dev`
   - **No `-infra-` suffix** - these are for application service deployments
   - Used by service repositories (application code repositories) for CI/CD workflows
 
-- **Bootstrap Service Principals** (`infra-foundation` repository): `sp-gha-{project_name}-infra-{environment}`
+- **Bootstrap Service Principals** (`infra-foundation` component): `sp-gha-{project_name}-infra-{environment}`
   - Example: `sp-gha-ecare-infra-dev`
   - **Has `-infra-` suffix** - these are for infrastructure management (Terraform operations)
   - Used by Terraform repositories (`infra-foundation`, `infra-platform`, `infra-identity`)
@@ -215,7 +217,7 @@ Shared helpers: `parse_dry_run`, logging, optional `.env` loading (ignored if mi
 
 ## Architecture
 
-This repository uses a modular architecture to eliminate code duplication:
+This component uses a modular architecture to eliminate code duplication:
 
 - **Environment Module** (`modules/environment/`): Shared module that encapsulates all common identity configuration for an environment. This module eliminates ~90% of code duplication across environments by providing a single source of truth.
 - **GitHub OIDC Azure Integration Module** (`modules/github-oidc/`): Creates Service Principal, Federated Identity Credentials for service repositories, and RBAC role assignments for GitHub Actions workflows (ACR build, AKS deployment).
@@ -223,7 +225,7 @@ This repository uses a modular architecture to eliminate code duplication:
 
 ## Pre-commit Hooks
 
-This repository uses pre-commit hooks to ensure code quality and consistency. The hooks automatically:
+This component uses pre-commit hooks to ensure code quality and consistency. The hooks automatically:
 
 - **Validate Conventional Commits format** - Ensures all commit messages follow the Conventional Commits standard
 - Format Terraform files (`terraform fmt`)
@@ -246,7 +248,7 @@ pip install pre-commit
 brew install pre-commit
 ```
 
-1. Install the hooks in this repository:
+1. Install the hooks in the monorepo root:
 
 ```bash
 cd /path/to/infra-identity

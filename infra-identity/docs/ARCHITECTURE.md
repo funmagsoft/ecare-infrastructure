@@ -2,11 +2,11 @@
 
 ## Overview
 
-The `infra-identity` repository manages identity and access control for applications running on Azure Kubernetes Service (AKS). It creates Azure AD identities and RBAC assignments that enable secure, passwordless authentication from GitHub Actions and Kubernetes workloads to Azure services.
+The `infra-identity` component manages identity and access control for applications running on Azure Kubernetes Service (AKS). It creates Azure AD identities and RBAC assignments that enable secure, passwordless authentication from GitHub Actions and Kubernetes workloads to Azure services.
 
 ## Purpose
 
-This repository serves as **Phase 3** of the infrastructure setup (after foundation and platform) and creates:
+This component serves as **Phase 3** of the infrastructure setup (after foundation and platform) and creates:
 
 1. **GitHub OIDC Integration**: Service Principals and Federated Identity Credentials for GitHub Actions workflows to build, test, and deploy services
 2. **Workload Identity**: User Assigned Managed Identities (UAMI) and Federated Identity Credentials for AKS pods to access Azure services (Key Vault, Storage, Service Bus)
@@ -53,7 +53,7 @@ User Assigned Managed Identity (Azure AD)
 Azure Resources (Key Vault, Storage, Service Bus)
 ```
 
-## Repository Structure
+## Directory Structure
 
 ```
 infra-identity/

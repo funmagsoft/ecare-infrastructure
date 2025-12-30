@@ -2,18 +2,18 @@
 
 ## Overview
 
-The `infra-foundation` repository provides the foundational infrastructure layer for the ecare project. It establishes the core networking infrastructure and authentication mechanisms required for all subsequent infrastructure deployments.
+The `infra-foundation` component provides the foundational infrastructure layer for the ecare project. It establishes the core networking infrastructure and authentication mechanisms required for all subsequent infrastructure deployments.
 
 ## Purpose
 
-This repository serves as **Phase 1** of the infrastructure setup and creates:
+This component serves as **Phase 1** of the infrastructure setup and creates:
 
 1. **Core Networking Infrastructure**: Virtual Networks, Subnets, Network Security Groups (NSG), and optional VPN Gateway that form the network foundation for all Azure resources
 2. **Terraform State Authentication**: Service Principals, Federated Identity Credentials (FIC), and RBAC role assignments that enable GitHub Actions workflows to authenticate to Azure and manage infrastructure using Terraform
 
 ## Infrastructure Layers
 
-The repository is organized into distinct layers with clear separation of concerns:
+The component is organized into distinct layers with clear separation of concerns:
 
 ### Layer 0: Phase 0 (Prerequisites)
 
@@ -38,7 +38,7 @@ Managed by **Terraform module** `modules/bootstrap/`:
 
 - **Service Principals**: Azure AD identities for GitHub Actions (`sp-gha-ecare-infra-{env}`)
 - **Federated Identity Credentials (FIC)**: OIDC authentication for Terraform repositories
-  - `infra-foundation`: This repository
+  - `infra-foundation`: This component
   - `infra-platform`: Platform infrastructure (AKS, ACR, databases)
   - `infra-identity`: Workload identities for services
 - **RBAC Role Assignments**:
@@ -62,7 +62,7 @@ Managed by **Terraform module** `modules/environment/`:
 - **VPN Gateway** (optional): Site-to-site and point-to-site VPN connectivity
 - **Route Tables**: Custom routing rules
 
-## Repository Structure
+## Directory Structure
 
 ```
 infra-foundation/
