@@ -31,7 +31,7 @@ module "environment" {
   services = var.services
   gitops_repos = var.gitops_repos
 
-  additional_tags = var.additional_tags
+  tags = var.tags
 }
 ```
 
@@ -43,7 +43,7 @@ module "environment" {
 | project_name | Project name | `string` | `"ecare"` | no |
 | services | Map of services to create workload identities for | `map(object)` | `{}` | no |
 | gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
-| additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
+| tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
 
 ### Services Object Structure
 
@@ -146,7 +146,7 @@ module "environment" {
 
   gitops_repos = ["hycom/gitops"]
 
-  additional_tags = {
+  tags = {
     CostCenter = "Engineering"
     Team       = "DevOps"
   }
@@ -180,7 +180,7 @@ module "environment" {
 
   gitops_repos = ["hycom/gitops"]
 
-  additional_tags = {
+  tags = {
     CostCenter = "Engineering"
     Team       = "DevOps"
     Compliance = "SOC2"

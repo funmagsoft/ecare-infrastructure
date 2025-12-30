@@ -12,12 +12,12 @@ terraform {
     # Environment-specific configuration
     # Update these values when setting up a new environment:
     # - resource_group_name:  rg-ecare-{env}
-    # - storage_account_name: tfstatemagsoftecare{env}
+    # - storage_account_name: tfstatehycomecare{env}
     # - container_name:       tfstate (same for all environments)
     # - key:                  infra-foundation/terraform.tfstate (same for all environments)
     # - use_azuread_auth:     true (same for all environments)
     resource_group_name  = "rg-ecare-{env}"             # CHANGE: Replace {env} with environment name
-    storage_account_name = "tfstatemagsoftecare{env}"   # CHANGE: Replace {env} with environment name (no hyphens)
+    storage_account_name = "tfstatehycomecare{env}"     # CHANGE: Replace {env} with environment name (no hyphens)
     container_name       = "tfstate"
     key                  = "infra-foundation/terraform.tfstate"
     use_azuread_auth     = true
@@ -37,8 +37,8 @@ terraform {
 
 # Example for 'dev' environment:
 # resource_group_name  = "rg-ecare-dev"
-# storage_account_name = "tfstatemagsoftecaredev"
+# storage_account_name = "tfstatehycomecaredev"
 #
 # Example for 'prod' environment:
 # resource_group_name  = "rg-ecare-prod"
-# storage_account_name = "tfstatemagsoft ecareprod"
+# storage_account_name = "tfstatehycomecareprod"

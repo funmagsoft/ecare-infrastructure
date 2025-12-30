@@ -62,7 +62,7 @@ module "storage" {
 | account_tier | Storage Account tier (Standard or Premium) | `string` | `"Standard"` | no |
 | account_replication_type | Replication type (LRS, GRS, RAGRS, ZRS) | `string` | `"LRS"` | no |
 | enable_https_traffic_only | Enable HTTPS traffic only | `bool` | `true` | no |
-| min_tls_version | Minimum TLS version | `string` | `"TLS1_2"` | no |
+| minimum_tls_version | Minimum TLS version | `string` | `"TLS1_2"` | no |
 | containers | List of container names to create | `list(string)` | `["app-data", "logs", "backups"]` | no |
 | enable_versioning | Enable blob versioning | `bool` | `true` | no |
 | enable_soft_delete_blob | Enable soft delete for blobs | `bool` | `true` | no |

@@ -141,7 +141,7 @@ gitops_repos = [
   "hycom/gitops"
 ]
 
-additional_tags = {
+tags = {
   CostCenter = "Engineering"
   Team       = "DevOps"
 }

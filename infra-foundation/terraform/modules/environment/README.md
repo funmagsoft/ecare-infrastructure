@@ -43,7 +43,7 @@ module "environment" {
   vpn_root_cert_data         = var.vpn_root_cert_data
   mgmt_subnet_allowed_ssh_ips = var.mgmt_subnet_allowed_ssh_ips
 
-  additional_tags = var.additional_tags
+  tags = var.tags
 }
 ```
 
@@ -64,7 +64,7 @@ module "environment" {
 | vpn_root_cert_name | Name of the root certificate for VPN | `string` | `"VPN-Root-Cert"` | no |
 | vpn_root_cert_data | Root certificate data (base64) | `string` | `""` | no |
 | mgmt_subnet_allowed_ssh_ips | List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet | `list(string)` | `[]` | no |
-| additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
+| tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
 
 ## Outputs
 
@@ -128,15 +128,15 @@ The module enforces tag validation to ensure all required tags are present:
 
 **Additional Tags**:
 
-- Use `additional_tags` variable to add custom tags
-- Required tags cannot be overridden via `additional_tags`
+- Use `tags` variable to add custom tags
+- Required tags cannot be overridden via `tags`
 - Validation ensures all required tags are present and non-empty
 
 **Validation**:
 
 - The module uses Terraform `check` blocks to validate that all required tags are present
 - If any required tag is missing or empty, Terraform will fail with a clear error message
-- The `additional_tags` variable has validation to prevent overriding required tags
+- The `tags` variable has validation to prevent overriding required tags
 
 ## Naming Convention
 
@@ -184,7 +184,7 @@ module "environment" {
 
   enable_vpn_gateway = false
 
-  additional_tags = {
+  tags = {
     CostCenter = "Engineering"
     Team       = "DevOps"
   }
@@ -214,7 +214,7 @@ module "environment" {
   vpn_root_cert_name         = "VPN-Root-Cert"
   vpn_root_cert_data         = var.vpn_root_cert_data  # Use environment variable for production
 
-  additional_tags = {
+  tags = {
     CostCenter = "Engineering"
     Team       = "DevOps"
     Compliance = "SOC2"

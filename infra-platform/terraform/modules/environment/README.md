@@ -146,7 +146,7 @@ module "environment" {
 | bastion_ubuntu_sku | Ubuntu SKU for Bastion VM | `string` | `"22_04-lts-gen2"` | no |
 | bastion_allowed_ssh_source_ips | Allowed source IPs for SSH to Bastion | `list(string)` | `["0.0.0.0/0"]` | no |
 | bastion_additional_users | Map of additional users to create on bastion | `map(list(string))` | `{}` | no |
-| additional_tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
+| tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
 
 ## Outputs
 
@@ -221,15 +221,15 @@ The module enforces tag validation to ensure all required tags are present:
 
 **Additional Tags**:
 
-- Use `additional_tags` variable to add custom tags
-- Required tags cannot be overridden via `additional_tags`
+- Use `tags` variable to add custom tags
+- Required tags cannot be overridden via `tags`
 - Validation ensures all required tags are present and non-empty
 
 **Validation**:
 
 - The module uses Terraform `check` blocks to validate that all required tags are present
 - If any required tag is missing or empty, Terraform will fail with a clear error message
-- The `additional_tags` variable has validation to prevent overriding required tags
+- The `tags` variable has validation to prevent overriding required tags
 
 ### AKS Configuration
 

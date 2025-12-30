@@ -54,10 +54,10 @@ locals {
 check "required_tags_validation" {
   assert {
     condition = alltrue([
-      for key in ["Environment", "Project", "Service", "ManagedBy", "Phase", "GitRepository", "TerraformPath"] :
+      for key in ["Environment", "Project", "Service", "ManagedBy", "Phase", "GitRepository", "TerraformPath", "DeploymentId"] :
       contains(keys(local.tags), key) && trimspace(local.tags[key]) != ""
     ])
-    error_message = "All required tags must be present and non-empty in local.tags: Environment, Project, Service, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty in local.tags: Environment, Project, Service, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
 
