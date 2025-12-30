@@ -9,16 +9,8 @@ This directory contains shared components used across all infrastructure reposit
 Common shell functions and utilities.
 
 - **`common.sh`**: Core helper functions (output, checks, Azure CLI, environment, Git)
+- **`globals.sh`**: Global project configuration (ORGANIZATION, PROJECT)
 - See [scripts/README.md](./scripts/README.md) for detailed documentation
-
-### `docs/` (future)
-
-Cross-repository documentation:
-
-- Coding standards
-- Naming conventions
-- Architecture patterns
-- Best practices
 
 ## Purpose
 

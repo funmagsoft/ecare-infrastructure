@@ -16,6 +16,10 @@ This library eliminates code duplication by providing a single source of truth f
 
 Core helper functions for shell scripts.
 
+### `globals.sh`
+
+Global project configuration constants shared across all infrastructure components.
+
 **Categories:**
 
 - **Output Functions**: `print_header()`, `print_success()`, `print_error()`, `print_warning()`, `print_info()`
@@ -251,6 +255,36 @@ print_version
 # Output: Shared Scripts Library v1.0.0
 #         Part of ecare-infrastructure monorepo
 ```
+
+## Global Configuration (globals.sh)
+
+The `globals.sh` file contains project-wide constants that should remain consistent across all infrastructure components.
+
+**Variables:**
+
+- `ORGANIZATION` - GitHub organization name (e.g., "hycom")
+- `ORGANIZATION_FOR_SA` - Organization name for Storage Account naming (may differ due to Azure constraints)
+- `PROJECT` - Project name used in resource naming (e.g., "ecare")
+
+**Usage:**
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Source shared functions (which automatically sources globals.sh)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "${REPO_ROOT}/shared/scripts/common.sh"
+
+# Use global constants
+echo "Organization: $ORGANIZATION"
+echo "Project: $PROJECT"
+
+# Use in resource naming
+RESOURCE_GROUP="rg-${PROJECT}-dev"
+```
+
+**Note:** The `globals.sh` file is automatically sourced by `common.sh` in infra-foundation. Other components should source it explicitly if needed.
 
 ## Version History
 

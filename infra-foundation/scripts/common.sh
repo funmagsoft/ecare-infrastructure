@@ -18,10 +18,14 @@ fi
 # ============================================================================
 # Load global project configuration
 # ============================================================================
-# Load project constants from globals.sh (ORGANIZATION, ORGANIZATION_FOR_SA, PROJECT)
+# Load project constants from shared globals.sh (ORGANIZATION, ORGANIZATION_FOR_SA, PROJECT)
 # These are project-specific and should not change per deployment
-if [ -f "$(dirname "${BASH_SOURCE[0]}")/globals.sh" ]; then
-  source "$(dirname "${BASH_SOURCE[0]}")/globals.sh"
+# REPO_ROOT is already set above when sourcing shared/scripts/common.sh
+if [ -f "${REPO_ROOT}/shared/scripts/globals.sh" ]; then
+  source "${REPO_ROOT}/shared/scripts/globals.sh"
+else
+  echo "ERROR: Shared globals not found at ${REPO_ROOT}/shared/scripts/globals.sh"
+  exit 1
 fi
 
 # ============================================================================
