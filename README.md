@@ -22,27 +22,6 @@ creates the Virtual Network, subnets, and network security rules.
 configured. This repository's `bootstrap` module creates Service Principals and Federated Identity Credentials for Terraform
 repositories to authenticate to Azure and manage state files.
 
-### Important Distinction: Bootstrap vs. Service Identity
-
-**This repository's `bootstrap` module** creates Service Principals for **Terraform repositories** (`infra-foundation`,
-`infra-platform`, `infra-identity`) to manage infrastructure:
-
-- Run `terraform plan` and `terraform apply`
-- Access Terraform state files in Storage Accounts
-- Manage Azure resources (networks, AKS, databases)
-
-**The `infra-identity` repository** creates User Assigned Managed Identities (UAMI) for **service repositories** to deploy
-applications:
-
-- Push container images to Azure Container Registry (ACR)
-- Deploy services to Azure Kubernetes Service (AKS)
-- Access Azure resources (Key Vault, Storage, Service Bus)
-
-**Summary:**
-
-- **`infra-foundation` bootstrap**: SP/FIC for Terraform repositories → Infrastructure management
-- **`infra-identity`**: UAMI/FIC for service repositories → Application deployment
-
 ## What This Repository Creates
 
 ### Infrastructure Resources
@@ -74,18 +53,17 @@ terraform/
 │   ├── network/        # Network module (VNet, Subnets, NSGs)
 │   └── vpn-gateway/    # VPN Gateway module
 ├── templates/          # Template files for versions.tf and providers.tf
-└── environments/
-    ├── dev/
-    ├── test/
-    ├── stage/
-    └── prod/
-
-scripts/
-├── setup-phase0.sh          # Creates Phase 0 infrastructure (RG, Storage, User Access)
-├── verify-phase0.sh         # Verifies Phase 0 only
-├── verify-all.sh            # Verifies ALL infrastructure (Phase 0 + Terraform)
-├── cleanup-phase0.sh        # Deletes Phase 0 only
-└── cleanup-terraform-emergency.sh  # Emergency cleanup when terraform destroy fails
+├── environments/
+│   ├── dev/
+│   ├── test/
+│   ├── stage/
+│   └── prod/
+└── scripts/
+    ├── setup-phase0.sh                 # Creates Phase 0 infrastructure (RG, Storage, User Access)
+    ├── verify-phase0.sh                # Verifies Phase 0 only
+    ├── verify-all.sh                   # Verifies ALL infrastructure (Phase 0 + Terraform)
+    ├── cleanup-phase0.sh               # Deletes Phase 0 only
+    └── cleanup-terraform-emergency.sh  # Emergency cleanup when terraform destroy fails
 ```
 
 Each environment directory contains:
@@ -217,8 +195,7 @@ cd ../../..
 
 ## Bootstrap Module
 
-The `bootstrap` module creates authentication for Terraform state management. This module replaces deprecated bash scripts and
-provides Infrastructure as Code (IaC) management.
+The `bootstrap` module creates authentication for Terraform state management. This module provides Infrastructure as Code (IaC) management. Resources created by this module are consumed by GitHub Actions to manage infrastructure repositories.
 
 ### What It Creates
 
@@ -241,6 +218,8 @@ users_with_state_access = [
   "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # User Object ID
 ]
 ```
+
+`organization_for_sa` - Organization name for Storage Account. It may differ from the `organization` due to Azure Storage account naming constraints.
 
 To get a user's Object ID:
 
@@ -308,6 +287,8 @@ This creates an NSG rule `AllowSSHInbound` (priority 200) for SSH (port 22).
 
 **Security Note**: Always restrict SSH access to trusted IPs. For production, consider VPN Gateway or Azure Bastion.
 
+SSH access is simpler and cheaper than access via a VPN Gateway. If the VPN Gateway is enabled (`enable_vpn_gateway = true`), there is no need to open SSH access—just leave the `mgmt_subnet_allowed_ssh_ips` list empty.
+
 ## Pre-commit Hooks
 
 This repository uses pre-commit hooks to ensure code quality:
@@ -351,7 +332,10 @@ pre-commit autoupdate
 All commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```text
-<type>[optional scope]: <description>
+<type>(optional scope): <description>
+
+- Feature 1
+- Feature 2
 ```
 
 **Valid types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`

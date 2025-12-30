@@ -626,6 +626,7 @@ Terraform state files contain **sensitive data**:
 **Access Control:**
 
 Only these identities have access:
+
 - Users in `users_with_state_access` (from terraform.tfvars)
 - Service Principals (from bootstrap module)
 
@@ -654,7 +655,10 @@ Blob: infra-foundation/terraform.tfstate
 
 ## Additional Resources
 
-- **Main README:** `../README.md` - Architecture overview and getting started
-- **Module READMEs:** `../terraform/modules/<name>/README.md` - Module-specific documentation
+- **[Main README](../README.md)** - Architecture overview and getting started
+- **[Bootstrap Module](./terraform/modules/bootstrap/README.md)** - Service Principals, FIC, RBAC for Terraform
+- **[Environment Module](./terraform/modules/environment/README.md)** - Shared environment infrastructure
+- **[Network Module](./terraform/modules/network/README.md)** - VNet, Subnets, NSGs
+- **[VPN Gateway Module](./terraform/modules/vpn-gateway/README.md)** - Site-to-site and point-to-site VPN
 - **Terraform Documentation:** [terraform.io](https://www.terraform.io/)
 - **Azure CLI Reference:** [docs.microsoft.com/cli/azure](https://docs.microsoft.com/en-us/cli/azure/)
