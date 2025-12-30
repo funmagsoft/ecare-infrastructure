@@ -13,18 +13,16 @@ data "azurerm_resource_group" "main" {
 
 # Local variables
 locals {
-  environment = var.environment
-  project     = var.project_name
-  location    = data.azurerm_resource_group.main.location
+  location = data.azurerm_resource_group.main.location
 
   # Required tags - these must always be present
   required_tags = {
-    Environment   = local.environment
-    Project       = local.project
+    Environment   = var.environment
+    Project       = var.project_name
     ManagedBy     = "Terraform"
     Phase         = "Foundation"
     GitRepository = "infra-foundation"
-    TerraformPath = "terraform/environments/${local.environment}"
+    TerraformPath = "terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id
   }
 
@@ -68,20 +66,20 @@ module "network" {
   resource_group_name = data.azurerm_resource_group.main.name
   location            = local.location
 
-  vnet_name = "vnet-${local.project}-${local.environment}"
+  vnet_name = "vnet-${var.project_name}-${var.environment}"
   vnet_cidr = var.vnet_cidr
 
-  aks_subnet_name = "snet-${local.project}-${local.environment}-aks"
+  aks_subnet_name = "snet-${var.project_name}-${var.environment}-aks"
   aks_subnet_cidr = var.aks_subnet_cidr
-  aks_nsg_name    = "nsg-${local.project}-${local.environment}-aks"
+  aks_nsg_name    = "nsg-${var.project_name}-${var.environment}-aks"
 
-  data_subnet_name = "snet-${local.project}-${local.environment}-data"
+  data_subnet_name = "snet-${var.project_name}-${var.environment}-data"
   data_subnet_cidr = var.data_subnet_cidr
-  data_nsg_name    = "nsg-${local.project}-${local.environment}-data"
+  data_nsg_name    = "nsg-${var.project_name}-${var.environment}-data"
 
-  mgmt_subnet_name = "snet-${local.project}-${local.environment}-mgmt"
+  mgmt_subnet_name = "snet-${var.project_name}-${var.environment}-mgmt"
   mgmt_subnet_cidr = var.mgmt_subnet_cidr
-  mgmt_nsg_name    = "nsg-${local.project}-${local.environment}-mgmt"
+  mgmt_nsg_name    = "nsg-${var.project_name}-${var.environment}-mgmt"
 
   mgmt_subnet_allowed_ssh_ips = var.mgmt_subnet_allowed_ssh_ips
 
@@ -99,8 +97,8 @@ module "vpn_gateway" {
   resource_group_name = data.azurerm_resource_group.main.name
   location            = local.location
 
-  vpn_gateway_name  = "vgw-${local.project}-${local.environment}"
-  public_ip_name    = "pip-vgw-${local.project}-${local.environment}"
+  vpn_gateway_name  = "vgw-${var.project_name}-${var.environment}"
+  public_ip_name    = "pip-vgw-${var.project_name}-${var.environment}"
   gateway_subnet_id = module.network.gateway_subnet_id
 
   vpn_gateway_sku          = var.vpn_gateway_sku

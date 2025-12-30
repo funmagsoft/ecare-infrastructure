@@ -235,7 +235,7 @@ variable "mgmt_subnet_allowed_ssh_ips" {
 #------------------------------------------------------------------------------
 
 variable "tags" {
-  description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."
+  description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId). Required tags take precedence and cannot be overridden."
   type        = map(string)
   default     = {}
 
