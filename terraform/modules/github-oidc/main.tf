@@ -1,6 +1,7 @@
 # Local variables for tags and GitHub OIDC configuration
 locals {
   # Required tags - these must always be present
+  # Ensures consistent tagging across all resources for tracking, cost allocation, and compliance
   required_tags = {
     Environment   = var.environment
     Project       = var.project_name
@@ -12,20 +13,26 @@ locals {
 
   # Merge required tags with additional tags
   # Required tags take precedence (merge order: var.tags first, then required_tags overwrite)
-  # This ensures required tags cannot be overridden by var.tags
+  # This ensures required tags cannot be overridden by var.tags, maintaining consistency
   merged_tags = merge(
     var.tags,
     local.required_tags
   )
 
   # Convert map to list of strings for Azure AD resources (format: "Key=Value")
-  # Using "=" instead of ":" for better compatibility with Entra ID tag filtering
+  # Azure Entra ID (Azure AD) uses string tags in format "Key=Value" (not "Key:Value").
+  # The "=" separator is required for proper tag filtering and querying in Azure Portal and Azure CLI.
+  # References:
+  # - Azure AD Application tags: https://learn.microsoft.com/en-us/graph/api/resources/application
+  # - Azure AD Service Principal tags: https://learn.microsoft.com/en-us/graph/api/resources/serviceprincipal
   ad_tags = [
     for key, value in local.merged_tags : "${key}=${value}"
   ]
 
   # GitHub OIDC configuration constants
   # These are used for all Federated Identity Credentials in this module
+  # Issuer: GitHub's OIDC provider URL (fixed for all GitHub Actions workflows)
+  # Audience: Azure AD token exchange API (standard for GitHub Actions → Azure authentication)
   github_oidc_issuer   = "https://token.actions.githubusercontent.com"
   github_oidc_audience = ["api://AzureADTokenExchange"]
 
@@ -52,7 +59,20 @@ locals {
   }
 }
 
+# Validation: Ensure all required tags are present in merged_tags
+check "required_tags_validation" {
+  assert {
+    condition = alltrue([
+      for key in ["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"] :
+      contains(keys(local.merged_tags), key) && trimspace(local.merged_tags[key]) != ""
+    ])
+    error_message = "All required tags must be present and non-empty in merged_tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+  }
+}
+
 # Application Registration for Service Principal
+# Creates an Azure AD application that serves as the identity for GitHub Actions workflows
+# This application will be used to authenticate service and GitOps repositories
 resource "azuread_application" "gha" {
   display_name = "sp-gha-${var.project_name}-${var.environment}"
 
@@ -60,6 +80,8 @@ resource "azuread_application" "gha" {
 }
 
 # Service Principal
+# Creates a service principal (enterprise application) linked to the application registration
+# This is the actual identity that will be assigned RBAC roles for ACR and AKS access
 resource "azuread_service_principal" "gha" {
   client_id = azuread_application.gha.client_id
 
@@ -93,7 +115,10 @@ resource "azuread_application_federated_identity_credential" "gitops_repos" {
 }
 
 # RBAC: Contributor on ACR
-# Required for az acr build (managing ACR Tasks)
+# Grants Service Principal permission to:
+# - Push and pull container images
+# - Manage ACR tasks (az acr build)
+# - View and manage repository metadata
 resource "azurerm_role_assignment" "acr_contributor" {
   scope                = var.acr_id
   role_definition_name = "Contributor"
@@ -101,7 +126,10 @@ resource "azurerm_role_assignment" "acr_contributor" {
 }
 
 # RBAC: Azure Kubernetes Service Cluster User Role on AKS
-# Required for az aks get-credentials (retrieving kubeconfig)
+# Grants Service Principal permission to:
+# - Retrieve kubeconfig (az aks get-credentials)
+# - List cluster resources
+# - Required as base permission for Kubernetes access
 resource "azurerm_role_assignment" "aks_cluster_user" {
   scope                = var.aks_id
   role_definition_name = "Azure Kubernetes Service Cluster User Role"
@@ -109,7 +137,10 @@ resource "azurerm_role_assignment" "aks_cluster_user" {
 }
 
 # RBAC: Azure Kubernetes Service RBAC Writer on AKS (optional)
-# Required for deployments (creating deployments, services, configmaps, etc.)
+# Grants Service Principal permission to:
+# - Deploy applications (create/update/delete deployments, services, configmaps, secrets)
+# - Manage Kubernetes resources in all namespaces
+# - Required for CI/CD deployments from GitHub Actions
 resource "azurerm_role_assignment" "aks_rbac_writer" {
   count = var.enable_aks_rbac_writer ? 1 : 0
 

@@ -40,9 +40,9 @@ locals {
   }
 
   # Merge required tags with additional tags
-  # Required tags take precedence (merge order: additional_tags first, then required_tags)
+  # Required tags take precedence (merge order: var.tags first, then required_tags)
   common_tags = merge(
-    var.additional_tags,
+    var.tags,
     local.required_tags
   )
 

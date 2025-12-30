@@ -44,8 +44,8 @@ variable "gitops_repos" {
   default     = []
 }
 
-variable "additional_tags" {
-  description = "Additional tags to merge with required tags. Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden."
+variable "tags" {
+  description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."
   type        = map(string)
   default     = {}
 }

@@ -30,12 +30,27 @@ locals {
   )
 
   # Stable keys for additional role assignments to avoid churn on list reordering
+  # Key format: "scope|role" - this ensures:
+  # 1. Same role+scope combination is not created twice (automatic deduplication)
+  # 2. Reordering list elements doesn't cause Terraform resource churn
+  # 3. Stable resource names in Terraform state (based on scope and role, not list index)
   additional_roles_map = local.needs_azure_access ? {
     for r in var.additional_roles : "${trimspace(r.scope)}|${trimspace(r.role)}" => {
       role  = trimspace(r.role)
       scope = trimspace(r.scope)
     }
   } : {}
+}
+
+# Validation: Ensure all required tags are present
+check "required_tags_validation" {
+  assert {
+    condition = alltrue([
+      for key in ["Environment", "Project", "Service", "ManagedBy", "Phase", "GitRepository", "TerraformPath"] :
+      contains(keys(local.tags), key) && trimspace(local.tags[key]) != ""
+    ])
+    error_message = "All required tags must be present and non-empty in local.tags: Environment, Project, Service, ManagedBy, Phase, GitRepository, TerraformPath."
+  }
 }
 
 # User Assigned Managed Identity (only if access is needed)

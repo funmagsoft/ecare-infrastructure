@@ -37,8 +37,8 @@ gitops_repos = [
 ]
 
 # Additional Tags (optional)
-# Additional tags to merge with required tags. Required tags cannot be overridden.
-# additional_tags = {
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# tags = {
 #   CostCenter = "Engineering"
 #   Team       = "DevOps"
 # }

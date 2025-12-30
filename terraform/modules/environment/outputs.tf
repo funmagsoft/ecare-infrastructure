@@ -21,14 +21,19 @@ output "github_oidc_gitops_federated_identity_credentials" {
 
 # Workload Identity Outputs
 output "workload_identities" {
-  description = "Map of workload identities per service"
+  description = "Map of workload identities per service with complete identity information"
   value = {
     for name, mod in module.workload_identity :
     name => {
-      identity_id           = mod.identity_id
-      identity_client_id    = mod.identity_client_id
-      identity_principal_id = mod.identity_principal_id
-      federated_credential  = mod.federated_credential_id
+      identity_id               = mod.identity_id
+      identity_name             = mod.managed_identity_name
+      identity_client_id        = mod.identity_client_id
+      identity_principal_id     = mod.identity_principal_id
+      federated_credential_id   = mod.federated_credential_id
+      federated_credential_name = mod.federated_credential_name
+      service_account_name      = mod.service_account_name
+      service_account_namespace = mod.service_account_namespace
+      enabled_services          = mod.enabled_services
     }
   }
 }

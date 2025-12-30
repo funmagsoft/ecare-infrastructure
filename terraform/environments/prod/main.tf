@@ -7,5 +7,5 @@ module "environment" {
   services     = var.services
   gitops_repos = var.gitops_repos
 
-  additional_tags = var.additional_tags
+  tags = var.tags
 }

@@ -51,14 +51,14 @@ variable "gitops_repos" {
   default     = []
 }
 
-variable "additional_tags" {
-  description = "Additional tags to merge with required tags. Required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath) cannot be overridden."
+variable "tags" {
+  description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."
   type        = map(string)
   default     = {}
 
   validation {
     condition = alltrue([
-      for key in keys(var.additional_tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"], key)
+      for key in keys(var.tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"], key)
     ])
     error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
   }
