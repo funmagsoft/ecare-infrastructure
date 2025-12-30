@@ -1,0 +1,58 @@
+# Environment Configuration for PRODUCTION
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+# IMPORTANT: For production, consider using environment variables for sensitive data
+
+# Azure Configuration
+# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
+# RECOMMENDED for production: Set explicitly in CI/CD or via environment variable
+# subscription_id = "your-subscription-id"  # Recommended for production
+# subscription_id = null  # Optional: set to null to use active subscription
+
+# Environment Configuration
+environment  = "prod"
+project_name = "ecare"
+
+# Bootstrap Configuration
+organization_name   = "hycom"
+organization_for_sa = "hycom"
+enable_bootstrap    = true
+# terraform_repos = ["infra-foundation", "infra-platform", "infra-identity"]  # Optional: override default repos
+
+# Users with access to Terraform state Storage Account
+# To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv
+users_with_state_access = [
+  "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # Dariusz Cydzik
+  "c655dbb9-e52b-45c3-8b96-e37a1c35aa7e"   # Marek Gmyrek
+]
+
+# Network Configuration
+vnet_cidr           = "10.4.0.0/16"
+aks_subnet_cidr     = "10.4.1.0/24"
+data_subnet_cidr    = "10.4.2.0/24"
+mgmt_subnet_cidr    = "10.4.3.0/24"
+gateway_subnet_cidr = "10.4.4.0/24"
+
+# Management Subnet SSH Access
+# List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet
+# RECOMMENDED: Restrict SSH access in production to specific IPs
+# mgmt_subnet_allowed_ssh_ips = ["1.2.3.4"]
+
+# VPN Configuration (set to true if VPN needed)
+# RECOMMENDED: Enable VPN for production environments
+enable_vpn_gateway  = false  # Set to true if VPN access is required
+
+# If VPN enabled, configure:
+# vpn_gateway_sku          = "VpnGw2"  # Higher SKU for production
+# vpn_client_address_space = "192.168.255.0/24"
+# vpn_root_cert_name       = "VPN-Root-Cert"
+# vpn_root_cert_data       = "<base64-encoded-cert-data>"  # Use environment variable TF_VAR_vpn_root_cert_data for production
+
+# Additional Tags (optional)
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# RECOMMENDED for production: Add cost allocation and compliance tags
+# tags = {
+#   CostCenter = "Engineering"
+#   Team       = "DevOps"
+#   Compliance = "SOC2"
+# }

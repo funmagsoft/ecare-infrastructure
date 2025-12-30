@@ -1,0 +1,52 @@
+# Environment Configuration for STAGE
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+
+# Azure Configuration
+# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
+# Recommended to set explicitly in CI/CD: subscription_id = "your-subscription-id"
+# subscription_id = null  # Optional: set to null to use active subscription
+
+# Environment Configuration
+environment  = "stage"
+project_name = "ecare"
+
+# Bootstrap Configuration
+organization_name   = "hycom"
+organization_for_sa = "hycom"
+enable_bootstrap    = true
+# terraform_repos = ["infra-foundation", "infra-platform", "infra-identity"]  # Optional: override default repos
+
+# Users with access to Terraform state Storage Account
+# To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv
+users_with_state_access = [
+  "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # Dariusz Cydzik
+  "c655dbb9-e52b-45c3-8b96-e37a1c35aa7e"   # Marek Gmyrek
+]
+
+# Network Configuration
+vnet_cidr           = "10.3.0.0/16"
+aks_subnet_cidr     = "10.3.1.0/24"
+data_subnet_cidr    = "10.3.2.0/24"
+mgmt_subnet_cidr    = "10.3.3.0/24"
+gateway_subnet_cidr = "10.3.4.0/24"
+
+# Management Subnet SSH Access
+# List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet
+# mgmt_subnet_allowed_ssh_ips = ["1.2.3.4"]
+
+# VPN Configuration (set to true if VPN needed)
+enable_vpn_gateway  = false
+
+# If VPN enabled, configure:
+# vpn_gateway_sku          = "VpnGw1"
+# vpn_client_address_space = "192.168.255.0/24"
+# vpn_root_cert_name       = "VPN-Root-Cert"
+# vpn_root_cert_data       = "<base64-encoded-cert-data>"
+
+# Additional Tags (optional)
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# tags = {
+#   CostCenter = "Engineering"
+#   Team       = "DevOps"
+# }
