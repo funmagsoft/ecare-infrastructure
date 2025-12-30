@@ -19,8 +19,12 @@ enable_bootstrap    = true
 
 # Users with access to Terraform state Storage Account
 # To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv
+# Note: The user who initially creates the resource group and runs Terraform 
+# for the first time should remain commented out here, as they already have 
+# the necessary permissions assigned manually. Uncommenting would cause
+# a conflict error due to duplicate role assignment.
 users_with_state_access = [
-  "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # Dariusz Cydzik
+  # "f714a502-3026-4ef8-b753-00c5b4c00f4a",  # Dariusz Cydzik
   "c655dbb9-e52b-45c3-8b96-e37a1c35aa7e"   # Marek Gmyrek
 ]
 
