@@ -1,0 +1,231 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Terraform: Format All",
+      "type": "shell",
+      "command": "terraform fmt -recursive infra-foundation/terraform && terraform fmt -recursive infra-identity/terraform && terraform fmt -recursive infra-platform/terraform",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Terraform: Format Foundation",
+      "type": "shell",
+      "command": "terraform fmt -recursive",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-foundation/terraform"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Format Identity",
+      "type": "shell",
+      "command": "terraform fmt -recursive",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-identity/terraform"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Format Platform",
+      "type": "shell",
+      "command": "terraform fmt -recursive",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-platform/terraform"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Init Foundation Dev",
+      "type": "shell",
+      "command": "terraform init",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-foundation/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Init Identity Dev",
+      "type": "shell",
+      "command": "terraform init",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-identity/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Init Platform Dev",
+      "type": "shell",
+      "command": "terraform init",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-platform/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Validate Foundation Dev",
+      "type": "shell",
+      "command": "terraform validate",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-foundation/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Validate Identity Dev",
+      "type": "shell",
+      "command": "terraform validate",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-identity/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Terraform: Validate Platform Dev",
+      "type": "shell",
+      "command": "terraform validate",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-platform/terraform/environments/dev"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Scripts: Verify Foundation Phase0",
+      "type": "shell",
+      "command": "./scripts/verify-phase0.sh",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-foundation"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Scripts: Verify Foundation All",
+      "type": "shell",
+      "command": "./scripts/verify-all.sh",
+      "options": {
+        "cwd": "${workspaceFolder}/infra-foundation"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Pre-commit: Run All Files",
+      "type": "shell",
+      "command": "pre-commit run --all-files",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Git: Add and Commit",
+      "type": "shell",
+      "command": "git add . && git commit -m \"${input:commitMessage}\"",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Git: Conventional Commit",
+      "type": "shell",
+      "command": "git add . && git commit -m \"${input:commitType}(${input:commitScope}): ${input:commitMessage}\"",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "Enter commit message"
+    },
+    {
+      "id": "commitType",
+      "type": "pickString",
+      "description": "Select commit type",
+      "options": [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "chore",
+        "build",
+        "ci"
+      ]
+    },
+    {
+      "id": "commitScope",
+      "type": "pickString",
+      "description": "Select commit scope",
+      "options": [
+        "foundation",
+        "identity",
+        "platform",
+        "shared",
+        "monorepo",
+        "docs",
+        "scripts"
+      ]
+    }
+  ]
+}
+

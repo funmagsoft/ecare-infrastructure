@@ -16,7 +16,9 @@ terraform.rc
 !.env.example
 
 # IDE
+# Allow root-level .vscode for monorepo configuration
 .vscode/
+!/.vscode/
 .idea/
 *.swp
 *.swo
