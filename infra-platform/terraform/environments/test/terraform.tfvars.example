@@ -1,0 +1,109 @@
+# Environment Configuration for TEST
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+
+environment       = "test"
+organization_name = "hycom"
+project_name      = "ecare"
+
+#------------------------------------------------------------------------------
+# Monitoring Configuration
+#------------------------------------------------------------------------------
+log_analytics_sku            = "PerGB2018"
+log_analytics_retention_days = 30
+application_insights_type    = "web"
+
+#------------------------------------------------------------------------------
+# Storage Configuration
+#------------------------------------------------------------------------------
+storage_account_tier                         = "Standard"
+storage_replication_type                     = "LRS"
+storage_containers                           = ["app-data", "logs", "backups"]
+storage_enable_versioning                    = true
+storage_enable_soft_delete_blob              = true
+storage_blob_soft_delete_retention_days      = 7
+storage_enable_soft_delete_container         = true
+storage_container_soft_delete_retention_days = 7
+
+#------------------------------------------------------------------------------
+# Key Vault Configuration
+#------------------------------------------------------------------------------
+key_vault_sku                       = "standard"
+key_vault_purge_protection_enabled  = false
+key_vault_soft_delete_retention_days = 7
+
+#------------------------------------------------------------------------------
+# ACR Configuration
+#------------------------------------------------------------------------------
+acr_sku                     = "Premium"
+acr_zone_redundancy_enabled = false
+acr_retention_days          = 7
+
+#------------------------------------------------------------------------------
+# PostgreSQL Configuration
+#------------------------------------------------------------------------------
+postgresql_version                       = "15"
+postgresql_sku_name                      = "B_Standard_B1ms"
+postgresql_storage_mb                    = 32768
+postgresql_backup_retention_days         = 7
+postgresql_geo_redundant_backup_enabled  = false
+postgresql_high_availability_enabled     = false
+postgresql_high_availability_mode        = "ZoneRedundant"
+postgresql_admin_username                = "psqladmin"
+# Option 1: Set password directly (file is in .gitignore, so safe)
+postgresql_admin_password                = "CHANGE_ME_YourSecurePassword123!"
+
+# Option 2: Use environment variable instead (uncomment line above and comment this)
+# Then set: export TF_VAR_postgresql_admin_password="YourSecurePassword123!"
+
+#------------------------------------------------------------------------------
+# Service Bus Configuration
+#------------------------------------------------------------------------------
+service_bus_sku            = "Standard"
+service_bus_capacity       = 1
+service_bus_zone_redundant = false
+
+#------------------------------------------------------------------------------
+# AKS Configuration
+#------------------------------------------------------------------------------
+aks_kubernetes_version               = null  # Use latest stable version
+aks_sku_tier                         = "Standard"
+aks_network_plugin                   = "azure"
+aks_network_policy                   = "azure"
+aks_service_cidr                     = "10.2.0.0/16"
+aks_dns_service_ip                   = "10.2.0.10"
+
+# System node pool
+aks_system_node_pool_vm_size         = "Standard_D2s_v3"
+aks_system_node_pool_node_count      = 3
+aks_system_node_pool_os_disk_size_gb = 128
+
+# User node pool
+aks_user_node_pool_enabled           = true
+aks_user_node_pool_vm_size           = "Standard_D2s_v3"
+aks_user_node_pool_min_count         = 1
+aks_user_node_pool_max_count         = 3
+aks_user_node_pool_os_disk_size_gb   = 128
+aks_enable_auto_scaling              = true
+
+# Features
+aks_oidc_issuer_enabled              = true
+aks_workload_identity_enabled        = true
+aks_azure_policy_enabled             = true
+aks_enable_container_insights        = true
+
+#------------------------------------------------------------------------------
+# Bastion Configuration
+#------------------------------------------------------------------------------
+bastion_vm_size                = "Standard_D2als_v6"
+bastion_admin_username         = "azureuser"
+bastion_ubuntu_sku             = "22_04-lts-gen2"  # 24.04 not available yet
+bastion_allowed_ssh_source_ips = ["0.0.0.0/0"]  # Change to specific IPs in production
+
+# Additional users on bastion (with sudo access)
+# Each user can have multiple SSH public keys
+bastion_additional_users = {
+  # user1 = [
+  #   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... user1@example.com"
+  # ]
+}

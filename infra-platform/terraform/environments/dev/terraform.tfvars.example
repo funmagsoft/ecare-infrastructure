@@ -1,0 +1,112 @@
+# Environment Configuration for DEV
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+
+environment       = "dev"
+organization_name = "hycom"
+project_name      = "ecare"
+
+#------------------------------------------------------------------------------
+# Monitoring Configuration
+#------------------------------------------------------------------------------
+log_analytics_sku            = "PerGB2018"
+log_analytics_retention_days = 30
+application_insights_type    = "web"
+
+#------------------------------------------------------------------------------
+# Storage Configuration
+#------------------------------------------------------------------------------
+storage_account_tier                         = "Standard"
+storage_replication_type                     = "LRS"
+storage_containers                           = ["app-data", "logs", "backups"]
+storage_enable_versioning                    = true
+storage_enable_soft_delete_blob              = true
+storage_blob_soft_delete_retention_days      = 7
+storage_enable_soft_delete_container         = true
+storage_container_soft_delete_retention_days = 7
+
+#------------------------------------------------------------------------------
+# Key Vault Configuration
+#------------------------------------------------------------------------------
+key_vault_sku                        = "standard"
+key_vault_purge_protection_enabled   = false
+key_vault_soft_delete_retention_days = 7
+
+#------------------------------------------------------------------------------
+# ACR Configuration
+#------------------------------------------------------------------------------
+acr_sku                     = "Premium"
+acr_zone_redundancy_enabled = false
+acr_retention_days          = 7
+
+#------------------------------------------------------------------------------
+# PostgreSQL Configuration
+#------------------------------------------------------------------------------
+postgresql_version                       = "15"
+postgresql_sku_name                      = "B_Standard_B1ms"
+postgresql_storage_mb                    = 32768
+postgresql_backup_retention_days         = 7
+postgresql_geo_redundant_backup_enabled  = false
+postgresql_high_availability_enabled     = false
+postgresql_high_availability_mode        = "ZoneRedundant"
+postgresql_admin_username                = "psqladmin"
+# Option 1: Set password directly (file is in .gitignore, so safe)
+postgresql_admin_password                = "YourSecurePassword123!"
+
+# Option 2: Use environment variable instead (uncomment line above and comment this)
+# Then set: export TF_VAR_postgresql_admin_password="YourSecurePassword123!"
+
+#------------------------------------------------------------------------------
+# Service Bus Configuration
+#------------------------------------------------------------------------------
+service_bus_sku            = "Standard"
+service_bus_capacity       = 1
+service_bus_zone_redundant = false
+
+#------------------------------------------------------------------------------
+# AKS Configuration
+#------------------------------------------------------------------------------
+aks_kubernetes_version               = null  # Use latest stable version
+aks_sku_tier                         = "Standard"
+aks_network_plugin                   = "azure"
+aks_network_policy                   = "azure"
+aks_service_cidr                     = "10.2.0.0/16"
+aks_dns_service_ip                   = "10.2.0.10"
+
+# System node pool
+aks_system_node_pool_vm_size         = "Standard_D2s_v3"
+aks_system_node_pool_node_count      = 3
+aks_system_node_pool_os_disk_size_gb = 128
+
+# User node pool
+aks_user_node_pool_enabled           = true
+aks_user_node_pool_vm_size           = "Standard_D2s_v3"
+aks_user_node_pool_min_count         = 1
+aks_user_node_pool_max_count         = 3
+aks_user_node_pool_os_disk_size_gb   = 128
+aks_enable_auto_scaling              = true
+
+# Features
+aks_oidc_issuer_enabled              = true
+aks_workload_identity_enabled        = true
+aks_azure_policy_enabled             = true
+aks_enable_container_insights        = true
+
+#------------------------------------------------------------------------------
+# Bastion Configuration
+#------------------------------------------------------------------------------
+bastion_vm_size                = "Standard_D2als_v6"
+bastion_admin_username         = "azureuser"
+bastion_ubuntu_sku             = "22_04-lts-gen2"  # 24.04 not available yet in all regions
+bastion_allowed_ssh_source_ips = ["0.0.0.0/0"]  # Change to specific IPs in production
+
+# Additional users on bastion (with sudo access)
+# Each user can have multiple SSH public keys
+bastion_additional_users = {
+  marek = [
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCm5fSkl6kPRVhs87rdCU+D6hHjgT+WMbdYSa5u+SA8/8K+3mhEGpjAjEnp3UJjqCmyk2lgb8ShdU/HxvjdFTvwZ1VHJk0pBX9VLVblb81mFYgrNG1nKoQkXTHKBgD+hJPoqXcoHoqMShUlPTEtoScrb4zHAMJv/t23AINtkcHuVkuuiOoJqZzHHauXKYCRms6sHzvPYHUpAjShDQiZbcdHPNl5txIIkXNKEU/MtFlqEgO4aXTPhfSBGEGw59cwm137j3r8sNdFIECCx0T1tmQ6fpsMQTbDijftz8M5+YxyC5Zu7V9bacr+GzJbDgh3L257oNpPrGowhjBP8Qe2vTiTNZUROlqGWIoWXWjtykaFni5j60tPxxyUZl9mU5qOFNDr0MeHzwF7iex4EkSiCOAfbRw/Kj/b5xFuYdwRBVDJ8J6aM6zSM5UTK68XPn8qIUPTgkIbnTeslEwnfbwmk7Ct8AuP9K1kgALP/Lp0JaNbSgx9XJI2LkdYxD/RH5wWq1hXfb4tLhvKq/2oZjMXyZ79Mmf+sWu5V3OQhgsK0PkhXBZ7zkWu2INx6OQhDG8eQYKB/fsncMRsUwpYLErwlFitK1JYxj75ExACywfLimdm+H5wNUoy9D0u3GCLfZ5aAIxHZzqDGN3ILI1u13CDxNgqXl/D9MdPJwprHlm99UICGQ== marek.gmyrek@hycom.digital"
+  ]
+  darek = [
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCkWFSRgSsMU2ipw/xWEOO/y1UkpqoT3bX1erFUEZsnBIlDPBK7GD83OGUMalWx14xlJpeh0dzuBVHnk5bEay89HuNh5cUJCnLFLn0Gs1Z2U5aU4uPhA34rZBZmYUMRiunyvbLlXxXFRiUYjJsFfMx2k57VH6L8+dbTOW276lqjs/7D6xZgKmrpxobXiewfMwuIXjRXZ8cOj05toXizd2uwmFZIV6GbC54lgsQnoLsyYwR1y3JTA93VcudPE6MnXLUqWL6bVuok6YG9Df8mqKdzupgedo3IKS3Tj7W0EInJelX0DIZyTv0PxU5SpeJS3/84Un9oENEOXrhFlJX59jM9+dNIHhSQdEF0X84NZXiGPaJemFq+i8SmZzCyDlxC23wRR9jtpMuuLbtmccALwTNYQ3BqemQETla07z4wlTkdbb+VToO4QHTjR9i3GcEnt/NpMv40RmsJG0FY1tTGeD8go4aBsn//V0oAL7ISqEqdF89cLzQq0hRQZaVcRWIIfe4zis7UJNPLKkzOWDX+vIr6g0MQqsUgMH5D/S5exYu9xKOzCI2zC010Gw+eMgTqSyQDH2BD1IqEutO2qYJF4nw7CAUpHrJfDzdgTbP/ZvRvPMC3QOlxTnDaZHLSC9+nzNgJyDW9lfpr5zZ7HcwEgvOW9julNHF2L3MJ/fkb6lRx2w== dariusz.cydzik@hycom.pl"
+  ]
+}

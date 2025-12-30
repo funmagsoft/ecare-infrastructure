@@ -1,0 +1,117 @@
+---
+# Pre-commit hooks configuration for Terraform infrastructure
+# Install: pip install pre-commit
+# Setup: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        description: Trims trailing whitespace
+        exclude: '\.(md|markdown)$'
+      - id: end-of-file-fixer
+        description: Ensures files end with exactly one newline (required by code-style.mdc)
+      - id: check-yaml
+        description: Validates YAML syntax
+      - id: check-json
+        description: Validates JSON syntax
+      - id: check-added-large-files
+        description: Prevents committing large files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        description: Detects merge conflict markers
+      - id: check-case-conflict
+        description: Detects case conflicts in file names
+
+  # Terraform formatting and validation
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.83.0
+    hooks:
+      # Format Terraform files
+      - id: terraform_fmt
+        description: Formats Terraform files according to code-style.mdc
+        args:
+          - '--args=-recursive'
+        files: '\.tf$'
+
+      # Validate Terraform syntax
+      - id: terraform_validate
+        description: Validates Terraform configuration
+        args:
+          - '--args=-no-color'
+        files: '\.tf$'
+        exclude: '^terraform/environments/.*/backend\.tf$'
+
+      # Check Terraform documentation (disabled - can be enabled if needed)
+      # - id: terraform_docs
+      #   description: Generates/updates Terraform documentation
+      #   args:
+      #     - '--hook-config=--path-to-file=README.md'
+      #     - '--hook-config=--add-to-existing-file=true'
+      #     - '--hook-config=--create-file-if-not-exist=true'
+      #   files: '^terraform/modules/.*/.*\.tf$'
+
+      # TFLint - Terraform linter (requires tflint installation)
+      # Note: Some warnings are expected (e.g., unused data sources in environments,
+      # missing main.tf after refactoring). These are non-blocking warnings.
+      - id: terraform_tflint
+        description: Lints Terraform files
+        args:
+          - '--args=--only=terraform_deprecated_interpolation'
+          - '--args=--only=terraform_deprecated_index'
+          - '--args=--only=terraform_comment_syntax'
+          - '--args=--only=terraform_documented_outputs'
+          - '--args=--only=terraform_documented_variables'
+          - '--args=--only=terraform_typed_variables'
+          - '--args=--only=terraform_module_pinned_source'
+          - '--args=--only=terraform_naming_convention'
+          - '--args=--only=terraform_required_version'
+          - '--args=--only=terraform_required_providers'
+          # Excluded rules that cause false positives:
+          # - terraform_unused_declarations (data sources may be used in modules)
+          # - terraform_standard_module_structure (environments don't need main.tf after refactoring)
+          # - terraform_workspace_remote (not applicable to our structure)
+        files: '\.tf$'
+        exclude: '^terraform/environments/.*/data\.tf$'  # Exclude data.tf from environments
+
+      # Checkov - Security scanning (disabled - requires checkov installation)
+      # - id: terraform_checkov
+      #   description: Security and compliance scanning for Terraform
+      #   args:
+      #     - '--check'
+      #     - '--framework=terraform'
+      #     - '--quiet'
+      #     - '--skip-check=CKV_AZURE_*'
+      #   files: '\.tf$'
+      #   pass_filenames: false
+      #   always_run: false
+
+  # Markdown linting (for documentation)
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        description: Lints Markdown files
+        args:
+          - '--fix'
+          - '--disable=MD013'  # Disable line length check (we use 100 chars per code-style.mdc)
+          - '--disable=MD033'  # Allow inline HTML
+          - '--disable=MD024'  # Allow duplicate headings (sometimes needed for context)
+          - '--disable=MD040'  # Allow fenced code blocks without language
+          - '--disable=MD029'  # Allow ordered list item prefix variations
+        files: '\.md$'
+        exclude: '^docs/'
+
+  # Conventional Commits validation
+  - repo: local
+    hooks:
+      - id: validate-commit-msg
+        name: Validate Conventional Commits format
+        entry: bash scripts/validate-commit-msg.sh
+        language: system
+        stages: [commit-msg]
+        pass_filenames: true
+        always_run: true
