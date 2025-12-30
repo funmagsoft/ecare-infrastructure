@@ -16,9 +16,6 @@ terraform.rc
 !.env.example
 
 # IDE
-# Allow root-level .vscode for monorepo configuration
-.vscode/
-!/.vscode/
 .idea/
 *.swp
 *.swo
@@ -53,3 +50,13 @@ env/
 node_modules/
 package-lock.json
 
+# Cursor IDE
+# Ignore everything in .cursor/ except rules/ and commands/ directories and their contents
+.cursor/*
+!.cursor/rules/
+!.cursor/commands/
+
+# VSCode IDE
+# Ignore everything in .vscode/ except tasks.json
+.vscode/*
+!.vscode/tasks.json
