@@ -1,7 +1,6 @@
-# Infrastructure Operations Runbook
+# Deployment Guide - Infrastructure Foundation
 
-This runbook describes operational procedures for deploying, verifying, and destroying infrastructure in the
-`infra-foundation` component of the ecare-infrastructure monorepo.
+This document describes operational procedures for deploying, verifying, and destroying infrastructure in the `infra-foundation` component of the ecare-infrastructure monorepo.
 
 ## Table of Contents
 

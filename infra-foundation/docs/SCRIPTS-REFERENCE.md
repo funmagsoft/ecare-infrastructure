@@ -639,6 +639,6 @@ cd ../../..
 
 ## Additional Resources
 
-- **Operational Procedures**: [RUNBOOK.md](./RUNBOOK.md) - Detailed deployment and troubleshooting
+- **Operational Procedures**: [DEPLOYMENT.md](./DEPLOYMENT.md) - Detailed deployment and troubleshooting
 - **Main README**: [../README.md](../README.md) - Architecture overview and getting started
 - **Module Documentation**: `../terraform/modules/<name>/README.md` - Module-specific details

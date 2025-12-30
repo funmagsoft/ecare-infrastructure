@@ -4,7 +4,7 @@
 
 This document provides solutions to common issues encountered when working with the `infra-foundation` repository.
 
-For operational procedures (deployment, verification, cleanup), see **[RUNBOOK.md](./RUNBOOK.md)**.
+For operational procedures (deployment, verification, cleanup), see **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
 
 ---
 
@@ -39,7 +39,7 @@ This script bypasses Terraform and deletes resources directly via Azure CLI.
 
 **⚠️ Warning:** This is destructive and bypasses Terraform state management. Use only when `terraform destroy` fails.
 
-**See also:** [RUNBOOK.md - Emergency Teardown](./RUNBOOK.md#procedure-2-emergency-teardown-terraform-destroy-failed)
+**See also:** [DEPLOYMENT.md - Emergency Teardown](./DEPLOYMENT.md#procedure-2-emergency-teardown-terraform-destroy-failed)
 
 ---
 
