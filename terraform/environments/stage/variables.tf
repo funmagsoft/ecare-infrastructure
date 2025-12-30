@@ -1,7 +1,11 @@
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev, test, stage, prod)"
   type        = string
-  default     = "stage"
+
+  validation {
+    condition     = contains(["dev", "test", "stage", "prod"], var.environment)
+    error_message = "Environment must be one of: dev, test, stage, prod."
+  }
 }
 
 variable "subscription_id" {
