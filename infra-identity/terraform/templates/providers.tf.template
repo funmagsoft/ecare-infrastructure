@@ -1,0 +1,19 @@
+# Provider Configuration Template
+#
+# This template documents the provider configuration pattern.
+# Copy this file to environments/<environment>/providers.tf - the content is identical for all environments.
+#
+# Note: Provider configuration must be in the root module (environment directory), not in child modules.
+# Child modules inherit the provider configuration from the root module.
+
+provider "azurerm" {
+  features {}
+
+  # Optional: Uncomment to explicitly set subscription (recommended in CI/CD)
+  # subscription_id = var.subscription_id
+}
+
+provider "azuread" {
+  # Uses Azure CLI authentication by default
+  # For CI/CD, Azure AD authentication is handled via OIDC (Federated Identity Credentials)
+}

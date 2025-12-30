@@ -1,0 +1,44 @@
+# Environment Configuration for DEV
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore, so your sensitive data won't be committed
+
+# Azure Configuration
+# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
+# Recommended to set explicitly in CI/CD: subscription_id = "your-subscription-id"
+# subscription_id = null  # Optional: set to null to use active subscription
+
+# Environment Configuration
+environment  = "dev"
+project_name = "ecare"
+
+# Services Configuration
+# Map of services to create workload identities for
+services = {
+  # billing = {
+  #   repo                    = "funmagsoft/billing-service"
+  #   branch                  = "main"
+  #   enable_key_vault_access = true
+  #   enable_storage_access   = true
+  #   enable_service_bus_access = false
+  #   additional_roles = [
+  #     # {
+  #     #   role  = "Reader"
+  #     #   scope = "/subscriptions/<sub-id>/resourceGroups/rg-ecare-dev"
+  #     # }
+  #   ]
+  # }
+}
+
+# GitOps Repositories
+# List of GitOps repositories for environment-based OIDC integration
+# Creates FIC with subject: repo:{repo}:environment:{environment}
+gitops_repos = [
+  # "hycom/gitops"
+]
+
+# Additional Tags (optional)
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# tags = {
+#   CostCenter = "Engineering"
+#   Team       = "DevOps"
+# }
