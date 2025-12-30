@@ -1,10 +1,44 @@
-#!/bin/bash
-set -euo pipefail
+#!/usr/bin/env bash
+# ============================================================================
+# Add Service
+# ============================================================================
+# Adds or updates a service entry in terraform/environments/<env>/services.tf
+# (local.services). This manages service workload identities and permissions.
+#
+# Usage:
+#   ./add-service.sh --env <env> --service <name> --repo <org/repo> [options]
+#
+# Examples:
+#   ./add-service.sh --env dev --service billing --repo funmagsoft/billing-service --kv
+#   ./add-service.sh --env all --service api --repo funmagsoft/api-service --kv --storage --sb
 
+# ============================================================================
+# Source Shared Scripts Library
+# ============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-source "${SCRIPT_DIR}/common.sh"
+if [ -f "${REPO_ROOT}/shared/scripts/common.sh" ]; then
+  source "${REPO_ROOT}/shared/scripts/common.sh"
+else
+  echo "ERROR: Shared scripts library not found at ${REPO_ROOT}/shared/scripts/common.sh"
+  exit 1
+fi
+
+# ============================================================================
+# Load Global Configuration
+# ============================================================================
+if [ -f "${REPO_ROOT}/shared/scripts/globals.sh" ]; then
+  source "${REPO_ROOT}/shared/scripts/globals.sh"
+else
+  echo "ERROR: Shared globals not found at ${REPO_ROOT}/shared/scripts/globals.sh"
+  exit 1
+fi
+
+# ============================================================================
+# Script Configuration
+# ============================================================================
+set -euo pipefail
 
 ENVIRONMENT=""
 SERVICE_NAME=""
@@ -13,33 +47,43 @@ ENABLE_KV=false
 ENABLE_STORAGE=false
 ENABLE_SB=false
 ENV_LIST=()
+DRY_RUN=false
 
+# ============================================================================
+# Usage Information
+# ============================================================================
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --env <dev|test|stage|prod|all> --service <name> --repo <org/repo> [--kv] [--storage] [--sb] [--dry-run]
+Usage: $(basename "$0") --env <env> --service <name> --repo <org/repo> [options]
 
-Adds or updates a service entry in terraform/environments/<env>/services.tf (local.services).
+Adds or updates a service entry in terraform/environments/<env>/services.tf
 
-Options:
+Required Arguments:
   --env       Environment: dev, test, stage, prod, or all
   --service   Logical service name (e.g. billing)
   --repo      GitHub repo in org/repo format (e.g. funmagsoft/billing-service)
-  --kv        Enable Key Vault access flag (enable_key_vault_access = true)
-  --storage   Enable Storage access flag (enable_storage_access = true)
-  --sb        Enable Service Bus access flag (enable_service_bus_access = true)
+
+Optional Flags:
+  --kv        Enable Key Vault access (enable_key_vault_access = true)
+  --storage   Enable Storage access (enable_storage_access = true)
+  --sb        Enable Service Bus access (enable_service_bus_access = true)
   --dry-run   Show changes without modifying files
+
+Examples:
+  $(basename "$0") --env dev --service billing --repo funmagsoft/billing-service --kv
+  $(basename "$0") --env all --service api --repo funmagsoft/api --kv --storage --sb --dry-run
+
 EOF
+  exit 1
 }
 
+# ============================================================================
+# Parse Arguments
+# ============================================================================
 parse_args() {
-  # If no arguments, show help
   if [ $# -eq 0 ]; then
     usage
-    exit 1
   fi
-
-  parse_dry_run "$@"
-  set -- "${REMAINING_ARGS[@]}"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -68,27 +112,27 @@ parse_args() {
         shift
         ;;
       --dry-run)
-        # already handled in parse_dry_run
+        DRY_RUN=true
         shift
         ;;
       -h|--help)
         usage
-        exit 0
         ;;
       *)
         log_error "Unknown option: $1"
         usage
-        exit 1
         ;;
     esac
   done
 }
 
+# ============================================================================
+# Validate Arguments
+# ============================================================================
 validate_args() {
   if [[ -z "$ENVIRONMENT" || -z "$SERVICE_NAME" || -z "$REPO_NAME" ]]; then
     log_error "Missing required arguments"
     usage
-    exit 1
   fi
 
   case "$ENVIRONMENT" in
@@ -105,9 +149,12 @@ validate_args() {
   esac
 }
 
+# ============================================================================
+# Update Services File
+# ============================================================================
 update_services_file() {
   local target_env="$1"
-  local env_dir="${REPO_ROOT}/terraform/environments/${target_env}"
+  local env_dir="${REPO_ROOT}/infra-identity/terraform/environments/${target_env}"
   local services_tf="${env_dir}/services.tf"
 
   if [ ! -d "$env_dir" ]; then
@@ -128,13 +175,9 @@ locals {
     #   enable_key_vault_access = true
     #   enable_storage_access   = true
     #   enable_service_bus_access = false
-    #   additional_roles = [
-    #     # {
-    #     #   role  = "Reader"
-    #     #   scope = "/subscriptions/<sub-id>/resourceGroups/rg-ecare-${ENVIRONMENT}"
-    #     # }
-    #   ]
+    #   additional_roles = []
     # }
+
     # Service: ${SERVICE_NAME}
     ${SERVICE_NAME} = {
       repo                    = "${REPO_NAME}"
@@ -151,7 +194,7 @@ EOF
     fi
 
     log_info "services.tf not found, creating template"
-    run_cmd cat <<'EOF' > "$services_tf"
+    cat <<'EOF' > "$services_tf"
 locals {
   services = {
     # Example service
@@ -161,12 +204,7 @@ locals {
     #   enable_key_vault_access = true
     #   enable_storage_access   = true
     #   enable_service_bus_access = false
-    #   additional_roles = [
-    #     # {
-    #     #   role  = "Reader"
-    #     #   scope = "/subscriptions/<sub-id>/resourceGroups/rg-ecare-<env>"
-    #     # }
-    #   ]
+    #   additional_roles = []
     # }
   }
 }
@@ -194,7 +232,7 @@ EOF
     }
     /^  services = \{/ { in_services = 1 }
     {
-    if (in_services && match($0, "^    # Service: " svc "$")) { skip = 1; next }
+      if (in_services && match($0, "^    # Service: " svc "$")) { skip = 1; next }
       if (skip && match($0, "^    }")) { skip = 0; next }
       if (skip) next
       if (in_services && $0 ~ /^  }\s*$/) {
@@ -213,16 +251,28 @@ EOF
     rm -f "$tmp"
   else
     mv "$tmp" "$services_tf"
+    log_success "Updated services.tf for ${target_env}"
   fi
 }
 
+# ============================================================================
+# Main
+# ============================================================================
 main() {
-  load_dotenv || log_warn ".env not found in repo root, continuing without it"
   parse_args "$@"
   validate_args
+
   for env in "${ENV_LIST[@]}"; do
     update_services_file "$env"
   done
+
+  if [ "$DRY_RUN" = true ]; then
+    log_info ""
+    log_info "=== DRY-RUN MODE: No changes were made ==="
+  else
+    log_success ""
+    log_success "=== Service configuration updated successfully ==="
+  fi
 }
 
 main "$@"

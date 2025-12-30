@@ -1,14 +1,22 @@
-#!/bin/bash
-# Validate commit message format (Conventional Commits)
-#
-# This script validates that commit messages follow the Conventional Commits format:
+#!/usr/bin/env bash
+# ============================================================================
+# Validate Commit Message
+# ============================================================================
+# Validates that commit messages follow the Conventional Commits format:
 # <type>[optional scope]: <description>
 #
 # Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci
+#
+# This script is used by pre-commit hooks and can be called directly for
+# manual validation.
+#
+# Usage:
+#   ./validate-commit-msg.sh <commit-msg-file>
 
-# Get commit message file path
-# Pre-commit passes the commit message file as the first argument for commit-msg hook
-# The file path is passed via pass_filenames: true
+# ============================================================================
+# Get Commit Message File Path
+# ============================================================================
+# Pre-commit passes the commit message file as the first argument
 if [ -n "$1" ] && [ -f "$1" ]; then
     commit_msg_file="$1"
 elif [ -n "$COMMIT_MSG_FILE" ] && [ -f "$COMMIT_MSG_FILE" ]; then
@@ -23,6 +31,9 @@ else
     fi
 fi
 
+# ============================================================================
+# Read and Validate Commit Message
+# ============================================================================
 # Read commit message (first line only for validation)
 commit_msg=$(head -n1 "$commit_msg_file" 2>/dev/null || echo "")
 
@@ -51,3 +62,4 @@ if ! echo "$commit_msg" | grep -qE "$pattern"; then
 fi
 
 exit 0
+
