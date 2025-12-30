@@ -446,38 +446,6 @@ Helper scripts for special scenarios.
 
 ---
 
-### validate-commit-msg.sh
-
-**Purpose:** Validate commit messages follow Conventional Commits format
-
-**Used by:** Pre-commit hook (`.git/hooks/commit-msg`)
-
-**Format required:**
-
-```text
-<type>[optional scope]: <description>
-```
-
-**Valid types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
-
-**Examples:**
-
-- ✅ `feat: add new feature`
-- ✅ `fix(github-oidc): fix tags handling`
-- ✅ `docs: update README`
-- ❌ `Add new feature` (missing type)
-- ❌ `feat add feature` (missing colon)
-
-**Usage:**
-
-```bash
-# Automatically called by pre-commit hook
-# Manual validation:
-./scripts/validate-commit-msg.sh <commit-message-file>
-```
-
----
-
 ## Helper Scripts
 
 Scripts that are called by other scripts (not intended for direct use).

@@ -30,7 +30,6 @@ terraform/
     └── prod/
 
 scripts/
-├── common.sh
 └── add-service.sh
 ```
 
@@ -219,9 +218,7 @@ Behavior:
 - In `--dry-run` mode, prints the would-be file content and does not write.
 - If `terraform.tfvars` is missing and `--dry-run`, it only prints a template; otherwise it creates a template and appends the service.
 
-### common.sh
-
-Shared helpers: `parse_dry_run`, logging, optional `.env` loading (ignored if missing).
+**Note:** This script uses shared helper functions from `shared/scripts/common.sh` and global configuration from `shared/scripts/globals.sh`.
 
 ## Running Terraform
 

@@ -64,9 +64,7 @@ infra-identity/
 │   └── TROUBLESHOOTING.md    # Common issues and solutions
 │
 ├── scripts/
-│   ├── add-service.sh       # Helper to add new service
-│   ├── common.sh            # Shared functions
-│   └── validate-commit-msg.sh # Commit message validation
+│   └── add-service.sh       # Helper to add new service
 │
 └── terraform/
     ├── modules/

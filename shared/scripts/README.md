@@ -54,6 +54,38 @@ Cleanup script for removing all resources tagged with a specific deployment ID.
 - `--dry-run` - Preview changes without executing them (default)
 - `--execute` - Actually delete resources
 
+### `validate-commit-msg.sh`
+
+Validates commit messages against Conventional Commits format.
+
+**Purpose:** Ensure all commits follow the project's commit message standards
+
+**Used by:** Pre-commit hooks (`.pre-commit-config.yaml`)
+
+**Format required:**
+
+```text
+<type>[optional scope]: <description>
+```
+
+**Valid types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
+
+**Examples:**
+
+- ✅ `feat: add new feature`
+- ✅ `fix(github-oidc): fix tags handling`
+- ✅ `docs: update README`
+- ❌ `Add new feature` (missing type)
+- ❌ `feat add feature` (missing colon)
+
+**Usage:**
+
+```bash
+# Automatically called by pre-commit hook
+# Manual validation:
+./shared/scripts/validate-commit-msg.sh <commit-message-file>
+```
+
 ## Usage
 
 ### Basic Usage

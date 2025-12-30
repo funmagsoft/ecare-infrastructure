@@ -104,7 +104,6 @@ foundational Azure infrastructure (networking, VPN, GitHub OIDC integration).
 | Script | Purpose | When to Use |
 |--------|---------|-------------|
 | `recover-sp-ids.sh` | Recover Service Principal IDs from Azure | Lost `service-principals.env` file |
-| `validate-commit-msg.sh` | Validate commit messages | Pre-commit hook (automated) |
 
 ## Deployment Procedures
 
