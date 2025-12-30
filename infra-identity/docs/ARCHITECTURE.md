@@ -490,4 +490,3 @@ Quick links:
 - GitHub Actions authentication fails → Check FIC subject claim
 - Pod cannot access Key Vault → Verify Kubernetes SA annotation and RBAC role
 - Service Principal not found → Check `infra-platform` outputs
-

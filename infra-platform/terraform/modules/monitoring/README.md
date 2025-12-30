@@ -74,10 +74,10 @@ Log Analytics Workspace is used by AKS for Container Insights:
 ```hcl
 module "aks" {
   source = "../../modules/aks"
-  
+
   log_analytics_workspace_id = module.monitoring.log_analytics_workspace_id
   enable_container_insights  = true
-  
+
   # ... other variables
 }
 ```
@@ -116,7 +116,7 @@ module "monitoring" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   log_analytics_retention_days = 30
 }
 ```
@@ -130,7 +130,7 @@ module "monitoring" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   log_analytics_retention_days = 90  # Longer retention for production
 }
 ```

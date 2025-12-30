@@ -4,7 +4,7 @@
 
 This document provides step-by-step procedures for deploying and managing the `infra-identity` repository.
 
-For architecture overview, see **[ARCHITECTURE.md](./ARCHITECTURE.md)**.  
+For architecture overview, see **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
 For troubleshooting, see **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**.
 
 ---
@@ -460,7 +460,7 @@ services = {
     enable_storage_access     = <true|false>  # Storage Blob Data Contributor
     enable_service_bus_access = <true|false>  # Azure Service Bus Data Owner
     namespace                 = "<k8s-namespace>"  # Default: "ecare"
-    
+
     # Optional: Custom RBAC roles
     additional_roles = [
       {
@@ -764,4 +764,3 @@ Set in GitHub repository settings:
 4. **Add environments**: Repeat for test, stage, prod
 
 For issues, see **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**.
-

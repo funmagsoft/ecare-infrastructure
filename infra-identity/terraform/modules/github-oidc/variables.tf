@@ -64,7 +64,7 @@ variable "service_repos" {
     Map of service repositories for GitHub OIDC integration.
     Key: service name
     Value: object with repo (org/repo-name) and branch (default: main)
-    
+
     Example:
     service_repos = {
       billing = {
@@ -100,7 +100,7 @@ variable "gitops_repos" {
   description = <<-EOT
     List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration.
     Creates one FIC per repository per environment with subject: repo:{repo}:environment:{environment}
-    
+
     Example:
     gitops_repos = [
       "hycom/gitops"

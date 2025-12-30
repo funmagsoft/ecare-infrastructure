@@ -61,4 +61,3 @@ jobs:
         run: |
           cd infra-identity/scripts
           bash -c "source ./common.sh && print_version"
-

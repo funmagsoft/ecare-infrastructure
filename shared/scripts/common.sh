@@ -59,7 +59,7 @@ check_required_commands() {
       missing+=("$cmd")
     fi
   done
-  
+
   if [ ${#missing[@]} -gt 0 ]; then
     print_error "Missing required commands: ${missing[*]}"
     return 1
@@ -115,7 +115,7 @@ load_env_file() {
     print_error "Environment file not found: $env_file"
     return 1
   fi
-  
+
   print_info "Loading environment from: $env_file"
   set -a
   # shellcheck disable=SC1090
@@ -139,7 +139,7 @@ get_project_root() {
 validate_conventional_commit() {
   local commit_msg="$1"
   local pattern='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
-  
+
   if [[ ! "$commit_msg" =~ $pattern ]]; then
     print_error "Commit message does not follow Conventional Commits format"
     print_info "Expected format: type(scope): description"
@@ -157,4 +157,3 @@ print_version() {
   echo "Shared Scripts Library v1.0.0"
   echo "Part of ecare-infrastructure monorepo"
 }
-

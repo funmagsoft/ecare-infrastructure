@@ -153,7 +153,7 @@ The VPN Gateway module requires the gateway subnet from the network module:
 ```hcl
 module "network" {
   source = "../../modules/network"
-  
+
   enable_vpn_gateway = true
   gateway_subnet_cidr = "10.1.4.0/24"
   # ... other variables
@@ -161,7 +161,7 @@ module "network" {
 
 module "vpn_gateway" {
   source = "../../modules/vpn-gateway"
-  
+
   gateway_subnet_id = module.network.gateway_subnet_id
   # ... other variables
 }

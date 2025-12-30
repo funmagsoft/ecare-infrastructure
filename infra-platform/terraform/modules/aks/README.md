@@ -29,7 +29,7 @@ module "aks" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   kubernetes_version = null  # Use latest stable
   sku_tier           = "Standard"
 
@@ -319,7 +319,7 @@ module "aks" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   kubernetes_version = null  # Use latest stable
   sku_tier           = "Standard"
 
@@ -356,7 +356,7 @@ module "aks" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   kubernetes_version = "1.28.5"  # Pinned version for prod
   sku_tier           = "Standard"
 
@@ -399,7 +399,7 @@ The AKS module integrates with ACR by automatically granting the kubelet identit
 ```hcl
 module "aks" {
   source = "../../modules/aks"
-  
+
   acr_id = module.acr.acr_id
   # ... other variables
 }
@@ -412,7 +412,7 @@ The AKS module integrates with the Monitoring module for Container Insights:
 ```hcl
 module "aks" {
   source = "../../modules/aks"
-  
+
   log_analytics_workspace_id = module.monitoring.log_analytics_workspace_id
   enable_container_insights  = true
   # ... other variables

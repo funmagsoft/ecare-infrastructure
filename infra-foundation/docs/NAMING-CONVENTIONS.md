@@ -443,4 +443,3 @@ variable "project_name" {
   }
 }
 ```
-

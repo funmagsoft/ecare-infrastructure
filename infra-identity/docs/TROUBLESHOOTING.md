@@ -4,7 +4,7 @@
 
 This document provides solutions to common issues encountered when working with the `infra-identity` repository.
 
-For deployment procedures, see **[DEPLOYMENT.md](./DEPLOYMENT.md)**.  
+For deployment procedures, see **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
 For architecture overview, see **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
 
 ---
@@ -679,4 +679,3 @@ Deploy test pod (see [DEPLOYMENT.md - Test Workload Identity from Pod](./DEPLOYM
 - **Terraform Documentation**: [terraform.io](https://www.terraform.io/docs)
 - **AKS Workload Identity**: [Azure Workload Identity docs](https://azure.github.io/azure-workload-identity/)
 - **Team**: Contact DevOps team for assistance
-

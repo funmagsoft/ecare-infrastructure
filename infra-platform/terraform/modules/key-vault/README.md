@@ -180,7 +180,7 @@ module "key_vault" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   sku_name                   = "standard"
   purge_protection_enabled   = false  # Flexible for dev
   soft_delete_retention_days = 7      # Short retention
@@ -200,7 +200,7 @@ module "key_vault" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   sku_name                   = "premium"  # HSM support
   purge_protection_enabled   = true       # Extra protection
   soft_delete_retention_days = 90         # Maximum retention

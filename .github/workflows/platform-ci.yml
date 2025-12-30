@@ -60,4 +60,3 @@ jobs:
       - name: Test shared scripts sourcing
         run: |
           bash -c "source shared/scripts/common.sh && print_version"
-

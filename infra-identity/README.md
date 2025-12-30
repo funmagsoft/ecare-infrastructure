@@ -51,12 +51,12 @@ Each environment directory contains:
 
 The `github-oidc` module creates:
 
-- **Service Principal** (one per environment)  
+- **Service Principal** (one per environment)
   Name: `sp-gha-{project_name}-{environment}-{deployment_id}` (e.g., `sp-gha-ecare-dev-a1b2c3d4`)
 - **Federated Identity Credentials (FIC)** for GitHub OIDC:
   - One per service repository (branch-based: `repo:{org}/{repo}:ref:refs/heads/{branch}`, default branch = `main`)
   - One per GitOps repository (environment-based: `repo:{org}/{repo}:environment:{environment}`)
-  Issuer: `https://token.actions.githubusercontent.com`  
+  Issuer: `https://token.actions.githubusercontent.com`
 - **RBAC Role Assignments**:
   - **Contributor** on Azure Container Registry (ACR) - Required for `az acr build`
   - **Azure Kubernetes Service Cluster User Role** on AKS - Required for `az aks get-credentials`
@@ -104,10 +104,10 @@ All resources are tagged with a unique `deployment_id` (8-character alphanumeric
 
 For each service declared in `terraform/environments/<env>/terraform.tfvars` (or `variables.tf`), the `workload-identity` module creates:
 
-- **User Assigned Managed Identity (UAMI)**  
+- **User Assigned Managed Identity (UAMI)**
   Name: `mi-ecare-<service>-<env>`
-- **Federated Identity Credential (FIC)** for AKS Workload Identity  
-  Issuer: AKS OIDC Issuer URL  
+- **Federated Identity Credential (FIC)** for AKS Workload Identity
+  Issuer: AKS OIDC Issuer URL
   Subject: `system:serviceaccount:{namespace}:sa-{service}`
 - **RBAC assignments** (conditional, based on flags):
   - Key Vault: `Key Vault Secrets User` on `key_vault_id`
@@ -356,7 +356,7 @@ git commit --no-verify -m "message"
   - `versions.tf` - Terraform version, backend configuration, and required providers
   - `providers.tf` - Provider configurations (AzureRM, AzureAD)
   - `kubernetes-provider.tf` - Kubernetes provider configuration (required for AKS namespace creation)
-  
+
   These are required in the root module (environment directory), not in child modules. See `terraform/templates/` for templates.
 - **Module Architecture**: All environments use the shared `environment` module, which eliminates code duplication. Changes to the module automatically propagate to all environments.
 

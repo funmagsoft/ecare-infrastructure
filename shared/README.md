@@ -80,11 +80,11 @@ Current version: **1.0.0**
 
 ## Benefits of Monorepo for Shared Code
 
-✅ **Atomic commits**: Change shared code + usage in all repos in one commit  
-✅ **No version conflicts**: Always using the latest version  
-✅ **Easy refactoring**: IDE can find all usages across repos  
-✅ **Simplified testing**: Test shared code changes with all repos at once  
-✅ **Single source of truth**: No confusion about which version to use  
+✅ **Atomic commits**: Change shared code + usage in all repos in one commit
+✅ **No version conflicts**: Always using the latest version
+✅ **Easy refactoring**: IDE can find all usages across repos
+✅ **Simplified testing**: Test shared code changes with all repos at once
+✅ **Single source of truth**: No confusion about which version to use
 
 ## See Also
 
@@ -93,4 +93,3 @@ Current version: **1.0.0**
 - [Foundation README](../infra-foundation/README.md)
 - [Identity README](../infra-identity/README.md)
 - [Platform README](../infra-platform/README.md)
-

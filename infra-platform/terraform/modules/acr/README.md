@@ -112,10 +112,10 @@ module "acr" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   sku            = "Standard"  # Lower cost for dev
   retention_days = 7
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name
@@ -131,12 +131,12 @@ module "acr" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   sku                     = "Premium"  # Premium for prod
   zone_redundancy_enabled = true       # HA across zones
   retention_days          = 30        # Longer retention
   trust_policy_enabled     = true      # Content trust
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name
@@ -152,7 +152,7 @@ ACR is automatically integrated with AKS. The AKS module receives the ACR ID and
 ```hcl
 module "aks" {
   source = "../../modules/aks"
-  
+
   acr_id = module.acr.acr_id
   # ... other variables
 }

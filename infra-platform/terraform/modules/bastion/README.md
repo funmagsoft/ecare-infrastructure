@@ -26,14 +26,14 @@ module "bastion" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   subnet_id      = var.mgmt_subnet_id
   vm_size        = "Standard_B1s"
   admin_username = "azureuser"
   ubuntu_sku     = "22_04-lts-gen2"
 
   allowed_ssh_source_ips = ["203.0.113.0/24"]  # Your office IP
-  
+
   enable_system_assigned_identity = true
   install_tools                  = true
 }
@@ -264,13 +264,13 @@ module "bastion" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   subnet_id      = var.mgmt_subnet_id
   vm_size        = "Standard_B1s"  # Lower cost for dev
   admin_username = "azureuser"
-  
+
   allowed_ssh_source_ips = ["203.0.113.0/24"]  # Office IP range
-  
+
   enable_system_assigned_identity = true
   install_tools                  = true
 }
@@ -285,13 +285,13 @@ module "bastion" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   subnet_id      = var.mgmt_subnet_id
   vm_size        = "Standard_D2s_v3"  # More resources for prod
   admin_username = "azureuser"
-  
+
   allowed_ssh_source_ips = ["203.0.113.0/24", "198.51.100.0/24"]  # Multiple IP ranges
-  
+
   enable_system_assigned_identity = true
   install_tools                  = true
 }

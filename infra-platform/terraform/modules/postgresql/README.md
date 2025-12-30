@@ -28,7 +28,7 @@ module "postgresql" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   postgresql_version = "15"
   sku_name           = "B_Standard_B1ms"  # Burstable for dev
   storage_mb         = 32768
@@ -44,7 +44,7 @@ module "postgresql" {
   # Backups
   backup_retention_days        = 7
   geo_redundant_backup_enabled = false
-  
+
   # High Availability (production only)
   high_availability_enabled = false
 }
@@ -156,18 +156,18 @@ module "postgresql" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   postgresql_version = "15"
   sku_name           = "B_Standard_B1ms"  # Burstable for dev
   storage_mb         = 32768
-  
+
   backup_retention_days        = 7
   geo_redundant_backup_enabled = false
   high_availability_enabled    = false
-  
+
   administrator_login    = "psqladmin"
   administrator_password = var.db_password
-  
+
   private_endpoint_subnet_id = var.data_subnet_id
   vnet_id                    = var.vnet_id
   vnet_name                  = var.vnet_name
@@ -183,19 +183,19 @@ module "postgresql" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   postgresql_version = "15"
   sku_name           = "GP_Standard_D2s_v3"  # General Purpose for prod
   storage_mb         = 131072
-  
+
   backup_retention_days        = 35  # Maximum retention
   geo_redundant_backup_enabled = true
   high_availability_enabled    = true
   high_availability_mode      = "ZoneRedundant"
-  
+
   administrator_login    = "psqladmin"
   administrator_password = var.db_password
-  
+
   private_endpoint_subnet_id = var.data_subnet_id
   vnet_id                    = var.vnet_id
   vnet_name                  = var.vnet_name

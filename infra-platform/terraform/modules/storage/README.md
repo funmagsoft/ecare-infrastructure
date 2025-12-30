@@ -144,9 +144,9 @@ module "storage" {
   location                 = "West Europe"
   environment              = "dev"
   account_replication_type = "LRS"  # Local redundancy for dev
-  
+
   blob_soft_delete_retention_days = 7  # Short retention for dev
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name
@@ -163,10 +163,10 @@ module "storage" {
   location                 = "West Europe"
   environment              = "prod"
   account_replication_type = "GRS"  # Geo-redundancy for prod
-  
+
   blob_soft_delete_retention_days = 30  # Longer retention for prod
   enable_versioning                = true
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name

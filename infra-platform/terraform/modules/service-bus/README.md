@@ -126,9 +126,9 @@ module "service_bus" {
   resource_group_name = "rg-ecare-dev"
   location            = "West Europe"
   environment         = "dev"
-  
+
   sku = "Standard"  # Standard tier for dev
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name
@@ -144,11 +144,11 @@ module "service_bus" {
   resource_group_name = "rg-ecare-prod"
   location            = "West Europe"
   environment         = "prod"
-  
+
   sku            = "Premium"  # Premium tier for prod
   capacity       = 2          # Multiple messaging units
   zone_redundant = true        # Zone redundancy for HA
-  
+
   subnet_id = var.data_subnet_id
   vnet_id   = var.vnet_id
   vnet_name = var.vnet_name
