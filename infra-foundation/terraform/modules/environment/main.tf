@@ -1,7 +1,15 @@
+#------------------------------------------------------------------------------
+# Data Sources
+#------------------------------------------------------------------------------
+
 # Reference existing Resource Group (created in Phase 0)
 data "azurerm_resource_group" "main" {
   name = "rg-${var.project_name}-${var.environment}"
 }
+
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
 
 # Local variables
 locals {
@@ -28,6 +36,10 @@ locals {
   )
 }
 
+#------------------------------------------------------------------------------
+# Validation
+#------------------------------------------------------------------------------
+
 # Validation: Ensure all required tags are present
 # This precondition will fail if any required tag is missing or empty
 check "required_tags_validation" {
@@ -44,6 +56,10 @@ check "required_tags_validation" {
     error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
+
+#------------------------------------------------------------------------------
+# Modules
+#------------------------------------------------------------------------------
 
 # Network Module
 module "network" {

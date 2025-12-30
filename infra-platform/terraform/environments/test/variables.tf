@@ -1,7 +1,29 @@
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev, test, stage, prod)"
   type        = string
   default     = "test"
+
+  validation {
+    condition     = contains(["dev", "test", "stage", "prod"], var.environment)
+    error_message = "Environment must be one of: dev, test, stage, prod."
+  }
+}
+
+variable "deployment_id" {
+  description = "Unique deployment identifier (8 lowercase alphanumeric characters). Use the same ID across all phases (foundation/identity/platform) for easy cleanup."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{8}$", var.deployment_id))
+    error_message = "deployment_id must be exactly 8 lowercase alphanumeric characters (e.g., 'a1b2c3d4')."
+  }
+}
+
+variable "subscription_id" {
+  description = "Azure subscription ID. Optional locally; recommended in CI/CD."
+  type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "organization_name" {
@@ -14,6 +36,11 @@ variable "project_name" {
   description = "Project name"
   type        = string
   default     = "ecare"
+
+  validation {
+    condition     = length(var.project_name) <= 30
+    error_message = "project_name must be 30 characters or less to ensure resource names stay within Azure limits."
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -30,6 +57,11 @@ variable "log_analytics_retention_days" {
   description = "Retention period in days for Log Analytics"
   type        = number
   default     = 30
+
+  validation {
+    condition     = var.log_analytics_retention_days >= 30 && var.log_analytics_retention_days <= 730
+    error_message = "log_analytics_retention_days must be between 30 and 730 days."
+  }
 }
 
 variable "application_insights_type" {
@@ -46,12 +78,22 @@ variable "storage_account_tier" {
   description = "Storage Account tier"
   type        = string
   default     = "Standard"
+
+  validation {
+    condition     = contains(["Standard", "Premium"], var.storage_account_tier)
+    error_message = "storage_account_tier must be either Standard or Premium."
+  }
 }
 
 variable "storage_replication_type" {
   description = "Storage Account replication type"
   type        = string
   default     = "LRS"
+
+  validation {
+    condition     = contains(["LRS", "GRS", "RAGRS", "ZRS", "GZRS", "RAGZRS"], var.storage_replication_type)
+    error_message = "storage_replication_type must be one of: LRS, GRS, RAGRS, ZRS, GZRS, RAGZRS."
+  }
 }
 
 variable "storage_containers" {
@@ -76,6 +118,11 @@ variable "storage_blob_soft_delete_retention_days" {
   description = "Retention days for blob soft delete"
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.storage_blob_soft_delete_retention_days >= 1 && var.storage_blob_soft_delete_retention_days <= 365
+    error_message = "storage_blob_soft_delete_retention_days must be between 1 and 365 days."
+  }
 }
 
 variable "storage_enable_soft_delete_container" {
@@ -88,6 +135,11 @@ variable "storage_container_soft_delete_retention_days" {
   description = "Retention days for container soft delete"
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.storage_container_soft_delete_retention_days >= 1 && var.storage_container_soft_delete_retention_days <= 365
+    error_message = "storage_container_soft_delete_retention_days must be between 1 and 365 days."
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -98,6 +150,11 @@ variable "key_vault_sku" {
   description = "SKU for Key Vault"
   type        = string
   default     = "standard"
+
+  validation {
+    condition     = contains(["standard", "premium"], var.key_vault_sku)
+    error_message = "key_vault_sku must be either standard or premium."
+  }
 }
 
 variable "key_vault_purge_protection_enabled" {
@@ -110,6 +167,11 @@ variable "key_vault_soft_delete_retention_days" {
   description = "Soft delete retention days for Key Vault"
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.key_vault_soft_delete_retention_days >= 7 && var.key_vault_soft_delete_retention_days <= 90
+    error_message = "key_vault_soft_delete_retention_days must be between 7 and 90 days."
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -120,6 +182,11 @@ variable "acr_sku" {
   description = "SKU for Azure Container Registry"
   type        = string
   default     = "Premium"
+
+  validation {
+    condition     = contains(["Basic", "Standard", "Premium"], var.acr_sku)
+    error_message = "acr_sku must be one of: Basic, Standard, Premium."
+  }
 }
 
 variable "acr_zone_redundancy_enabled" {
@@ -132,6 +199,11 @@ variable "acr_retention_days" {
   description = "Retention days for untagged manifests"
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.acr_retention_days >= 0 && var.acr_retention_days <= 365
+    error_message = "acr_retention_days must be between 0 and 365 days."
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -160,6 +232,11 @@ variable "postgresql_backup_retention_days" {
   description = "Backup retention days for PostgreSQL"
   type        = number
   default     = 7
+
+  validation {
+    condition     = var.postgresql_backup_retention_days >= 7 && var.postgresql_backup_retention_days <= 35
+    error_message = "postgresql_backup_retention_days must be between 7 and 35 days."
+  }
 }
 
 variable "postgresql_geo_redundant_backup_enabled" {
@@ -200,6 +277,11 @@ variable "service_bus_sku" {
   description = "SKU for Service Bus"
   type        = string
   default     = "Standard"
+
+  validation {
+    condition     = contains(["Basic", "Standard", "Premium"], var.service_bus_sku)
+    error_message = "service_bus_sku must be one of: Basic, Standard, Premium."
+  }
 }
 
 variable "service_bus_capacity" {
@@ -229,24 +311,43 @@ variable "aks_sku_tier" {
   description = "SKU tier for AKS"
   type        = string
   default     = "Standard"
+  validation {
+    condition     = contains(["Free", "Standard", "Premium"], var.aks_sku_tier)
+    error_message = "aks_sku_tier must be one of: Free, Standard, Premium."
+  }
 }
 
 variable "aks_network_plugin" {
   description = "Network plugin for AKS"
   type        = string
   default     = "azure"
+
+  validation {
+    condition     = contains(["azure", "kubenet", "none"], var.aks_network_plugin)
+    error_message = "aks_network_plugin must be one of: azure, kubenet, none."
+  }
 }
 
 variable "aks_network_policy" {
   description = "Network policy for AKS"
   type        = string
   default     = "azure"
+
+  validation {
+    condition     = contains(["azure", "calico", "cilium"], var.aks_network_policy)
+    error_message = "aks_network_policy must be one of: azure, calico, cilium."
+  }
 }
 
 variable "aks_service_cidr" {
   description = "Service CIDR for AKS"
   type        = string
   default     = "10.2.0.0/16"
+
+  validation {
+    condition     = can(cidrhost(var.aks_service_cidr, 0))
+    error_message = "aks_service_cidr must be a valid CIDR notation (e.g., 10.2.0.0/16)."
+  }
 }
 
 variable "aks_dns_service_ip" {
@@ -289,18 +390,36 @@ variable "aks_user_node_pool_min_count" {
   description = "Minimum node count for AKS user node pool"
   type        = number
   default     = 1
+  validation {
+    condition     = var.aks_user_node_pool_min_count >= 1
+    error_message = "aks_user_node_pool_min_count must be >= 1."
+  }
 }
 
 variable "aks_user_node_pool_max_count" {
   description = "Maximum node count for AKS user node pool"
   type        = number
   default     = 3
+  validation {
+    condition     = var.aks_user_node_pool_max_count >= var.aks_user_node_pool_min_count
+    error_message = "aks_user_node_pool_max_count must be >= aks_user_node_pool_min_count."
+  }
 }
 
 variable "aks_user_node_pool_os_disk_size_gb" {
   description = "OS disk size for AKS user nodes"
   type        = number
   default     = 128
+}
+
+variable "aks_user_node_pool_node_count" {
+  description = "Fixed node count for AKS user node pool when autoscaling is disabled"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.aks_user_node_pool_node_count >= 1
+    error_message = "aks_user_node_pool_node_count must be >= 1."
+  }
 }
 
 variable "aks_enable_auto_scaling" {
@@ -359,10 +478,31 @@ variable "bastion_allowed_ssh_source_ips" {
   description = "Allowed source IPs for SSH to Bastion"
   type        = list(string)
   default     = ["0.0.0.0/0"]
+
+  validation {
+    condition = alltrue([
+      for ip in var.bastion_allowed_ssh_source_ips :
+      can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?$", ip))
+    ])
+    error_message = "bastion_allowed_ssh_source_ips must contain valid IP addresses or CIDR blocks (e.g., 192.168.1.1 or 192.168.1.0/24)."
+  }
 }
 
 variable "bastion_additional_users" {
   description = "Map of additional users to create on bastion. Key is username, value is list of SSH public keys. Users will have sudo access."
   type        = map(list(string))
   default     = {}
+}
+
+variable "tags" {
+  description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId). Required tags take precedence and cannot be overridden."
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition = alltrue([
+      for key in keys(var.tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath", "DeploymentId"], key)
+    ])
+    error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
+  }
 }

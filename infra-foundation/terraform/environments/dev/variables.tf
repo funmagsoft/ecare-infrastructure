@@ -48,6 +48,10 @@ variable "organization_for_sa" {
   default     = "hycom"
 }
 
+#------------------------------------------------------------------------------
+# Bootstrap Variables
+#------------------------------------------------------------------------------
+
 variable "enable_bootstrap" {
   description = <<-EOT
     Enable bootstrap module (SP, FIC, RBAC for Terraform repos).
@@ -79,6 +83,10 @@ variable "terraform_repos" {
   default     = ["infra-foundation", "infra-platform", "infra-identity"]
 }
 
+#------------------------------------------------------------------------------
+# User Access Variables
+#------------------------------------------------------------------------------
+
 variable "users_with_state_access" {
   description = <<-EOT
     List of Azure AD user Object IDs who should have Storage Blob Data Contributor
@@ -104,6 +112,10 @@ variable "users_with_state_access" {
     error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
   }
 }
+
+#------------------------------------------------------------------------------
+# Network Variables
+#------------------------------------------------------------------------------
 
 variable "vnet_cidr" {
   description = "CIDR block for VNet"
@@ -155,6 +167,10 @@ variable "gateway_subnet_cidr" {
   }
 }
 
+#------------------------------------------------------------------------------
+# VPN Gateway Variables
+#------------------------------------------------------------------------------
+
 variable "enable_vpn_gateway" {
   description = "Enable VPN Gateway deployment"
   type        = bool
@@ -196,6 +212,10 @@ variable "vpn_root_cert_data" {
   }
 }
 
+#------------------------------------------------------------------------------
+# Security Variables
+#------------------------------------------------------------------------------
+
 variable "mgmt_subnet_allowed_ssh_ips" {
   description = "List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet"
   type        = list(string)
@@ -209,6 +229,10 @@ variable "mgmt_subnet_allowed_ssh_ips" {
     error_message = "mgmt_subnet_allowed_ssh_ips must contain valid IP addresses or CIDR blocks."
   }
 }
+
+#------------------------------------------------------------------------------
+# Tags Variables
+#------------------------------------------------------------------------------
 
 variable "tags" {
   description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."

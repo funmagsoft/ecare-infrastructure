@@ -57,7 +57,7 @@ module "postgresql" {
 | resource_group_name | Name of the resource group | `string` | - | yes |
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | postgresql_version | PostgreSQL version (11, 12, 13, 14, 15, 16) | `string` | `"15"` | no |
 | sku_name | SKU name for PostgreSQL Flexible Server | `string` | `"B_Standard_B1ms"` | no |
 | storage_mb | Storage size in MB (32768-16777216) | `number` | `32768` | no |

@@ -1,18 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.80"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-  }
-}
-
 provider "azurerm" {
   features {
     key_vault {
@@ -23,4 +8,7 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
+
+  # Optional: recommended in CI/CD
+  subscription_id = var.subscription_id
 }

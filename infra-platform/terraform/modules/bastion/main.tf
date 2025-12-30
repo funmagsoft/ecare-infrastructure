@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# SSH Key Generation
+#------------------------------------------------------------------------------
+
 # Generate SSH key if not provided
 resource "tls_private_key" "ssh" {
   count = var.admin_ssh_public_key == null ? 1 : 0
@@ -65,9 +69,7 @@ resource "azurerm_network_security_group" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "bastion"
+      Module = "bastion"
     }
   )
 }
@@ -83,9 +85,7 @@ resource "azurerm_public_ip" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "bastion"
+      Module = "bastion"
     }
   )
 }
@@ -106,9 +106,7 @@ resource "azurerm_network_interface" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "bastion"
+      Module = "bastion"
     }
   )
 }
@@ -165,9 +163,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "bastion"
+      Module = "bastion"
     }
   )
 }

@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Virtual Network
+#------------------------------------------------------------------------------
+
 resource "azurerm_virtual_network" "main" {
   name                = var.vnet_name
   location            = var.location
@@ -11,6 +15,10 @@ resource "azurerm_virtual_network" "main" {
     }
   )
 }
+
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
 
 # Subnets Configuration
 locals {
@@ -33,6 +41,10 @@ locals {
   }
 }
 
+#------------------------------------------------------------------------------
+# Subnets
+#------------------------------------------------------------------------------
+
 # Create subnets using for_each
 resource "azurerm_subnet" "subnets" {
   for_each = local.subnets
@@ -43,6 +55,10 @@ resource "azurerm_subnet" "subnets" {
   address_prefixes     = each.value.address_prefixes
 }
 
+#------------------------------------------------------------------------------
+# NSG Associations
+#------------------------------------------------------------------------------
+
 # Associate NSGs with subnets
 resource "azurerm_subnet_network_security_group_association" "subnets" {
   for_each = local.subnets
@@ -50,6 +66,10 @@ resource "azurerm_subnet_network_security_group_association" "subnets" {
   subnet_id                 = azurerm_subnet.subnets[each.key].id
   network_security_group_id = each.value.nsg_id
 }
+
+#------------------------------------------------------------------------------
+# Gateway Subnet
+#------------------------------------------------------------------------------
 
 # Gateway Subnet (for VPN Gateway)
 # Gateway subnet remains separate due to special requirements (fixed name "GatewaySubnet")

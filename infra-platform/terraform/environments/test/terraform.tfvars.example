@@ -3,6 +3,8 @@
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 
 environment       = "test"
+deployment_id     = "e5f6g7h8" # Unique deployment identifier for this environment
+subscription_id   = null       # Optional: Azure subscription ID (recommended in CI/CD)
 organization_name = "hycom"
 project_name      = "ecare"
 
@@ -107,3 +109,11 @@ bastion_additional_users = {
   #   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... user1@example.com"
   # ]
 }
+
+#------------------------------------------------------------------------------
+# Additional Tags (Optional)
+#------------------------------------------------------------------------------
+# tags = {
+#   CostCenter = "Engineering"
+#   Owner      = "Platform Team"
+# }

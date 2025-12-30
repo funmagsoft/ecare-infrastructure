@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
+
 # Local variables for Storage Account naming
 locals {
   # Create deterministic hash from org+project+env+location
@@ -58,9 +62,7 @@ resource "azurerm_storage_account" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -81,9 +83,7 @@ resource "azurerm_private_dns_zone" "blob" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -96,9 +96,7 @@ resource "azurerm_private_dns_zone" "file" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -116,9 +114,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "blob" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -135,9 +131,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "file" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -164,9 +158,7 @@ resource "azurerm_private_endpoint" "blob" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }
@@ -193,9 +185,7 @@ resource "azurerm_private_endpoint" "file" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "storage"
+      Module = "storage"
     }
   )
 }

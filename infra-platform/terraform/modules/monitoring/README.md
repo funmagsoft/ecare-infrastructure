@@ -45,7 +45,7 @@ module "monitoring" {
 | resource_group_name | Name of the resource group | `string` | - | yes |
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | log_analytics_sku | SKU for Log Analytics Workspace | `string` | `"PerGB2018"` | no |
 | log_analytics_retention_days | Retention period in days for Log Analytics | `number` | `30` | no |
 | application_insights_type | Application type for Application Insights | `string` | `"web"` | no |

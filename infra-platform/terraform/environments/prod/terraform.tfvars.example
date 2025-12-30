@@ -4,6 +4,8 @@
 # IMPORTANT: For production, consider using Key Vault or environment variables for sensitive data
 
 environment       = "prod"
+deployment_id     = "m3n4o5p6" # Unique deployment identifier for this environment
+subscription_id   = null       # Optional: Azure subscription ID (recommended in CI/CD)
 organization_name = "hycom"
 project_name      = "ecare"
 
@@ -107,3 +109,11 @@ bastion_additional_users = {
   #   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... user1@example.com"
   # ]
 }
+
+#------------------------------------------------------------------------------
+# Additional Tags (Optional)
+#------------------------------------------------------------------------------
+# tags = {
+#   CostCenter = "Engineering"
+#   Owner      = "Platform Team"
+# }

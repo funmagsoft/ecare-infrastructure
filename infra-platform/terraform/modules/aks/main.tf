@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
+
 locals {
   dns_prefix = var.dns_prefix != null ? var.dns_prefix : "aks-${var.project_name}-${var.environment}"
 }
@@ -26,8 +30,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     tags = merge(
       var.tags,
       {
-        Environment = var.environment
-        NodePool    = "system"
+        NodePool = "system"
       }
     )
   }
@@ -59,9 +62,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "aks"
+      Module = "aks"
     }
   )
 
@@ -93,8 +94,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      NodePool    = "user"
+      NodePool = "user"
     }
   )
 

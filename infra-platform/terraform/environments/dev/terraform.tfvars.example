@@ -3,6 +3,8 @@
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 
 environment       = "dev"
+deployment_id     = "a1b2c3d4" # Unique deployment identifier for this environment
+subscription_id   = null       # Optional: Azure subscription ID (recommended in CI/CD)
 organization_name = "hycom"
 project_name      = "ecare"
 
@@ -110,3 +112,12 @@ bastion_additional_users = {
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCkWFSRgSsMU2ipw/xWEOO/y1UkpqoT3bX1erFUEZsnBIlDPBK7GD83OGUMalWx14xlJpeh0dzuBVHnk5bEay89HuNh5cUJCnLFLn0Gs1Z2U5aU4uPhA34rZBZmYUMRiunyvbLlXxXFRiUYjJsFfMx2k57VH6L8+dbTOW276lqjs/7D6xZgKmrpxobXiewfMwuIXjRXZ8cOj05toXizd2uwmFZIV6GbC54lgsQnoLsyYwR1y3JTA93VcudPE6MnXLUqWL6bVuok6YG9Df8mqKdzupgedo3IKS3Tj7W0EInJelX0DIZyTv0PxU5SpeJS3/84Un9oENEOXrhFlJX59jM9+dNIHhSQdEF0X84NZXiGPaJemFq+i8SmZzCyDlxC23wRR9jtpMuuLbtmccALwTNYQ3BqemQETla07z4wlTkdbb+VToO4QHTjR9i3GcEnt/NpMv40RmsJG0FY1tTGeD8go4aBsn//V0oAL7ISqEqdF89cLzQq0hRQZaVcRWIIfe4zis7UJNPLKkzOWDX+vIr6g0MQqsUgMH5D/S5exYu9xKOzCI2zC010Gw+eMgTqSyQDH2BD1IqEutO2qYJF4nw7CAUpHrJfDzdgTbP/ZvRvPMC3QOlxTnDaZHLSC9+nzNgJyDW9lfpr5zZ7HcwEgvOW9julNHF2L3MJ/fkb6lRx2w== dariusz.cydzik@hycom.pl"
   ]
 }
+
+#------------------------------------------------------------------------------
+# Additional Tags (Optional)
+#------------------------------------------------------------------------------
+# tags = {
+#   CostCenter = "Engineering"
+#   Owner      = "Platform Team"
+# }
+

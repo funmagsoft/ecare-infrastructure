@@ -88,7 +88,7 @@ module "aks" {
 | resource_group_name | Name of the resource group | `string` | - | yes |
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | kubernetes_version | Kubernetes version | `string` | - | no |
 | dns_prefix | DNS prefix for the cluster | `string` | - | no |
 | sku_tier | SKU tier (Free, Standard, Premium) | `string` | `"Standard"` | no |

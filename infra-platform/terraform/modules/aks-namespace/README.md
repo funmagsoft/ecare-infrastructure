@@ -34,7 +34,7 @@ module "aks_namespace" {
 |------|-------------|------|---------|:--------:|
 | namespace | Kubernetes namespace to create | `string` | `"ecare"` | no |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for labeling | `string` | `"ecare"` | no |
+| project_name | Project name for labeling (max 30 characters) | `string` | `"ecare"` | no |
 | labels | Additional labels to apply to the namespace | `map(string)` | `{}` | no |
 
 ## Outputs

@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Public IP
+#------------------------------------------------------------------------------
+
 # Public IP for VPN Gateway
 resource "azurerm_public_ip" "vpn" {
   name                = var.public_ip_name
@@ -8,6 +12,10 @@ resource "azurerm_public_ip" "vpn" {
 
   tags = var.tags
 }
+
+#------------------------------------------------------------------------------
+# VPN Gateway
+#------------------------------------------------------------------------------
 
 # VPN Gateway
 resource "azurerm_virtual_network_gateway" "vpn" {

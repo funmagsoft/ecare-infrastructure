@@ -228,10 +228,16 @@ output "bastion_principal_id" {
 # Summary Output
 #------------------------------------------------------------------------------
 
+output "deployment_id" {
+  description = "Unique deployment identifier for cleanup operations"
+  value       = var.deployment_id
+}
+
 output "deployment_summary" {
   description = "Summary of deployed platform resources"
   value = {
     environment          = var.environment
+    deployment_id        = var.deployment_id
     aks_cluster          = module.aks.aks_cluster_name
     aks_oidc_issuer      = module.aks.aks_oidc_issuer_url
     acr_login_server     = module.acr.acr_login_server

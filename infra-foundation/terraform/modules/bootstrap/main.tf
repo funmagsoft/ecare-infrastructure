@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Data Sources
+#------------------------------------------------------------------------------
+
 # Data source: Resource Group (created in Phase 0 by scripts)
 data "azurerm_resource_group" "main" {
   name = "rg-${var.project_name}-${var.environment}"
@@ -8,6 +12,10 @@ data "azurerm_storage_account" "state" {
   name                = "tfstate${var.organization_for_sa}${var.project_name}${var.environment}"
   resource_group_name = data.azurerm_resource_group.main.name
 }
+
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
 
 # Local variables for tags and GitHub OIDC configuration
 locals {
@@ -55,6 +63,10 @@ locals {
   ]
 }
 
+#------------------------------------------------------------------------------
+# Validation
+#------------------------------------------------------------------------------
+
 # Validation: Ensure all required tags are present in merged_tags
 check "required_tags_validation" {
   assert {
@@ -65,6 +77,10 @@ check "required_tags_validation" {
     error_message = "All required tags must be present and non-empty in merged_tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
+
+#------------------------------------------------------------------------------
+# Azure AD Resources
+#------------------------------------------------------------------------------
 
 # Application Registration for Service Principal
 # Creates an Azure AD application that serves as the identity for GitHub Actions workflows
@@ -100,6 +116,10 @@ resource "azuread_application_federated_identity_credential" "terraform_repos" {
   subject        = "repo:${each.value}:environment:${var.environment}"
   audiences      = ["api://AzureADTokenExchange"]
 }
+
+#------------------------------------------------------------------------------
+# RBAC Role Assignments
+#------------------------------------------------------------------------------
 
 # RBAC: Contributor on Resource Group
 # Grants Service Principal permission to:

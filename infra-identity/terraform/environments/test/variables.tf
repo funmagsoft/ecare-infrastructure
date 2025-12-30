@@ -36,6 +36,10 @@ variable "project_name" {
   }
 }
 
+#------------------------------------------------------------------------------
+# Workload Identity Variables
+#------------------------------------------------------------------------------
+
 variable "services" {
   description = "Map of services to create workload identities for"
   type = map(object({
@@ -52,6 +56,10 @@ variable "services" {
   default = {}
 }
 
+#------------------------------------------------------------------------------
+# GitOps Variables
+#------------------------------------------------------------------------------
+
 variable "gitops_repos" {
   description = <<-EOT
     List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration.
@@ -65,6 +73,10 @@ variable "gitops_repos" {
   type        = list(string)
   default     = []
 }
+
+#------------------------------------------------------------------------------
+# Tags Variables
+#------------------------------------------------------------------------------
 
 variable "tags" {
   description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."

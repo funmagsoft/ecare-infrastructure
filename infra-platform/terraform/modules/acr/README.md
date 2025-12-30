@@ -46,7 +46,7 @@ module "acr" {
 | resource_group_name | Name of the resource group | `string` | - | yes |
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | sku | SKU for ACR (Basic, Standard, Premium) | `string` | `"Premium"` | no |
 | admin_enabled | Enable admin user | `bool` | `false` | no |
 | public_network_access_enabled | Enable public network access | `bool` | `true` | no |

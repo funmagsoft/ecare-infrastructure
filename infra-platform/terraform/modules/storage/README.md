@@ -58,7 +58,7 @@ module "storage" {
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
 | organization_name | Organization name for resource naming | `string` | `"hycom"` | no |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | account_tier | Storage Account tier (Standard or Premium) | `string` | `"Standard"` | no |
 | account_replication_type | Replication type (LRS, GRS, RAGRS, ZRS) | `string` | `"LRS"` | no |
 | enable_https_traffic_only | Enable HTTPS traffic only | `bool` | `true` | no |

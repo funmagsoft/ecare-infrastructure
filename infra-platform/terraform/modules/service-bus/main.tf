@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Service Bus Namespace
+#------------------------------------------------------------------------------
+
 # Service Bus Namespace
 resource "azurerm_servicebus_namespace" "this" {
   name                         = "sb-${var.project_name}-${var.environment}"
@@ -14,9 +18,7 @@ resource "azurerm_servicebus_namespace" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "service-bus"
+      Module = "service-bus"
     }
   )
 }
@@ -31,9 +33,7 @@ resource "azurerm_private_dns_zone" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "service-bus"
+      Module = "service-bus"
     }
   )
 }
@@ -51,9 +51,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "service-bus"
+      Module = "service-bus"
     }
   )
 }
@@ -82,9 +80,7 @@ resource "azurerm_private_endpoint" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "service-bus"
+      Module = "service-bus"
     }
   )
 }

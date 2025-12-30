@@ -1,4 +1,9 @@
 # Re-export outputs from the environment module
+output "deployment_id" {
+  description = "Unique deployment identifier for cleanup operations"
+  value       = module.environment.deployment_id
+}
+
 #------------------------------------------------------------------------------
 # Monitoring Outputs
 #------------------------------------------------------------------------------

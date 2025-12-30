@@ -36,6 +36,87 @@ variable "project_name" {
   }
 }
 
+variable "organization_name" {
+  description = "GitHub organization name"
+  type        = string
+  default     = "hycom"
+}
+
+variable "organization_for_sa" {
+  description = "Organization name for Storage Account naming (may differ from organization due to Azure naming constraints)"
+  type        = string
+  default     = "hycom"
+}
+
+#------------------------------------------------------------------------------
+# Bootstrap Variables
+#------------------------------------------------------------------------------
+
+variable "enable_bootstrap" {
+  description = <<-EOT
+    Enable bootstrap module (SP, FIC, RBAC for Terraform repos).
+
+    Set to false if:
+    - Bootstrap was already created manually (using scripts)
+    - Bootstrap was already created in a previous Terraform run
+    - You want to manage bootstrap separately
+
+    Set to true if:
+    - This is the first deployment
+    - You want Terraform to manage bootstrap resources
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "terraform_repos" {
+  description = <<-EOT
+    List of Terraform repository names (without organization prefix).
+    Full repository names will be constructed as: organization_name/repo-name
+
+    Default repositories:
+    - infra-foundation
+    - infra-platform
+    - infra-identity
+  EOT
+  type        = list(string)
+  default     = ["infra-foundation", "infra-platform", "infra-identity"]
+}
+
+#------------------------------------------------------------------------------
+# User Access Variables
+#------------------------------------------------------------------------------
+
+variable "users_with_state_access" {
+  description = <<-EOT
+    List of Azure AD user Object IDs who should have Storage Blob Data Contributor
+    role on the Terraform state Storage Account. This allows them to view and browse
+    state files in Azure Portal.
+
+    To get a user's Object ID:
+      az ad user show --id <user-email> --query id --output tsv
+
+    Example:
+      users_with_state_access = [
+        "12345678-1234-1234-1234-123456789012"
+      ]
+  EOT
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for id in var.users_with_state_access :
+      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", id))
+    ])
+    error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
+  }
+}
+
+#------------------------------------------------------------------------------
+# Network Variables
+#------------------------------------------------------------------------------
+
 variable "vnet_cidr" {
   description = "CIDR block for VNet"
   type        = string
@@ -86,6 +167,10 @@ variable "gateway_subnet_cidr" {
   }
 }
 
+#------------------------------------------------------------------------------
+# VPN Gateway Variables
+#------------------------------------------------------------------------------
+
 variable "enable_vpn_gateway" {
   description = "Enable VPN Gateway deployment"
   type        = bool
@@ -127,6 +212,10 @@ variable "vpn_root_cert_data" {
   }
 }
 
+#------------------------------------------------------------------------------
+# Security Variables
+#------------------------------------------------------------------------------
+
 variable "mgmt_subnet_allowed_ssh_ips" {
   description = "List of allowed source IP addresses/CIDR blocks for SSH access to mgmt subnet"
   type        = list(string)
@@ -141,6 +230,10 @@ variable "mgmt_subnet_allowed_ssh_ips" {
   }
 }
 
+#------------------------------------------------------------------------------
+# Tags Variables
+#------------------------------------------------------------------------------
+
 variable "tags" {
   description = "Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden."
   type        = map(string)
@@ -151,74 +244,5 @@ variable "tags" {
       for key in keys(var.tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath", "DeploymentId"], key)
     ])
     error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
-  }
-}
-
-variable "organization_name" {
-  description = "GitHub organization name"
-  type        = string
-  default     = "hycom"
-}
-
-variable "organization_for_sa" {
-  description = "Organization name for Storage Account naming (may differ from organization due to Azure naming constraints)"
-  type        = string
-  default     = "hycom"
-}
-
-variable "enable_bootstrap" {
-  description = <<-EOT
-    Enable bootstrap module (SP, FIC, RBAC for Terraform repos).
-
-    Set to false if:
-    - Bootstrap was already created manually (using scripts)
-    - Bootstrap was already created in a previous Terraform run
-    - You want to manage bootstrap separately
-
-    Set to true if:
-    - This is the first deployment
-    - You want Terraform to manage bootstrap resources
-  EOT
-  type        = bool
-  default     = true
-}
-
-variable "terraform_repos" {
-  description = <<-EOT
-    List of Terraform repository names (without organization prefix).
-    Full repository names will be constructed as: organization_name/repo-name
-
-    Default repositories:
-    - infra-foundation
-    - infra-platform
-    - infra-identity
-  EOT
-  type        = list(string)
-  default     = ["infra-foundation", "infra-platform", "infra-identity"]
-}
-
-variable "users_with_state_access" {
-  description = <<-EOT
-    List of Azure AD user Object IDs who should have Storage Blob Data Contributor
-    role on the Terraform state Storage Account. This allows them to view and browse
-    state files in Azure Portal.
-
-    To get a user's Object ID:
-      az ad user show --id <user-email> --query id --output tsv
-
-    Example:
-      users_with_state_access = [
-        "12345678-1234-1234-1234-123456789012"
-      ]
-  EOT
-  type        = list(string)
-  default     = []
-
-  validation {
-    condition = alltrue([
-      for id in var.users_with_state_access :
-      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", id))
-    ])
-    error_message = "users_with_state_access must contain valid Azure AD Object IDs (GUIDs in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)."
   }
 }

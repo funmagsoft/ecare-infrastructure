@@ -2,6 +2,7 @@ module "environment" {
   source = "../../modules/environment"
 
   environment       = var.environment
+  deployment_id     = var.deployment_id
   organization_name = var.organization_name
   project_name      = var.project_name
 
@@ -73,4 +74,7 @@ module "environment" {
   bastion_ubuntu_sku             = var.bastion_ubuntu_sku
   bastion_allowed_ssh_source_ips = var.bastion_allowed_ssh_source_ips
   bastion_additional_users       = var.bastion_additional_users
+
+  # Tags
+  tags = var.tags
 }

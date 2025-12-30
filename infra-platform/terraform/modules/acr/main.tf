@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Azure Container Registry
+#------------------------------------------------------------------------------
+
 # Azure Container Registry
 resource "azurerm_container_registry" "this" {
   name                          = "acr${var.project_name}${var.environment}"
@@ -33,9 +37,7 @@ resource "azurerm_container_registry" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "acr"
+      Module = "acr"
     }
   )
 }
@@ -48,9 +50,7 @@ resource "azurerm_private_dns_zone" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "acr"
+      Module = "acr"
     }
   )
 }
@@ -68,9 +68,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "acr"
+      Module = "acr"
     }
   )
 }
@@ -97,9 +95,7 @@ resource "azurerm_private_endpoint" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "acr"
+      Module = "acr"
     }
   )
 }

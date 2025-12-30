@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
+
 # Local variables for tags and GitHub OIDC configuration
 locals {
   # Required tags - these must always be present
@@ -60,6 +64,10 @@ locals {
   }
 }
 
+#------------------------------------------------------------------------------
+# Validation
+#------------------------------------------------------------------------------
+
 # Validation: Ensure all required tags are present in merged_tags
 check "required_tags_validation" {
   assert {
@@ -70,6 +78,10 @@ check "required_tags_validation" {
     error_message = "All required tags must be present and non-empty in merged_tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
+
+#------------------------------------------------------------------------------
+# Azure AD Resources
+#------------------------------------------------------------------------------
 
 # Application Registration for Service Principal
 # Creates an Azure AD application that serves as the identity for GitHub Actions workflows
@@ -115,6 +127,10 @@ resource "azuread_application_federated_identity_credential" "gitops_repos" {
   subject        = "repo:${each.value}:environment:${var.environment}"
   audiences      = local.github_oidc_audience
 }
+
+#------------------------------------------------------------------------------
+# RBAC Role Assignments
+#------------------------------------------------------------------------------
 
 # RBAC: Contributor on ACR
 # Grants Service Principal permission to:

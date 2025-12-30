@@ -1,4 +1,12 @@
+#------------------------------------------------------------------------------
+# Data Sources
+#------------------------------------------------------------------------------
+
 data "azurerm_client_config" "current" {}
+
+#------------------------------------------------------------------------------
+# Key Vault
+#------------------------------------------------------------------------------
 
 # Key Vault
 resource "azurerm_key_vault" "this" {
@@ -25,9 +33,7 @@ resource "azurerm_key_vault" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "key-vault"
+      Module = "key-vault"
     }
   )
 }
@@ -40,9 +46,7 @@ resource "azurerm_private_dns_zone" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "key-vault"
+      Module = "key-vault"
     }
   )
 }
@@ -60,9 +64,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "key-vault"
+      Module = "key-vault"
     }
   )
 }
@@ -89,9 +91,7 @@ resource "azurerm_private_endpoint" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "key-vault"
+      Module = "key-vault"
     }
   )
 }

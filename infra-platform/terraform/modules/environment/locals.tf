@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
+
 # Local variables
 locals {
   # Required tags - these must always be present
@@ -11,10 +15,13 @@ locals {
   }
 
   # Merge required tags with additional tags
-  # Required tags take precedence (merge order: additional_tags first, then required_tags)
+  # Required tags take precedence (merge order: var.tags first, then required_tags)
   common_tags = merge(
-    var.additional_tags,
-    local.required_tags
+    var.tags,
+    local.required_tags,
+    {
+      DeploymentId = var.deployment_id
+    }
   )
 
   # Extract foundation outputs
@@ -23,6 +30,10 @@ locals {
   data_subnet_id = data.terraform_remote_state.foundation.outputs.data_subnet_id
   mgmt_subnet_id = data.terraform_remote_state.foundation.outputs.mgmt_subnet_id
 }
+
+#------------------------------------------------------------------------------
+# Validation
+#------------------------------------------------------------------------------
 
 # Validation: Ensure all required tags are present
 # This precondition will fail if any required tag is missing or empty
@@ -34,8 +45,9 @@ check "required_tags_validation" {
       local.common_tags["ManagedBy"] != null && local.common_tags["ManagedBy"] != "",
       local.common_tags["Phase"] != null && local.common_tags["Phase"] != "",
       local.common_tags["GitRepository"] != null && local.common_tags["GitRepository"] != "",
-      local.common_tags["TerraformPath"] != null && local.common_tags["TerraformPath"] != ""
+      local.common_tags["TerraformPath"] != null && local.common_tags["TerraformPath"] != "",
+      local.common_tags["DeploymentId"] != null && local.common_tags["DeploymentId"] != ""
     ])
-    error_message = "All required tags must be present and non-empty: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }

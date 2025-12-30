@@ -13,6 +13,11 @@ variable "project_name" {
   description = "Project name for labeling"
   type        = string
   default     = "ecare"
+
+  validation {
+    condition     = length(var.project_name) <= 30
+    error_message = "project_name must be 30 characters or less to ensure resource names stay within Azure limits."
+  }
 }
 
 variable "labels" {

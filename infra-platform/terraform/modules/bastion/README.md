@@ -46,7 +46,7 @@ module "bastion" {
 | resource_group_name | Name of the resource group | `string` | - | yes |
 | location | Azure region for resources | `string` | - | yes |
 | environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
-| project_name | Project name for resource naming | `string` | `"ecare"` | no |
+| project_name | Project name for resource naming (max 30 characters) | `string` | `"ecare"` | no |
 | subnet_id | Subnet ID for Bastion VM | `string` | - | yes |
 | vm_size | VM size for Bastion | `string` | `"Standard_D2als_v6"` | no |
 | admin_username | Admin username for Bastion VM | `string` | `"azureuser"` | no |

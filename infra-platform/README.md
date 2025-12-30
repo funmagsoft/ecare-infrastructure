@@ -41,17 +41,58 @@ terraform/
 
 Each environment directory contains:
 
-- `backend.tf` - Backend configuration (state storage)
-- `providers.tf` - Provider configuration (AzureRM, Kubernetes)
+- `versions.tf` - Terraform version, backend configuration, and required providers
+- `providers.tf` - Provider configuration (AzureRM)
 - `kubernetes-provider.tf` - Kubernetes provider configuration
-- `main.tf` - Calls the `platform` module
+- `main.tf` - Calls the `environment` module
 - `variables.tf` - Environment-specific variables
-- `outputs.tf` - Re-exports outputs from the `platform` module
+- `outputs.tf` - Re-exports outputs from the `environment` module
 - `terraform.tfvars` - Environment-specific values (not committed to git)
 
 ## Getting Started
 
 1. Review infra documentation [README.md](https://github.com/funmagsoft/infra-documentation/blob/main/README.md)
+
+## Deployment Identification
+
+All resources are tagged with a unique `deployment_id` (8-character alphanumeric identifier) for easy cleanup and tracking.
+
+**Purpose:**
+
+- Enables automated cleanup of ALL resources (Azure + Entra ID) using a single command
+- Must be consistent across all phases (foundation/identity/platform) for each environment
+- Allows tracking which resources belong to which deployment
+
+**Where deployment_id is used:**
+
+| Resource Type | Location | Example |
+|---------------|----------|---------|
+| **Azure Resources** | In `tags` | `DeploymentId = "a1b2c3d4"` |
+| AKS Cluster | Tag only | ❌ Not in name |
+| PostgreSQL Server | Tag only | ❌ Not in name |
+| Storage Account | Tag only | ❌ Not in name |
+| Key Vault | Tag only | ❌ Not in name |
+| Service Bus Namespace | Tag only | ❌ Not in name |
+| Container Registry (ACR) | Tag only | ❌ Not in name |
+| Bastion VM | Tag only | ❌ Not in name |
+| Log Analytics Workspace | Tag only | ❌ Not in name |
+| Application Insights | Tag only | ❌ Not in name |
+
+**Why this approach?**
+
+- **Azure Resources**: Tags are easily filterable and don't affect existing resource names
+- **No Entra ID resources**: Platform phase doesn't create any Entra ID resources (no Service Principals or Applications)
+- **Consistent tagging**: All resources created by this phase inherit `DeploymentId` from `common_tags`
+
+**Cleanup example:**
+
+```bash
+# Preview what would be deleted (dry-run by default)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Delete all resources for dev environment (including platform resources)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
 
 ## Architecture
 
@@ -70,15 +111,15 @@ This repository uses a modular architecture to eliminate code duplication:
 
 Each environment directory (`environments/{dev,test,stage,prod}/`) contains:
 
-- `backend.tf` - Backend configuration pointing to environment-specific state storage
+- `versions.tf` - Terraform version, backend configuration, and required providers
 - `providers.tf` - Provider configuration (required in root module)
 - `kubernetes-provider.tf` - Kubernetes provider configuration (required for AKS namespace creation)
-- `main.tf` - Calls the `platform` module with environment-specific variables
+- `main.tf` - Calls the `environment` module with environment-specific variables
 - `variables.tf` - Environment-specific input variables
-- `outputs.tf` - Re-exports outputs from the `platform` module
+- `outputs.tf` - Re-exports outputs from the `environment` module
 - `terraform.tfvars` - Environment-specific values (not committed to git)
 
-**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments.
+**Templates**: The `terraform/templates/` directory contains template files for `backend.tf` and `providers.tf` to help set up new environments (note: environments now use `versions.tf` instead of separate `backend.tf`).
 
 ## Prerequisites
 

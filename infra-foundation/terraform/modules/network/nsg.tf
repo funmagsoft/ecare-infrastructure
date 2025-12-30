@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Network Security Groups
+#------------------------------------------------------------------------------
+
 # NSG for AKS Subnet
 resource "azurerm_network_security_group" "aks" {
   name                = var.aks_nsg_name
@@ -39,6 +43,10 @@ resource "azurerm_network_security_group" "mgmt" {
     }
   )
 }
+
+#------------------------------------------------------------------------------
+# NSG Rules Configuration
+#------------------------------------------------------------------------------
 
 # NSG Rules Configuration
 locals {
@@ -204,6 +212,10 @@ locals {
     }
   }
 }
+
+#------------------------------------------------------------------------------
+# NSG Rules Resources
+#------------------------------------------------------------------------------
 
 # Create NSG rules using for_each
 resource "azurerm_network_security_rule" "rules" {

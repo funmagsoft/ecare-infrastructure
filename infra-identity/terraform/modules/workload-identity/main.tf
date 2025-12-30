@@ -1,3 +1,6 @@
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
 
 locals {
   # Resource naming patterns
@@ -43,6 +46,10 @@ locals {
   } : {}
 }
 
+#------------------------------------------------------------------------------
+# Validation
+#------------------------------------------------------------------------------
+
 # Validation: Ensure all required tags are present
 check "required_tags_validation" {
   assert {
@@ -53,6 +60,10 @@ check "required_tags_validation" {
     error_message = "All required tags must be present and non-empty in local.tags: Environment, Project, Service, ManagedBy, Phase, GitRepository, TerraformPath."
   }
 }
+
+#------------------------------------------------------------------------------
+# Azure Resources
+#------------------------------------------------------------------------------
 
 # User Assigned Managed Identity (only if access is needed)
 resource "azurerm_user_assigned_identity" "service" {
@@ -91,6 +102,10 @@ resource "azurerm_federated_identity_credential" "service" {
     }
   }
 }
+
+#------------------------------------------------------------------------------
+# RBAC Role Assignments
+#------------------------------------------------------------------------------
 
 # Key Vault Secrets User (conditional)
 # Precondition Pattern:
@@ -167,6 +182,10 @@ resource "azurerm_role_assignment" "additional" {
     }
   }
 }
+
+#------------------------------------------------------------------------------
+# Kubernetes Resources
+#------------------------------------------------------------------------------
 
 # Kubernetes ServiceAccount (always created; annotation only if MI exists)
 resource "kubernetes_service_account_v1" "service" {

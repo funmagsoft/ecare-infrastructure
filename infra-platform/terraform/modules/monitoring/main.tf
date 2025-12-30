@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# Log Analytics Workspace
+#------------------------------------------------------------------------------
+
 # Log Analytics Workspace
 resource "azurerm_log_analytics_workspace" "this" {
   name                = "log-${var.project_name}-${var.environment}"
@@ -9,9 +13,7 @@ resource "azurerm_log_analytics_workspace" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "monitoring"
+      Module = "monitoring"
     }
   )
 }
@@ -27,9 +29,7 @@ resource "azurerm_application_insights" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "monitoring"
+      Module = "monitoring"
     }
   )
 }

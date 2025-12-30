@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------
+# PostgreSQL Flexible Server
+#------------------------------------------------------------------------------
+
 # PostgreSQL Flexible Server
 resource "azurerm_postgresql_flexible_server" "this" {
   name                = "psql-${var.project_name}-${var.environment}"
@@ -31,9 +35,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "postgresql"
+      Module = "postgresql"
     }
   )
 
@@ -67,9 +69,7 @@ resource "azurerm_private_dns_zone" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "postgresql"
+      Module = "postgresql"
     }
   )
 }
@@ -87,9 +87,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "postgresql"
+      Module = "postgresql"
     }
   )
 }
@@ -116,9 +114,7 @@ resource "azurerm_private_endpoint" "this" {
   tags = merge(
     var.tags,
     {
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-      Module      = "postgresql"
+      Module = "postgresql"
     }
   )
 }
