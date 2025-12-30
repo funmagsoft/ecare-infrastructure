@@ -125,6 +125,7 @@ The module enforces tag validation to ensure all required tags are present:
 - `Phase` - Always set to "Foundation"
 - `GitRepository` - Always set to "infra-foundation"
 - `TerraformPath` - Path to Terraform configuration (e.g., "terraform/environments/dev")
+- `DeploymentId` - Deployment identifier for this environment
 
 **Additional Tags**:
 

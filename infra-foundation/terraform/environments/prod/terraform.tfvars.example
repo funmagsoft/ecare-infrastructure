@@ -50,7 +50,7 @@ enable_vpn_gateway  = false  # Set to true if VPN access is required
 # vpn_root_cert_data       = "<base64-encoded-cert-data>"  # Use environment variable TF_VAR_vpn_root_cert_data for production
 
 # Additional Tags (optional)
-# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath). Required tags take precedence and cannot be overridden.
+# Additional tags to merge with required tags (Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId). Required tags take precedence and cannot be overridden.
 # RECOMMENDED for production: Add cost allocation and compliance tags
 # tags = {
 #   CostCenter = "Engineering"

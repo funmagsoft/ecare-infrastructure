@@ -320,7 +320,7 @@ terraform apply
 The `platform` module enforces tag validation to ensure all required tags are present:
 
 - **Required Tags** (automatically set, cannot be overridden):
-  - `Environment`, `Project`, `ManagedBy`, `Phase`, `GitRepository`, `TerraformPath`
+  - `Environment`, `Project`, `ManagedBy`, `Phase`, `GitRepository`, `TerraformPath`, `DeploymentId`
 - **Additional Tags**: Use `tags` variable to add custom tags 
 - **Validation**: `check` blocks validate all required tags are present and non-empty
 
