@@ -90,12 +90,39 @@ resource "azurerm_resource" "name" {
 
 ## 8. Comments & Documentation
 
-- **Section Headers:** Use comment blocks with separators to organize major sections:
+- **Section Headers:** Use comment blocks with separators to organize major sections of files (Data Sources, Local Variables, Resources):
 
 ```hcl
 #------------------------------------------------------------------------------
-# Module: Resource Name
+# Data Sources
 #------------------------------------------------------------------------------
+
+# Data source: Resource Group (created in Phase 0 by scripts)
+data "azurerm_resource_group" "main" {
+  name = "rg-${var.project_name}-${var.environment}"
+}
+
+#------------------------------------------------------------------------------
+# Local Variables
+#------------------------------------------------------------------------------
+
+locals {
+  # Required tags - these must always be present
+  required_tags = {
+    Environment = var.environment
+  }
+}
+
+#------------------------------------------------------------------------------
+# Resources
+#------------------------------------------------------------------------------
+
+# Application Registration for Service Principal
+# Creates an Azure AD application that serves as the identity...
+resource "azuread_application" "gha" {
+  display_name = "sp-gha-${var.project_name}-infra-${var.environment}"
+  tags         = local.ad_tags
+}
 ```
 
 - **Inline Comments:** Use `#` for inline comments. Place comments above the code they describe, not at the end of lines.
