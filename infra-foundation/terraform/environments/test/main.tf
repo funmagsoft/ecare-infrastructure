@@ -1,8 +1,9 @@
 module "environment" {
   source = "../../modules/environment"
 
-  environment  = var.environment
-  project_name = var.project_name
+  environment   = var.environment
+  project_name  = var.project_name
+  deployment_id = var.deployment_id
 
   vnet_cidr           = var.vnet_cidr
   aks_subnet_cidr     = var.aks_subnet_cidr

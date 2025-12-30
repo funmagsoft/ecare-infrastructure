@@ -17,6 +17,7 @@ locals {
     Phase         = "Foundation"
     GitRepository = "infra-foundation"
     TerraformPath = "terraform/environments/${local.environment}"
+    DeploymentId  = var.deployment_id
   }
 
   # Merge required tags with additional tags
@@ -37,9 +38,10 @@ check "required_tags_validation" {
       trimspace(local.common_tags["ManagedBy"]) != "",
       trimspace(local.common_tags["Phase"]) != "",
       trimspace(local.common_tags["GitRepository"]) != "",
-      trimspace(local.common_tags["TerraformPath"]) != ""
+      trimspace(local.common_tags["TerraformPath"]) != "",
+      trimspace(local.common_tags["DeploymentId"]) != ""
     ])
-    error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
 

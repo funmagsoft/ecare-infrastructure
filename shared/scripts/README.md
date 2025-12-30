@@ -16,10 +16,6 @@ This library eliminates code duplication by providing a single source of truth f
 
 Core helper functions for shell scripts.
 
-### `globals.sh`
-
-Global project configuration constants shared across all infrastructure components.
-
 **Categories:**
 
 - **Output Functions**: `print_header()`, `print_success()`, `print_error()`, `print_warning()`, `print_info()`
@@ -27,6 +23,36 @@ Global project configuration constants shared across all infrastructure componen
 - **Azure CLI Helpers**: `check_azure_login()`, `get_subscription_id()`, `get_tenant_id()`, `check_resource_exists()`
 - **Environment Helpers**: `validate_environment()`, `load_env_file()`, `get_project_root()`
 - **Git Helpers**: `validate_conventional_commit()`
+
+### `globals.sh`
+
+Global project configuration constants shared across all infrastructure components.
+
+**Contents:**
+
+- Organization and project names
+- Deployment IDs per environment (for resource tagging and cleanup)
+
+### `cleanup-by-deployment-id.sh`
+
+Cleanup script for removing all resources tagged with a specific deployment ID.
+
+**Purpose:** Delete all Azure and Entra ID resources associated with a deployment
+
+**Usage:**
+
+```bash
+# Dry run (preview only) - default behavior
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Actually delete resources
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
+
+**Options:**
+
+- `--dry-run` - Preview changes without executing them (default)
+- `--execute` - Actually delete resources
 
 ## Usage
 
@@ -265,6 +291,16 @@ The `globals.sh` file contains project-wide constants that should remain consist
 - `ORGANIZATION` - GitHub organization name (e.g., "hycom")
 - `ORGANIZATION_FOR_SA` - Organization name for Storage Account naming (may differ due to Azure constraints)
 - `PROJECT` - Project name used in resource naming (e.g., "ecare")
+- `DEPLOYMENT_IDS` - Associative array mapping environment names to deployment IDs
+
+**Deployment IDs:**
+
+Each environment has a unique 8-character deployment identifier used for resource tagging and cleanup:
+
+- `dev`: `a1b2c3d4`
+- `test`: `e5f6g7h8`
+- `stage`: `i9j0k1l2`
+- `prod`: `m3n4o5p6`
 
 **Usage:**
 
@@ -279,6 +315,11 @@ source "${REPO_ROOT}/shared/scripts/common.sh"
 # Use global constants
 echo "Organization: $ORGANIZATION"
 echo "Project: $PROJECT"
+
+# Use deployment ID for environment
+ENV="dev"
+DEPLOYMENT_ID="${DEPLOYMENT_IDS[$ENV]}"
+echo "Deployment ID for $ENV: $DEPLOYMENT_ID"
 
 # Use in resource naming
 RESOURCE_GROUP="rg-${PROJECT}-dev"

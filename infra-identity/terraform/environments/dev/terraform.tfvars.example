@@ -8,8 +8,9 @@
 # subscription_id = null  # Optional: set to null to use active subscription
 
 # Environment Configuration
-environment  = "dev"
-project_name = "ecare"
+environment   = "dev"
+project_name  = "ecare"
+deployment_id = "a1b2c3d4"  # Unique identifier for this environment (use same ID in all phases)
 
 # Services Configuration
 # Map of services to create workload identities for

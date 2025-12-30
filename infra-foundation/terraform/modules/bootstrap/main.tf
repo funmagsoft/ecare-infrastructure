@@ -33,6 +33,7 @@ locals {
     Phase         = "Bootstrap"
     GitRepository = "infra-foundation"
     TerraformPath = "terraform/environments/${var.environment}"
+    DeploymentId  = var.deployment_id
   }
 
   # Merge required tags with additional tags
@@ -58,18 +59,19 @@ locals {
 check "required_tags_validation" {
   assert {
     condition = alltrue([
-      for key in ["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"] :
+      for key in ["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath", "DeploymentId"] :
       contains(keys(local.merged_tags), key) && trimspace(local.merged_tags[key]) != ""
     ])
-    error_message = "All required tags must be present and non-empty in merged_tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty in merged_tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
 
 # Application Registration for Service Principal
 # Creates an Azure AD application that serves as the identity for GitHub Actions workflows
 # This application will be used to authenticate Terraform repositories for infrastructure management
+# Display name includes deployment_id for easy identification and cleanup
 resource "azuread_application" "gha" {
-  display_name = "sp-gha-${var.project_name}-infra-${var.environment}"
+  display_name = "sp-gha-${var.project_name}-infra-${var.environment}-${var.deployment_id}"
 
   tags = local.ad_tags
 }

@@ -1,28 +1,26 @@
 #!/bin/bash
 
 # ============================================================================
-# DEPRECATED: This script is replaced by Terraform bootstrap module
+# Setup Access for Current User to Terraform State Storage
 # ============================================================================
-# This script is kept for backward compatibility and migration purposes.
-# For new deployments, use Terraform bootstrap module instead:
+# This script grants Storage Blob Data Contributor access to the current user
+# on all Terraform state Storage Accounts (dev, test, stage, prod).
 #
-#   cd terraform/environments/dev
-#   terraform init
-#   terraform apply -target=module.bootstrap
+# This is required for Phase 0 setup to allow the user to:
+# - Initialize Terraform locally
+# - Read and write Terraform state files
+# - Browse state files in Azure Portal
 #
-# Configure users_with_state_access in terraform.tfvars:
+# Called by: setup-phase0.sh
 #
-#   users_with_state_access = [
-#     "12345678-1234-1234-1234-123456789012"  # User Object ID
-#   ]
+# Usage:
+#   ./scripts/setup-access-user.sh [--dry-run]
 #
-# To get a user's Object ID:
-#   az ad user show --id <user-email> --query id --output tsv
+# Options:
+#   --dry-run  Preview changes without executing them
 #
-# The bootstrap module creates Storage Blob Data Contributor role assignments
-# for all specified users on the Terraform state Storage Account.
-#
-# See: terraform/modules/bootstrap/README.md for details
+# Note: Additional users can be granted access via Terraform bootstrap module
+# by configuring users_with_state_access in terraform.tfvars.
 # ============================================================================
 
 # Source common functions

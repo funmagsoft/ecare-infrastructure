@@ -4,11 +4,12 @@ Complete reference for all operational scripts in the `infra-foundation` reposit
 
 ## Overview
 
-Scripts are organized into three categories:
+Scripts are organized into four categories:
 
 - **Phase 0 Scripts**: Create and manage prerequisites for Terraform (RG, Storage, User Access)
 - **Verification Scripts**: Verify infrastructure health at different layers
 - **Emergency Scripts**: Handle failure scenarios when Terraform operations fail
+- **Cleanup Scripts**: Remove resources by deployment identifier
 - **Utility Scripts**: Helper scripts for special scenarios
 
 ## Phase 0 Scripts
@@ -274,6 +275,69 @@ Scripts for verifying infrastructure health and configuration.
 ## Cleanup Scripts
 
 Scripts for destroying infrastructure.
+
+### cleanup-by-deployment-id.sh
+
+**Purpose:** Delete all Azure and Entra ID resources tagged with a specific deployment ID
+
+**Location:** `shared/scripts/cleanup-by-deployment-id.sh`
+
+**What it deletes:**
+
+- Azure Resource Groups (tagged with DeploymentId)
+- Entra ID Applications (display name ending with `-{deployment_id}`)
+- Service Principals (display name ending with `-{deployment_id}`)
+- Managed Identities (tagged with DeploymentId)
+
+**Usage:**
+
+```bash
+# Dry run (preview only) - default behavior
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --dry-run
+
+# Actually delete resources
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
+
+**Arguments:**
+
+- `deployment_id` - 8-character deployment identifier (e.g., `a1b2c3d4`)
+
+**Options:**
+
+- `--dry-run` - Preview changes without executing them (default)
+- `--execute` - Actually delete resources
+
+**Environment-specific deployment IDs:**
+
+- dev: `a1b2c3d4`
+- test: `e5f6g7h8`
+- stage: `i9j0k1l2`
+- prod: `m3n4o5p6`
+
+**Prerequisites:**
+
+- Azure CLI installed and authenticated
+- Appropriate permissions to delete resources
+
+**Safety features:**
+
+- Dry run mode by default
+- Confirmation prompt before deletion
+- Clear output showing what will be deleted
+
+**Example:**
+
+```bash
+# Preview what would be deleted for dev environment
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Delete all dev environment resources
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
+
+---
 
 ### cleanup-phase0.sh
 

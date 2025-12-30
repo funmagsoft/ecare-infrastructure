@@ -25,6 +25,7 @@ locals {
       Phase         = "WorkloadIdentity"
       GitRepository = "infra-identity"
       TerraformPath = "terraform/environments/${var.environment}"
+      DeploymentId  = var.deployment_id
     },
     var.tags
   )

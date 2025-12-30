@@ -38,12 +38,52 @@ authenticate to Azure and manage state files.
 
 The `bootstrap` module creates:
 
-- **Service Principals** (`sp-gha-{project}-infra-{env}`) - Azure AD identities for GitHub Actions OIDC authentication
+- **Service Principals** (`sp-gha-{project}-infra-{env}-{deployment_id}`) - Azure AD identities for GitHub Actions OIDC authentication
 - **Federated Identity Credentials (FIC)** - OIDC credentials for Terraform repositories (one per repository per environment)
 - **RBAC Role Assignments**:
   - Contributor on Resource Group
   - User Access Administrator on Resource Group
   - Storage Blob Data Contributor on Storage Account (for Service Principals and users)
+
+### Deployment Identification
+
+All resources are tagged with a unique `deployment_id` (8-character alphanumeric identifier) for easy cleanup and tracking.
+
+**Purpose:**
+
+- Enables automated cleanup of ALL resources (Azure + Entra ID) using a single command
+- Must be consistent across all phases (foundation/identity/platform) for each environment
+- Allows tracking which resources belong to which deployment
+
+**Where deployment_id is used:**
+
+| Resource Type | Location | Example |
+|---------------|----------|---------|
+| **Entra ID Resources** | In `displayName` | `sp-gha-ecare-infra-dev-a1b2c3d4` |
+| Service Principal | Name | ✅ Includes deployment_id |
+| Application Registration | Name | ✅ Includes deployment_id |
+| **Azure Resources** | In `tags` | `DeploymentId = "a1b2c3d4"` |
+| Resource Groups | Tag only | ❌ Not in name |
+| Virtual Networks | Tag only | ❌ Not in name |
+| Network Security Groups | Tag only | ❌ Not in name |
+| Storage Accounts | Tag only | ❌ Not in name (24 char limit) |
+| VPN Gateway | Tag only | ❌ Not in name |
+
+**Why this approach?**
+
+- **Entra ID**: Tags cannot be filtered via Azure CLI API, so we use `displayName` suffix
+- **Azure Resources**: Tags are easily filterable and don't affect existing resource names
+- **Storage Accounts**: Name limit is 24 characters (currently using ~20), no room for 8-char deployment_id
+
+**Cleanup example:**
+
+```bash
+# Preview what would be deleted (dry-run by default)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Delete all resources for dev environment
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
 
 ## Structure
 
@@ -100,6 +140,7 @@ cp .env.example .env
 cd terraform/environments/dev
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars with your configuration
+# IMPORTANT: Set deployment_id to match the value in shared/scripts/globals.sh for this environment
 
 terraform init
 terraform plan

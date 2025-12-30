@@ -42,6 +42,56 @@ This separation ensures:
 - Clear separation of concerns
 - Different lifecycle management
 
+## Deployment Identification
+
+All resources across all phases are tagged with a unique `deployment_id` (8-character alphanumeric identifier).
+
+**Purpose:**
+
+- Enables automated cleanup of ALL resources (Azure + Entra ID) using a single command
+- Must be consistent across all phases (foundation/identity/platform) for each environment
+- Allows tracking which resources belong to which deployment
+
+**Environment-specific deployment IDs:**
+
+| Environment | Deployment ID |
+|-------------|---------------|
+| dev | `a1b2c3d4` |
+| test | `e5f6g7h8` |
+| stage | `i9j0k1l2` |
+| prod | `m3n4o5p6` |
+
+**Where deployment_id is used:**
+
+- **Entra ID Resources**: Included in `displayName` (e.g., `sp-gha-ecare-infra-dev-a1b2c3d4`)
+  - Service Principals
+  - Application Registrations
+- **Azure Resources**: Stored in `DeploymentId` tag (e.g., `DeploymentId = "a1b2c3d4"`)
+  - Resource Groups
+  - Virtual Networks
+  - Network Security Groups
+  - Storage Accounts
+  - Managed Identities
+  - All other Azure resources
+
+**Why this approach?**
+
+- Entra ID tags cannot be filtered via Azure CLI API → use `displayName` suffix
+- Azure resource tags are easily filterable → use tags to avoid changing existing names
+- Storage Accounts have 24-character name limit → tags only
+
+**Cleanup example:**
+
+```bash
+# Preview what would be deleted for dev environment (dry-run by default)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Delete all resources for dev environment (all phases)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
+
+See [shared/scripts/README.md](./shared/scripts/README.md) for more details.
+
 ## Quick Start
 
 ### Prerequisites

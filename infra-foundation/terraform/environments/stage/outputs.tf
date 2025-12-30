@@ -1,4 +1,12 @@
 # ============================================================================
+# Deployment Configuration
+# ============================================================================
+output "deployment_id" {
+  description = "Unique deployment identifier for cleanup operations"
+  value       = var.deployment_id
+}
+
+# ============================================================================
 # Bootstrap Outputs
 # ============================================================================
 output "bootstrap_service_principal_app_id" {

@@ -1,3 +1,14 @@
+# ============================================================================
+# Deployment Configuration
+# ============================================================================
+output "deployment_id" {
+  description = "Unique deployment identifier for cleanup operations"
+  value       = var.deployment_id
+}
+
+# ============================================================================
+# Identity Outputs
+# ============================================================================
 # Re-export outputs from the identity module
 output "github_oidc_service_principal_app_id" {
   description = "Application (Client) ID of the Service Principal for GitHub Actions (service repositories)"

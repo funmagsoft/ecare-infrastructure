@@ -17,6 +17,21 @@ variable "project_name" {
     condition     = can(regex("^[a-zA-Z0-9-]+$", var.project_name))
     error_message = "project_name may contain only letters, numbers, and hyphens."
   }
+
+  validation {
+    condition     = length(var.project_name) <= 30
+    error_message = "project_name must be 30 characters or less to ensure resource names stay within Azure limits."
+  }
+}
+
+variable "deployment_id" {
+  description = "Unique deployment identifier (8 lowercase alphanumeric characters)"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{8}$", var.deployment_id))
+    error_message = "deployment_id must be exactly 8 lowercase alphanumeric characters."
+  }
 }
 
 variable "vnet_cidr" {
@@ -136,8 +151,8 @@ variable "tags" {
 
   validation {
     condition = alltrue([
-      for key in keys(var.tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath"], key)
+      for key in keys(var.tags) : !contains(["Environment", "Project", "ManagedBy", "Phase", "GitRepository", "TerraformPath", "DeploymentId"], key)
     ])
-    error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }

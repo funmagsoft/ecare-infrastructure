@@ -37,6 +37,7 @@ locals {
     Phase         = "WorkloadIdentity"
     GitRepository = "infra-identity"
     TerraformPath = "terraform/environments/${var.environment}"
+    DeploymentId  = var.deployment_id
   }
 
   # Merge required tags with additional tags
@@ -67,9 +68,10 @@ check "required_tags_validation" {
       trimspace(local.common_tags["ManagedBy"]) != "",
       trimspace(local.common_tags["Phase"]) != "",
       trimspace(local.common_tags["GitRepository"]) != "",
-      trimspace(local.common_tags["TerraformPath"]) != ""
+      trimspace(local.common_tags["TerraformPath"]) != "",
+      trimspace(local.common_tags["DeploymentId"]) != ""
     ])
-    error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath."
+    error_message = "All required tags must be present and non-empty (after trimming whitespace): Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
 
@@ -80,6 +82,7 @@ module "github_oidc_integration" {
 
   environment         = var.environment
   project_name        = var.project_name
+  deployment_id       = var.deployment_id
   resource_group_name = data.azurerm_resource_group.main.name
 
   acr_id = data.terraform_remote_state.platform.outputs.acr_id
@@ -112,6 +115,7 @@ module "workload_identity" {
   project_name        = var.project_name
   service_name        = each.key
   environment         = var.environment
+  deployment_id       = var.deployment_id
   resource_group_name = data.azurerm_resource_group.main.name
   location            = data.azurerm_resource_group.main.location
 

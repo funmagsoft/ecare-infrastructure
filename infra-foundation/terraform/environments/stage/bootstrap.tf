@@ -21,6 +21,7 @@ module "bootstrap" {
   organization_name   = var.organization_name
   organization_for_sa = var.organization_for_sa
   project_name        = var.project_name
+  deployment_id       = var.deployment_id
 
   terraform_repos         = var.terraform_repos
   users_with_state_access = var.users_with_state_access

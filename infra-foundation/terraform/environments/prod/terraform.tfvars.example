@@ -10,8 +10,9 @@
 # subscription_id = null  # Optional: set to null to use active subscription
 
 # Environment Configuration
-environment  = "prod"
-project_name = "ecare"
+environment   = "prod"
+project_name  = "ecare"
+deployment_id = "m3n4o5p6"  # Unique identifier for this environment (use same ID in all phases)
 
 # Bootstrap Configuration
 organization_name   = "hycom"

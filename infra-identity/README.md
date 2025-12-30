@@ -53,7 +53,7 @@ Each environment directory contains:
 The `github-oidc` module creates:
 
 - **Service Principal** (one per environment)  
-  Name: `sp-gha-{project_name}-{environment}` (e.g., `sp-gha-ecare-dev`)
+  Name: `sp-gha-{project_name}-{environment}-{deployment_id}` (e.g., `sp-gha-ecare-dev-a1b2c3d4`)
 - **Federated Identity Credentials (FIC)** for GitHub OIDC:
   - One per service repository (branch-based: `repo:{org}/{repo}:ref:refs/heads/{branch}`, default branch = `main`)
   - One per GitOps repository (environment-based: `repo:{org}/{repo}:environment:{environment}`)
@@ -62,6 +62,44 @@ The `github-oidc` module creates:
   - **Contributor** on Azure Container Registry (ACR) - Required for `az acr build`
   - **Azure Kubernetes Service Cluster User Role** on AKS - Required for `az aks get-credentials`
   - **Azure Kubernetes Service RBAC Writer** on AKS (optional) - Required for deployments
+
+### Deployment Identification
+
+All resources are tagged with a unique `deployment_id` (8-character alphanumeric identifier) for easy cleanup and tracking.
+
+**Purpose:**
+
+- Enables automated cleanup of ALL resources (Azure + Entra ID) using a single command
+- Must be consistent across all phases (foundation/identity/platform) for each environment
+- Allows tracking which resources belong to which deployment
+
+**Where deployment_id is used:**
+
+| Resource Type | Location | Example |
+|---------------|----------|---------|
+| **Entra ID Resources** | In `displayName` | `sp-gha-ecare-dev-a1b2c3d4` |
+| Service Principal (GitHub OIDC) | Name | ✅ Includes deployment_id |
+| Application Registration | Name | ✅ Includes deployment_id |
+| **Azure Resources** | In `tags` | `DeploymentId = "a1b2c3d4"` |
+| User Assigned Managed Identity | Tag only | ❌ Not in name |
+| Federated Identity Credentials | Tag only | ❌ Not in name |
+| RBAC Role Assignments | Parent resource tags | Inherited from UAMI |
+
+**Why this approach?**
+
+- **Entra ID**: Tags cannot be filtered via Azure CLI API, so we use `displayName` suffix
+- **Azure Resources**: Tags are easily filterable and don't affect existing resource names
+- **Managed Identities**: Name includes service name for clarity (`mi-ecare-billing-dev`)
+
+**Cleanup example:**
+
+```bash
+# Preview what would be deleted (dry-run by default)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4
+
+# Delete all resources for dev environment (including Managed Identities)
+./shared/scripts/cleanup-by-deployment-id.sh a1b2c3d4 --execute
+```
 
 ### Per Service (Workload Identity)
 

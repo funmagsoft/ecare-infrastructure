@@ -12,6 +12,21 @@ variable "project_name" {
   description = "Project name"
   type        = string
   default     = "ecare"
+
+  validation {
+    condition     = length(var.project_name) <= 30
+    error_message = "project_name must be 30 characters or less to ensure resource names stay within Azure limits."
+  }
+}
+
+variable "deployment_id" {
+  description = "Unique deployment identifier (8 lowercase alphanumeric characters)"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{8}$", var.deployment_id))
+    error_message = "deployment_id must be exactly 8 lowercase alphanumeric characters."
+  }
 }
 
 variable "services" {

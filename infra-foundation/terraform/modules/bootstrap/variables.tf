@@ -8,6 +8,16 @@ variable "environment" {
   }
 }
 
+variable "deployment_id" {
+  description = "Unique deployment identifier (8 lowercase alphanumeric characters)"
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{8}$", var.deployment_id))
+    error_message = "deployment_id must be exactly 8 lowercase alphanumeric characters."
+  }
+}
+
 variable "organization_name" {
   description = "GitHub organization name"
   type        = string
@@ -30,6 +40,11 @@ variable "project_name" {
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.project_name))
     error_message = "project_name must contain only lowercase letters and digits (used in storage account naming)."
+  }
+
+  validation {
+    condition     = length(var.project_name) <= 30
+    error_message = "project_name must be 30 characters or less to ensure resource names stay within Azure limits."
   }
 }
 
