@@ -17,9 +17,9 @@ build_fic_display_name() {
     fi
   done
 
-  # hash: first 4 characters SHA256(repo)
+  # hash: first 6 characters SHA256(repo)
   local hash
-  hash=$(printf '%s' "$repo" | sha256sum | awk '{print substr($1,1,4)}')
+  hash=$(printf '%s' "$repo" | sha256sum | awk '{print substr($1,1,6)}')
 
   printf 'GitHub%sEnv-%s-%s\n' "$titled" "$env" "$hash"
 }

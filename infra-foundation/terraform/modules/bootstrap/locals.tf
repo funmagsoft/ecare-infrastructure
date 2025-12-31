@@ -48,7 +48,7 @@ locals {
   # FIC display names: GitHub{Repo}Env-{environment}-{hash}
   fic_display_names = {
     for repo in local.terraform_repos_full :
-    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 4)}"
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 6)}"
   }
 }
 
