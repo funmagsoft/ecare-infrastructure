@@ -86,10 +86,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   vnet_subnet_id        = var.vnet_subnet_id
   mode                  = "User"
 
-  auto_scaling_enabled  = var.auto_scaling_enabled
-  min_count             = var.auto_scaling_enabled ? var.user_node_pool_min_count : null
-  max_count             = var.auto_scaling_enabled ? var.user_node_pool_max_count : null
-  node_count            = var.auto_scaling_enabled ? null : var.user_node_pool_node_count
+  auto_scaling_enabled = var.auto_scaling_enabled
+  min_count            = var.auto_scaling_enabled ? var.user_node_pool_min_count : null
+  max_count            = var.auto_scaling_enabled ? var.user_node_pool_max_count : null
+  node_count           = var.auto_scaling_enabled ? null : var.user_node_pool_node_count
 
   tags = merge(
     var.tags,

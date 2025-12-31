@@ -19,13 +19,13 @@ locals {
 
 # Storage Account
 resource "azurerm_storage_account" "this" {
-  name                       = local.storage_account_name
-  resource_group_name        = var.resource_group_name
-  location                   = var.location
-  account_tier               = var.account_tier
-  account_replication_type   = var.account_replication_type
-  min_tls_version            = var.minimum_tls_version
-  https_traffic_only_enabled = var.enable_https_traffic_only
+  name                             = local.storage_account_name
+  resource_group_name              = var.resource_group_name
+  location                         = var.location
+  account_tier                     = var.account_tier
+  account_replication_type         = var.account_replication_type
+  min_tls_version                  = var.minimum_tls_version
+  https_traffic_only_enabled       = var.enable_https_traffic_only
   cross_tenant_replication_enabled = var.cross_tenant_replication_enabled
 
   # Network access configuration
@@ -70,9 +70,9 @@ resource "azurerm_storage_account" "this" {
 
 # Storage Containers
 resource "azurerm_storage_container" "containers" {
-  for_each             = toset(var.containers)
-  name                 = each.value
-  storage_account_id   = azurerm_storage_account.this.id
+  for_each              = toset(var.containers)
+  name                  = each.value
+  storage_account_id    = azurerm_storage_account.this.id
   container_access_type = "private"
 }
 
