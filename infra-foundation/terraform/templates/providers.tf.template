@@ -4,6 +4,7 @@
 # Copy this file to environments/<environment>/providers.tf - the content is identical for all environments.
 #
 # Note: Provider configuration must be in the root module (environment directory), not in child modules.
+# Child modules inherit the provider configuration from the root module.
 
 provider "azurerm" {
   features {}
