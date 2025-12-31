@@ -1,13 +1,58 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: cleanup-phase0.sh
+# Component: infra-foundation
+# Purpose: Delete Phase 0 infrastructure (resource groups, state storage, role assignments) for all environments.
+# =============================================================================
+# Usage:
+#   ./cleanup-phase0.sh [-h|--help] [--dry-run|--execute]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./cleanup-phase0.sh [--dry-run|--execute] [-h|--help]
+
+Delete Phase 0 infrastructure for all environments (dev/test/stage/prod).
+This includes Terraform state storage and related role assignments.
+
+Options:
+  --dry-run     Print planned actions without executing
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+Notes:
+  - This script performs destructive operations. Review the output carefully.
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
 
-echo "=== Phase 0 Infrastructure Cleanup ==="
+log_info "=== Phase 0 Infrastructure Cleanup ==="
 log_dry_run
 log_warning "This will delete Phase 0 infrastructure ONLY:"
 log_warning "  - Current user RBAC assignments (Storage Blob Data Contributor)"
@@ -15,8 +60,8 @@ log_warning "  - Storage Accounts for Terraform state (⚠️ ALL STATE FILES WI
 log_warning "  - Resource Groups (dev, test, stage, prod)"
 echo ""
 log_error "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-log_error "┃  CRITICAL: This will DELETE Terraform state files permanently!  ┃"
-log_error "┃  Run 'terraform destroy' FIRST to delete Terraform resources.   ┃"
+log_error "┃  CRITICAL: This will DELETE Terraform state files permanently!   ┃"
+log_error "┃  Run 'terraform destroy' FIRST to delete Terraform resources.    ┃"
 log_error "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 echo ""
 log_info "This script does NOT delete Terraform-managed resources (SP, VNet, etc.)"
@@ -24,7 +69,7 @@ log_info "Those should be deleted with 'terraform destroy' first."
 echo ""
 
 if [ "$DRY_RUN" != true ]; then
-  echo "To confirm Phase 0 cleanup, type exactly: DELETE-PHASE0"
+  log_warning "To confirm Phase 0 cleanup, type exactly: DELETE-PHASE0"
   read -p "Confirmation: " CONFIRM
   if [ "$CONFIRM" != "DELETE-PHASE0" ]; then
     log_info "Aborted."
@@ -39,7 +84,7 @@ DELETED=0
 # ============================================================================
 # Step 1: Delete Current User RBAC Role Assignments
 # ============================================================================
-echo "=== Step 1: Deleting Current User RBAC Assignments ==="
+log_info "=== Step 1: Deleting Current User RBAC Assignments ==="
 echo ""
 
 if [ "$DRY_RUN" = true ]; then
@@ -47,13 +92,13 @@ if [ "$DRY_RUN" = true ]; then
   CURRENT_USER_OBJECT_ID="<current-user-object-id>"
   log_info "[DRY-RUN] Would get current user information"
 else
-  CURRENT_USER_EMAIL=$(az account show --query user.name --output tsv)
-  CURRENT_USER_OBJECT_ID=$(az ad signed-in-user show --query id --output tsv 2>/dev/null)
+  CURRENT_USER_EMAIL=$(az_call account show --query user.name --output tsv)
+  CURRENT_USER_OBJECT_ID=$(az_call ad signed-in-user show --query id --output tsv 2>/dev/null)
 
   # If signed-in-user doesn't work, try alternative method
   if [ -z "$CURRENT_USER_OBJECT_ID" ] || [ "$CURRENT_USER_OBJECT_ID" == "null" ]; then
     log_info "Trying alternative method to get Object ID from email..."
-    CURRENT_USER_OBJECT_ID=$(az ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
+    CURRENT_USER_OBJECT_ID=$(az_call ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
   fi
 
   if [ -z "$CURRENT_USER_OBJECT_ID" ] || [ "$CURRENT_USER_OBJECT_ID" == "null" ]; then
@@ -77,7 +122,7 @@ if [ -n "$CURRENT_USER_OBJECT_ID" ] && [ "$CURRENT_USER_OBJECT_ID" != "null" ]; 
     if [ "$DRY_RUN" = true ]; then
       log_info "[DRY-RUN] Would delete Storage Blob Data Contributor role for current user"
     else
-      if run_cmd az role assignment delete \
+      if az_exec role assignment delete \
         --assignee "$CURRENT_USER_OBJECT_ID" \
         --scope "$SA_SCOPE" \
         --role "Storage Blob Data Contributor" \
@@ -85,7 +130,7 @@ if [ -n "$CURRENT_USER_OBJECT_ID" ] && [ "$CURRENT_USER_OBJECT_ID" != "null" ]; 
         log_success "Removed Storage Blob Data Contributor role from ${SA_NAME}"
       else
         # Check if role assignment exists
-        if az role assignment list \
+        if az_call role assignment list \
           --assignee "$CURRENT_USER_OBJECT_ID" \
           --scope "$SA_SCOPE" \
           --role "Storage Blob Data Contributor" \
@@ -107,7 +152,7 @@ echo ""
 # ============================================================================
 # Step 2: Delete Storage Accounts and Containers
 # ============================================================================
-echo "=== Step 2: Deleting Storage Accounts ==="
+log_info "=== Step 2: Deleting Storage Accounts ==="
 echo ""
 
 for ENV in dev test stage prod; do
@@ -120,14 +165,14 @@ for ENV in dev test stage prod; do
     log_info "[DRY-RUN] Would delete Storage Account: $SA_NAME and all containers"
   else
     # Check if Storage Account exists
-    if az storage account show --name "$SA_NAME" --resource-group "$RG_NAME" --output none 2>/dev/null; then
+    if az_call storage account show --name "$SA_NAME" --resource-group "$RG_NAME" --output none 2>/dev/null; then
       # Delete all containers first
       log_info "Deleting containers in ${SA_NAME}..."
-      CONTAINERS=$(az storage container list --account-name "$SA_NAME" --auth-mode login --query "[].name" --output tsv 2>/dev/null)
+      CONTAINERS=$(az_call storage container list --account-name "$SA_NAME" --auth-mode login --query "[].name" --output tsv 2>/dev/null)
       if [ -n "$CONTAINERS" ]; then
         echo "$CONTAINERS" | while read -r container_name; do
           if [ -n "$container_name" ]; then
-            if run_cmd az storage container delete \
+            if az_exec storage container delete \
               --name "$container_name" \
               --account-name "$SA_NAME" \
               --auth-mode login \
@@ -141,7 +186,7 @@ for ENV in dev test stage prod; do
       fi
 
       # Delete Storage Account
-      if run_cmd az storage account delete \
+      if az_exec storage account delete \
         --name "$SA_NAME" \
         --resource-group "$RG_NAME" \
         --yes \
@@ -163,7 +208,7 @@ done
 # ============================================================================
 # Step 3: Delete Resource Groups
 # ============================================================================
-echo "=== Step 3: Deleting Resource Groups ==="
+log_info "=== Step 3: Deleting Resource Groups ==="
 echo ""
 
 for ENV in dev test stage prod; do
@@ -174,9 +219,9 @@ for ENV in dev test stage prod; do
   if [ "$DRY_RUN" = true ]; then
     log_info "[DRY-RUN] Would delete Resource Group: $RG_NAME (and all resources within it)"
   else
-    if az group show --name "$RG_NAME" --output none 2>/dev/null; then
+    if az_call group show --name "$RG_NAME" --output none 2>/dev/null; then
       log_info "Deleting Resource Group ${RG_NAME} (this will delete all remaining resources)..."
-      if run_cmd az group delete \
+      if az_exec group delete \
         --name "$RG_NAME" \
         --yes \
         --no-wait \
@@ -199,7 +244,7 @@ done
 # Summary
 # ============================================================================
 echo "================================================================================"
-echo "=== Phase 0 Cleanup Summary ==="
+log_info "=== Phase 0 Cleanup Summary ==="
 echo "================================================================================"
 echo ""
 
@@ -219,16 +264,16 @@ else
     log_info "Deleted/initiated deletion for ${DELETED} resource(s)"
     echo ""
     log_warning "Important Notes:"
-    echo "  - Resource Groups are being deleted asynchronously (may take 5-15 minutes)"
-    echo "  - All Terraform state files have been permanently deleted"
-    echo "  - Terraform-managed resources (SP, FIC, VNet, NSG, VPN) still exist"
+    log_info "  - Resource Groups are being deleted asynchronously (may take 5-15 minutes)"
+    log_info "  - All Terraform state files have been permanently deleted"
+    log_info "  - Terraform-managed resources (SP, FIC, VNet, NSG, VPN) still exist"
     echo ""
     log_info "To verify cleanup:"
-    echo "  az group list --query \"[?starts_with(name, 'rg-${PROJECT}-')]\""
+    echo "  az_call group list --query \"[?starts_with(name, 'rg-${PROJECT}-')]\""
     echo ""
     log_info "To remove Terraform resources (if not done yet):"
-    echo "  Run: terraform destroy (before Phase 0 cleanup)"
-    echo "  Or:  ./scripts/cleanup-terraform-emergency.sh (if terraform destroy failed)"
+    log_info "  Run: terraform destroy (before Phase 0 cleanup)"
+    log_info "  Or:  ./scripts/cleanup-terraform-emergency.sh (if terraform destroy failed)"
   else
     log_error "Phase 0 cleanup completed with ${ERRORS} error(s)"
     echo ""

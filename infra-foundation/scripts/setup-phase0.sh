@@ -1,14 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: setup-phase0.sh
+# Component: infra-foundation
+# Purpose: Orchestrate Phase 0 setup (resource groups, state storage, user access).
+# =============================================================================
+# Usage:
+#   ./setup-phase0.sh [--dry-run|--execute] [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./setup-phase0.sh [--dry-run|--execute] [-h|--help]
+
+Run the Phase 0 setup sequence for infra-foundation:
+  1) setup-rg.sh
+  2) setup-state-storage.sh
+  3) setup-access-user.sh
+
+Options:
+  --dry-run     Print planned actions without executing (propagated to child scripts)
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script (parse args, validate env vars, set subscription)
-# Note: setup-all supports --dry-run and passes it to all setup scripts
+# Note: setup-phase0 propagates --dry-run to child scripts.
 init_script "$@"
 
-echo "=== Complete Infrastructure Setup ==="
+log_info "=== Phase 0 Infrastructure Setup ==="
 log_dry_run
 log_info "Script directory: $SCRIPT_DIR"
 log_info "Subscription: $SUBSCRIPTION_ID"
@@ -43,9 +86,9 @@ for setup_script in "${SETUP_SCRIPTS[@]}"; do
   fi
 
   echo ""
-  echo "================================================================================"
-  echo "Running: $setup_script"
-  echo "================================================================================"
+  log_info "================================================================================"
+  log_info "Running: $setup_script"
+  log_info "================================================================================"
   echo ""
 
   # Run the setup script and pass through --dry-run if set
@@ -74,39 +117,39 @@ done
 
 # Final Summary
 echo ""
-echo "================================================================================"
-echo "=== Complete Setup Summary ==="
-echo "================================================================================"
+log_info "================================================================================"
+log_info "=== Setup Summary ==="
+log_info "================================================================================"
 echo ""
 
 if [ $TOTAL_ERRORS -eq 0 ]; then
   log_success "All setup scripts completed successfully!"
   echo ""
-  echo "Created Phase 0 components:"
-  echo "  ✓ Resource Groups (dev, test, stage, prod)"
-  echo "  ✓ Storage Accounts for Terraform state (with versioning and soft delete)"
-  echo "  ✓ Current user access to state storage (Storage Blob Data Contributor)"
+  log_info "Created Phase 0 components:"
+  log_success "Resource Groups (dev, test, stage, prod)"
+  log_success "Storage Accounts for Terraform state (with versioning and soft delete)"
+  log_success "Current user access to state storage (Storage Blob Data Contributor)"
   echo ""
-  echo "Note: Service Principals, FIC, and RBAC for GitHub Actions are created"
-  echo "      by Terraform bootstrap module (not by these scripts)."
+  log_info "Note: Service Principals, FIC, and RBAC for GitHub Actions are created"
+  log_info "      by Terraform bootstrap module (not by these scripts)."
   echo ""
   if [ "$DRY_RUN" != true ]; then
-    echo "Next steps:"
-    echo "  1. Verify Phase 0 setup: ./scripts/verify-phase0.sh"
-    echo "  2. Deploy Terraform bootstrap: cd terraform/environments/dev && terraform apply"
-    echo "  3. Verify complete setup: ./scripts/verify-all.sh"
-    echo "  4. Configure GitHub Secrets (see documentation)"
-    echo "  5. Proceed with Phase 1 deployment (network, VPN, etc.)"
+    log_info "Next steps:"
+    log_info "  1. Verify Phase 0 setup: ./scripts/verify-phase0.sh"
+    log_info "  2. Deploy Terraform bootstrap: cd terraform/environments/dev && terraform apply"
+    log_info "  3. Verify complete setup: ./scripts/verify-all.sh"
+    log_info "  4. Configure GitHub Secrets (see documentation)"
+    log_info "  5. Proceed with Phase 1 deployment (network, VPN, etc.)"
   fi
   exit 0
 else
   log_error "Setup completed with $TOTAL_ERRORS error(s)"
   echo ""
-  echo "Failed setups:"
+  log_error "Failed setups:"
   for failed in "${FAILED_SETUPS[@]}"; do
-    echo "  ✗ $failed" >&2
+    log_error "$failed"
   done
   echo ""
-  echo "Please review the output above and fix the issues before proceeding."
+  log_info "Please review the output above and fix the issues before proceeding."
   exit 1
 fi

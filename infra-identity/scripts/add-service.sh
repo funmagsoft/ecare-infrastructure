@@ -1,45 +1,32 @@
 #!/usr/bin/env bash
-# ============================================================================
-# Add Service
-# ============================================================================
-# Adds or updates a service entry in terraform/environments/<env>/services.tf
-# (local.services). This manages service workload identities and permissions.
-#
+# =============================================================================
+# Script: add-service.sh
+# Component: infra-identity
+# Purpose: Add or update a service definition in terraform/environments/<env>/services.tf.
+# =============================================================================
 # Usage:
-#   ./add-service.sh --env <env> --service <name> --repo <org/repo> [options]
-#
-# Examples:
-#   ./add-service.sh --env dev --service billing --repo funmagsoft/billing-service --kv
-#   ./add-service.sh --env all --service api --repo funmagsoft/api-service --kv --storage --sb
+#   ./add-service.sh --env <env|all> --service <name> --repo <org/repo> [--kv] [--storage] [--sb] [--dry-run] [-h|--help]
+# =============================================================================
 
-# ============================================================================
-# Source Shared Scripts Library
-# ============================================================================
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [ -f "${REPO_ROOT}/shared/scripts/common.sh" ]; then
-  source "${REPO_ROOT}/shared/scripts/common.sh"
-else
-  echo "ERROR: Shared scripts library not found at ${REPO_ROOT}/shared/scripts/common.sh"
-  exit 1
-fi
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
 
-# ============================================================================
-# Load Global Configuration
-# ============================================================================
-if [ -f "${REPO_ROOT}/shared/scripts/globals.sh" ]; then
-  source "${REPO_ROOT}/shared/scripts/globals.sh"
-else
-  echo "ERROR: Shared globals not found at ${REPO_ROOT}/shared/scripts/globals.sh"
-  exit 1
-fi
 
+setup_traps
 # ============================================================================
 # Script Configuration
 # ============================================================================
-set -euo pipefail
+set -Eeuo pipefail
 
+IFS=$'\n\t'
 ENVIRONMENT=""
 SERVICE_NAME=""
 REPO_NAME=""
@@ -74,7 +61,7 @@ Examples:
   $(basename "$0") --env all --service api --repo funmagsoft/api --kv --storage --sb --dry-run
 
 EOF
-  exit 1
+  return 0
 }
 
 # ============================================================================
@@ -83,6 +70,7 @@ EOF
 parse_args() {
   if [ $# -eq 0 ]; then
     usage
+    exit 0
   fi
 
   while [[ $# -gt 0 ]]; do
@@ -117,10 +105,12 @@ parse_args() {
         ;;
       -h|--help)
         usage
+        exit 0
         ;;
       *)
         log_error "Unknown option: $1"
         usage
+        exit 1
         ;;
     esac
   done
@@ -133,6 +123,7 @@ validate_args() {
   if [[ -z "$ENVIRONMENT" || -z "$SERVICE_NAME" || -z "$REPO_NAME" ]]; then
     log_error "Missing required arguments"
     usage
+    exit 1
   fi
 
   case "$ENVIRONMENT" in

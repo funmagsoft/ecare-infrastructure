@@ -1,20 +1,75 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: verify-terraform-environment.sh
+# Component: infra-foundation
+# Purpose: Verify Terraform environment module prerequisites and state configuration.
+# =============================================================================
+# Usage:
+#   ./verify-terraform-environment.sh [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Initialize script (parse args, validate env vars, set subscription)
-# Note: verify scripts don't need --dry-run, but we use init_script for consistency
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./verify-terraform-environment.sh [env1 env2 ...] [-h|--help]
+
+Verify Terraform environment module prerequisites and state configuration.
+
+Arguments:
+  env1 env2 ...  Optional list of environments to verify (dev, test, stage, prod).
+
+Options:
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+ENV_LIST=()
+
+if [ $# -gt 0 ]; then
+  for arg in "$@"; do
+    case "$arg" in
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      -*)
+        usage
+        exit 1
+        ;;
+      *)
+        validate_environment "$arg" || exit 1
+        ENV_LIST+=("$arg")
+        ;;
+    esac
+  done
+fi
+
+# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
 
-echo "=== Terraform Environment Module Verification ==="
-echo "Verifies resources created by terraform/modules/environment:"
-echo "  - Virtual Network and Subnets"
-echo "  - Network Security Groups"
-echo "  - VPN Gateway (if enabled)"
-echo "  - Route Tables"
+log_info "=== Terraform Environment Module Verification ==="
+log_info "Verifies resources created by terraform/modules/environment:"
+log_info "  - Virtual Network and Subnets"
+log_info "  - Network Security Groups"
+log_info "  - VPN Gateway (if enabled)"
+log_info "  - Route Tables"
 echo ""
 log_info "Subscription: $SUBSCRIPTION_ID"
 echo ""
@@ -23,8 +78,8 @@ ERRORS=0
 WARNINGS=0
 
 # Check Azure CLI authentication
-echo "1. Checking Azure CLI authentication..."
-if az account show --output none 2>/dev/null; then
+log_info "1. Checking Azure CLI authentication..."
+if az_call account show --output none 2>/dev/null; then
   log_success "Azure CLI authenticated"
 else
   log_error "Azure CLI not authenticated"
@@ -32,11 +87,11 @@ else
 fi
 
 # Set active subscription
-az account set --subscription "$SUBSCRIPTION_ID"
+az_call account set --subscription "$SUBSCRIPTION_ID"
 echo ""
 
 # Verify Environment resources for each environment
-echo "2. Verifying Environment resources..."
+log_info "2. Verifying Environment resources..."
 echo ""
 
 TOTAL_VNETS=0
@@ -44,14 +99,18 @@ TOTAL_SUBNETS=0
 TOTAL_NSGS=0
 TOTAL_VPNS=0
 
-for ENV in dev test stage prod; do
+if [ "${#ENV_LIST[@]}" -eq 0 ]; then
+  ENV_LIST=(dev test stage prod)
+fi
+
+for ENV in "${ENV_LIST[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
   VNET_NAME="vnet-${PROJECT}-${ENV}"
 
-  echo "=== Verifying Environment for ${ENV} ==="
+  log_info "=== Verifying Environment for ${ENV} ==="
 
   # Check if Resource Group exists (prerequisite)
-  if ! az group show --name "$RG_NAME" --output none 2>/dev/null; then
+  if ! az_call group show --name "$RG_NAME" --output none 2>/dev/null; then
     log_error "Resource Group not found: ${RG_NAME}"
     log_info "  Phase 0 setup may not have been run."
     ERRORS=$((ERRORS + 1))
@@ -60,8 +119,8 @@ for ENV in dev test stage prod; do
   fi
 
   # 1. Verify VNet
-  echo "  Checking Virtual Network..."
-  VNET_INFO=$(az network vnet show \
+  log_info "  Checking Virtual Network..."
+  VNET_INFO=$(az_call network vnet show \
     --name "$VNET_NAME" \
     --resource-group "$RG_NAME" \
     --query "{CIDR:addressSpace.addressPrefixes[0], Location:location, ProvisioningState:provisioningState}" \
@@ -92,13 +151,14 @@ for ENV in dev test stage prod; do
   fi
 
   # 2. Verify Subnets
-  echo "  Checking Subnets..."
+  log_info "  Checking Subnets..."
   SUBNET_COUNT=0
 
-  for SUBNET_TYPE in aks data mgmt gateway; do
-    SUBNET_NAME="${SUBNET_TYPE}-subnet"
+  # No gateway subnet here, as this is handled in the VPN module if enabled
+  for SUBNET_TYPE in aks data mgmt; do
+    SUBNET_NAME="snet-${PROJECT}-${ENV}-${SUBNET_TYPE}"
 
-    if az network vnet subnet show \
+    if az_call network vnet subnet show \
       --name "$SUBNET_NAME" \
       --vnet-name "$VNET_NAME" \
       --resource-group "$RG_NAME" \
@@ -111,23 +171,23 @@ for ENV in dev test stage prod; do
     fi
   done
 
-  if [ $SUBNET_COUNT -eq 4 ]; then
-    log_success "  All 4 subnets verified"
-    TOTAL_SUBNETS=$((TOTAL_SUBNETS + 4))
+  if [ $SUBNET_COUNT -eq 3 ]; then
+    log_success "  All 3 subnets verified"
+    TOTAL_SUBNETS=$((TOTAL_SUBNETS + 3))
   else
-    log_warning "  Only ${SUBNET_COUNT}/4 subnets found"
+    log_warning "  Only ${SUBNET_COUNT}/3 subnets found"
     WARNINGS=$((WARNINGS + 1))
     TOTAL_SUBNETS=$((TOTAL_SUBNETS + SUBNET_COUNT))
   fi
 
   # 3. Verify NSGs
-  echo "  Checking Network Security Groups..."
+  log_info "  Checking Network Security Groups..."
   NSG_COUNT=0
 
   for NSG_TYPE in aks data mgmt; do
-    NSG_NAME="nsg-${NSG_TYPE}-${PROJECT}-${ENV}"
+    NSG_NAME="nsg-${PROJECT}-${ENV}-${NSG_TYPE}"
 
-    NSG_INFO=$(az network nsg show \
+    NSG_INFO=$(az_call network nsg show \
       --name "$NSG_NAME" \
       --resource-group "$RG_NAME" \
       --query "{Name:name, ProvisioningState:provisioningState}" \
@@ -159,38 +219,45 @@ for ENV in dev test stage prod; do
   fi
 
   # 4. Verify VPN Gateway (optional - depends on enable_vpn_gateway variable)
-  echo "  Checking VPN Gateway..."
-  VPN_NAME="vpn-gw-${PROJECT}-${ENV}"
+  log_info "  Checking VPN Gateway..."
+  VPN_NAME="vgw-${PROJECT}-${ENV}"
+  ENV_DIR="${REPO_ROOT}/infra-foundation/terraform/environments/${ENV}"
+  ENABLE_VPN_GATEWAY="$(get_enable_vpn_gateway "$ENV_DIR")"
 
-  VPN_INFO=$(az network vnet-gateway show \
-    --name "$VPN_NAME" \
-    --resource-group "$RG_NAME" \
-    --query "{Name:name, ProvisioningState:provisioningState, GatewayType:gatewayType}" \
-    --output json 2>/dev/null)
+  if [ "$ENABLE_VPN_GATEWAY" = "true" ]; then
+    VPN_INFO=$(az_call network vnet-gateway show \
+      --name "$VPN_NAME" \
+      --resource-group "$RG_NAME" \
+      --query "{Name:name, ProvisioningState:provisioningState, GatewayType:gatewayType}" \
+      --output json 2>/dev/null)
 
-  if [ -n "$VPN_INFO" ] && [ "$VPN_INFO" != "null" ]; then
-    VPN_STATE=$(echo "$VPN_INFO" | jq -r '.ProvisioningState')
-    VPN_TYPE=$(echo "$VPN_INFO" | jq -r '.GatewayType')
+    if [ -n "$VPN_INFO" ] && [ "$VPN_INFO" != "null" ]; then
+      VPN_STATE=$(echo "$VPN_INFO" | jq -r '.ProvisioningState')
+      VPN_TYPE=$(echo "$VPN_INFO" | jq -r '.GatewayType')
 
-    log_success "    VPN Gateway exists: $VPN_NAME"
-    log_info "      Gateway Type: $VPN_TYPE"
-    log_info "      Provisioning State: $VPN_STATE"
+      log_success "    VPN Gateway exists: $VPN_NAME"
+      log_info "      Gateway Type: $VPN_TYPE"
+      log_info "      Provisioning State: $VPN_STATE"
 
-    if [ "$VPN_STATE" == "Succeeded" ]; then
-      TOTAL_VPNS=$((TOTAL_VPNS + 1))
+      if [ "$VPN_STATE" == "Succeeded" ]; then
+        TOTAL_VPNS=$((TOTAL_VPNS + 1))
+      else
+        log_warning "      Provisioning State: $VPN_STATE (may still be deploying)"
+        WARNINGS=$((WARNINGS + 1))
+      fi
     else
-      log_warning "      Provisioning State: $VPN_STATE (may still be deploying)"
-      WARNINGS=$((WARNINGS + 1))
+      log_error "    VPN Gateway missing: $VPN_NAME (enabled in terraform.tfvars)"
+      ERRORS=$((ERRORS + 1))
     fi
   else
-    log_info "    VPN Gateway not found (may be disabled in terraform.tfvars)"
+    log_info "    VPN Gateway disabled in terraform.tfvars"
   fi
 
   # 5. Verify Route Tables (optional - may not exist in all deployments)
-  echo "  Checking Route Tables..."
+  log_info "  Checking Route Tables..."
   RT_NAME="rt-${PROJECT}-${ENV}"
 
-  if az network route-table show \
+  if az_call network route-table show \
     --name "$RT_NAME" \
     --resource-group "$RG_NAME" \
     --output none 2>/dev/null; then
@@ -203,37 +270,42 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Verification Summary ==="
+log_info "=== Verification Summary ==="
+ENV_COUNT=${#ENV_LIST[@]}
+EXPECTED_VNETS=$ENV_COUNT
+EXPECTED_SUBNETS=$((ENV_COUNT * 3))
+EXPECTED_NSGS=$((ENV_COUNT * 3))
+EXPECTED_VPNS=$ENV_COUNT
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
   log_success "All Terraform Environment verifications passed!"
   echo ""
-  echo "Verified:"
-  echo "  - Virtual Networks: ${TOTAL_VNETS}/4"
-  echo "  - Subnets: ${TOTAL_SUBNETS}/16 (4 subnets × 4 environments)"
-  echo "  - Network Security Groups: ${TOTAL_NSGS}/12 (3 NSGs × 4 environments)"
+  log_info "Verified:"
+  log_info "  - Virtual Networks: ${TOTAL_VNETS}/${EXPECTED_VNETS}"
+  log_info "  - Subnets: ${TOTAL_SUBNETS}/${EXPECTED_SUBNETS} (3 subnets × ${ENV_COUNT} environments)"
+  log_info "  - Network Security Groups: ${TOTAL_NSGS}/${EXPECTED_NSGS} (3 NSGs × ${ENV_COUNT} environments)"
   if [ $TOTAL_VPNS -gt 0 ]; then
-    echo "  - VPN Gateways: ${TOTAL_VPNS}/4 (enabled in some environments)"
+    log_info "  - VPN Gateways: ${TOTAL_VPNS}/${EXPECTED_VPNS} (enabled in some environments)"
   else
-    echo "  - VPN Gateways: Not enabled"
+    log_info "  - VPN Gateways: Not enabled"
   fi
   exit 0
 elif [ $ERRORS -eq 0 ]; then
   log_warning "Verification completed with ${WARNINGS} warning(s)"
   echo ""
-  echo "Verified:"
-  echo "  - Virtual Networks: ${TOTAL_VNETS}/4"
-  echo "  - Subnets: ${TOTAL_SUBNETS}/16"
-  echo "  - Network Security Groups: ${TOTAL_NSGS}/12"
-  echo "  - VPN Gateways: ${TOTAL_VPNS}"
+  log_info "Verified:"
+  log_info "  - Virtual Networks: ${TOTAL_VNETS}/${EXPECTED_VNETS}"
+  log_info "  - Subnets: ${TOTAL_SUBNETS}/${EXPECTED_SUBNETS}"
+  log_info "  - Network Security Groups: ${TOTAL_NSGS}/${EXPECTED_NSGS}"
+  log_info "  - VPN Gateways: ${TOTAL_VPNS}/${EXPECTED_VPNS}"
   exit 0
 else
   log_error "Verification failed with ${ERRORS} error(s) and ${WARNINGS} warning(s)"
   echo ""
-  echo "Status:"
-  echo "  - Virtual Networks: ${TOTAL_VNETS}/4"
-  echo "  - Subnets: ${TOTAL_SUBNETS}/16"
-  echo "  - Network Security Groups: ${TOTAL_NSGS}/12"
-  echo "  - VPN Gateways: ${TOTAL_VPNS}"
+  log_info "Status:"
+  log_info "  - Virtual Networks: ${TOTAL_VNETS}/${EXPECTED_VNETS}"
+  log_info "  - Subnets: ${TOTAL_SUBNETS}/${EXPECTED_SUBNETS}"
+  log_info "  - Network Security Groups: ${TOTAL_NSGS}/${EXPECTED_NSGS}"
+  log_info "  - VPN Gateways: ${TOTAL_VPNS}/${EXPECTED_VPNS}"
   echo ""
   log_info "Hint: If resources are missing, run: cd terraform/environments/dev && terraform apply"
   exit 1

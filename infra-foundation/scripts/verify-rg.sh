@@ -1,15 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: verify-rg.sh
+# Component: infra-foundation
+# Purpose: Verify Resource Groups exist for all environments.
+# =============================================================================
+# Usage:
+#   ./verify-rg.sh [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Initialize script (parse args, validate env vars, set subscription)
-# Note: verify scripts don't need --dry-run, but we use init_script for consistency
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./verify-rg.sh [-h|--help]
+
+Verify Resource Groups exist for all environments.
+
+Options:
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+if [ $# -gt 0 ]; then
+  case "${1:-}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+fi
+
+# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
 
-echo "=== Resource Group Verification ==="
+log_info "=== Resource Group Verification ==="
 log_info "Subscription: $SUBSCRIPTION_ID"
 log_info "Location: $LOCATION"
 echo ""
@@ -18,8 +62,8 @@ ERRORS=0
 VERIFIED=0
 
 # Check Azure CLI authentication
-echo "1. Checking Azure CLI authentication..."
-if az account show --output none 2>/dev/null; then
+log_info "1. Checking Azure CLI authentication..."
+if az_call account show --output none 2>/dev/null; then
   log_success "Azure CLI authenticated"
 else
   log_error "Azure CLI not authenticated"
@@ -27,17 +71,17 @@ else
 fi
 
 # Set active subscription
-az account set --subscription "$SUBSCRIPTION_ID"
+az_call account set --subscription "$SUBSCRIPTION_ID"
 
 echo ""
-echo "2. Checking Resource Groups..."
+log_info "2. Checking Resource Groups..."
 for ENV in dev test stage prod; do
   RG_NAME="rg-${PROJECT}-${ENV}"
 
-  echo "=== Verifying ${RG_NAME} (${ENV} environment) ==="
+  log_info "=== Verifying ${RG_NAME} (${ENV} environment) ==="
 
   # Check if Resource Group exists
-  RG_INFO=$(az group show \
+  RG_INFO=$(az_call group show \
     --name "$RG_NAME" \
     --query "{Name:name, Location:location, ProvisioningState:properties.provisioningState}" \
     --output json 2>/dev/null)
@@ -66,7 +110,7 @@ for ENV in dev test stage prod; do
     fi
 
     # Check tags
-    RG_TAGS=$(az group show \
+    RG_TAGS=$(az_call group show \
       --name "$RG_NAME" \
       --query "tags" \
       --output json 2>/dev/null)
@@ -107,17 +151,17 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Verification Summary ==="
+log_info "=== Verification Summary ==="
 if [ $ERRORS -eq 0 ]; then
   log_success "All verifications passed!"
   echo ""
-  echo "Verified:"
-  echo "  - Resource Groups verified: ${VERIFIED}/4"
+  log_info "Verified:"
+  log_info "  - Resource Groups verified: ${VERIFIED}/4"
   exit 0
 else
   log_error "Verification failed with ${ERRORS} error(s)"
   echo ""
-  echo "Status:"
-  echo "  - Resource Groups verified: ${VERIFIED}/4"
+  log_info "Status:"
+  log_info "  - Resource Groups verified: ${VERIFIED}/4"
   exit 1
 fi

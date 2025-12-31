@@ -1,19 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: verify-all.sh
+# Component: infra-foundation
+# Purpose: Run complete infra-foundation verification checks (Phase 0 + Terraform modules).
+# =============================================================================
+# Usage:
+#   ./verify-all.sh [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Initialize script (parse args, validate env vars, set subscription)
-# Note: verify scripts don't need --dry-run, but we use init_script for consistency
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./verify-all.sh [-h|--help]
+
+Run complete infra-foundation verification checks (Phase 0 + Terraform modules).
+
+Options:
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+if [ $# -gt 0 ]; then
+  case "${1:-}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+fi
+
+# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
 
-echo "=== Complete Infrastructure Verification ==="
-echo "This script verifies ALL infrastructure layers:"
-echo "  Layer 1 (Phase 0): Resource Groups, Storage Accounts, User Access"
-echo "  Layer 2 (Terraform Bootstrap): Service Principals, FIC, RBAC for GitHub Actions"
-echo "  Layer 3 (Terraform Environment): VNet, Subnets, NSG, VPN"
+log_info "=== Complete Infrastructure Verification ==="
+log_info "This script verifies ALL infrastructure layers:"
+log_info "  Layer 1 (Phase 0): Resource Groups, Storage Accounts, User Access"
+log_info "  Layer 2 (Terraform Bootstrap): Service Principals, FIC, RBAC for GitHub Actions"
+log_info "  Layer 3 (Terraform Environment): VNet, Subnets, NSG, VPN"
 echo ""
 log_info "Script directory: $SCRIPT_DIR"
 log_info "Subscription: $SUBSCRIPTION_ID"
@@ -26,9 +70,9 @@ FAILED_VERIFICATIONS=()
 # ============================================================================
 # Layer 1: Phase 0 Verification
 # ============================================================================
-echo "================================================================================"
-echo "Layer 1: Phase 0 Infrastructure"
-echo "================================================================================"
+log_info "================================================================================"
+log_info "Layer 1: Phase 0 Infrastructure"
+log_info "================================================================================"
 echo ""
 
 if bash "${SCRIPT_DIR}/verify-phase0.sh"; then
@@ -45,9 +89,9 @@ echo ""
 # ============================================================================
 # Layer 2: Terraform Bootstrap Verification
 # ============================================================================
-echo "================================================================================"
-echo "Layer 2: Terraform Bootstrap Module"
-echo "================================================================================"
+log_info "================================================================================"
+log_info "Layer 2: Terraform Bootstrap Module"
+log_info "================================================================================"
 echo ""
 
 if bash "${SCRIPT_DIR}/verify-terraform-bootstrap.sh"; then
@@ -64,9 +108,9 @@ echo ""
 # ============================================================================
 # Layer 3: Terraform Environment Verification
 # ============================================================================
-echo "================================================================================"
-echo "Layer 3: Terraform Environment Module"
-echo "================================================================================"
+log_info "================================================================================"
+log_info "Layer 3: Terraform Environment Module"
+log_info "================================================================================"
 echo ""
 
 if bash "${SCRIPT_DIR}/verify-terraform-environment.sh"; then
@@ -83,46 +127,46 @@ echo ""
 # ============================================================================
 # Final Summary
 # ============================================================================
-echo "================================================================================"
-echo "=== Complete Verification Summary ==="
-echo "================================================================================"
+log_info "================================================================================"
+log_info "=== Complete Verification Summary ==="
+log_info "================================================================================"
 echo ""
 
 if [ $TOTAL_ERRORS -eq 0 ]; then
   log_success "All infrastructure verifications passed!"
   echo ""
-  echo "✓ Layer 1 - Phase 0 Infrastructure:"
-  echo "    - Resource Groups (dev, test, stage, prod)"
-  echo "    - Storage Accounts for Terraform state (with versioning and soft delete)"
-  echo "    - Current user access (Storage Blob Data Contributor)"
+  log_info "✓ Layer 1 - Phase 0 Infrastructure:"
+  log_info "    - Resource Groups (dev, test, stage, prod)"
+  log_info "    - Storage Accounts for Terraform state (with versioning and soft delete)"
+  log_info "    - Current user access (Storage Blob Data Contributor)"
   echo ""
-  echo "✓ Layer 2 - Terraform Bootstrap:"
-  echo "    - Service Principals for GitHub Actions (4 environments)"
-  echo "    - Federated Identity Credentials (12 total: 3 repos × 4 environments)"
-  echo "    - RBAC roles (Contributor, User Access Administrator, Storage Blob Data Contributor)"
+  log_info "✓ Layer 2 - Terraform Bootstrap:"
+  log_info "    - Service Principals for GitHub Actions (4 environments)"
+  log_info "    - Federated Identity Credentials (12 total: 3 repos × 4 environments)"
+  log_info "    - RBAC roles (Contributor, User Access Administrator, Storage Blob Data Contributor)"
   echo ""
-  echo "✓ Layer 3 - Terraform Environment:"
-  echo "    - Virtual Networks with subnets (aks, data, mgmt, gateway)"
-  echo "    - Network Security Groups (aks, data, mgmt)"
-  echo "    - VPN Gateway (if enabled)"
-  echo "    - Route Tables"
+  log_info "✓ Layer 3 - Terraform Environment:"
+  log_info "    - Virtual Networks with subnets (aks, data, mgmt, gateway)"
+  log_info "    - Network Security Groups (aks, data, mgmt)"
+  log_info "    - VPN Gateway (if enabled)"
+  log_info "    - Route Tables"
   echo ""
   log_info "Infrastructure is healthy and ready for use."
   exit 0
 else
   log_error "Verification completed with $TOTAL_ERRORS error(s)"
   echo ""
-  echo "Failed verifications:"
+  log_info "Failed verifications:"
   for failed in "${FAILED_VERIFICATIONS[@]}"; do
-    echo "  ✗ $failed" >&2
+    log_error "$failed"
   done
   echo ""
   log_warning "Please review the output above and fix the issues."
   echo ""
   log_info "Troubleshooting hints:"
-  echo "  - If Phase 0 failed: Run ./scripts/setup-phase0.sh"
-  echo "  - If Bootstrap failed: Run terraform apply (bootstrap module)"
-  echo "  - If Environment failed: Run terraform apply (environment module)"
-  echo "  - For detailed help: See RUNBOOK.md"
+  log_info "  - If Phase 0 failed: Run ./scripts/setup-phase0.sh"
+  log_info "  - If Bootstrap failed: Run terraform apply (bootstrap module)"
+  log_info "  - If Environment failed: Run terraform apply (environment module)"
+  log_info "  - For detailed help: See RUNBOOK.md"
   exit 1
 fi

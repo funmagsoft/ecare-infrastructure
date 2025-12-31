@@ -1,15 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: verify-access-user.sh
+# Component: infra-foundation
+# Purpose: Verify current user access to Terraform state Storage Accounts.
+# =============================================================================
+# Usage:
+#   ./verify-access-user.sh [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Initialize script (parse args, validate env vars, set subscription)
-# Note: verify scripts don't need --dry-run, but we use init_script for consistency
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./verify-access-user.sh [-h|--help]
+
+Verify current user access to Terraform state Storage Accounts.
+
+Options:
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+if [ $# -gt 0 ]; then
+  case "${1:-}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+fi
+
+# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
 
-echo "=== Current User Access Verification ==="
+log_info "=== Current User Access Verification ==="
 log_info "Subscription: $SUBSCRIPTION_ID"
 echo ""
 
@@ -17,8 +61,8 @@ ERRORS=0
 WARNINGS=0
 
 # Check Azure CLI authentication
-echo "1. Checking Azure CLI authentication..."
-if az account show --output none 2>/dev/null; then
+log_info "1. Checking Azure CLI authentication..."
+if az_call account show --output none 2>/dev/null; then
   log_success "Azure CLI authenticated"
 else
   log_error "Azure CLI not authenticated"
@@ -26,17 +70,17 @@ else
 fi
 
 # Set active subscription
-az account set --subscription "$SUBSCRIPTION_ID"
+az_call account set --subscription "$SUBSCRIPTION_ID"
 
 # Get current user information
-echo "2. Getting current user information..."
-CURRENT_USER_EMAIL=$(az account show --query user.name --output tsv)
-CURRENT_USER_OBJECT_ID=$(az ad signed-in-user show --query id --output tsv)
+log_info "2. Getting current user information..."
+CURRENT_USER_EMAIL=$(az_call account show --query user.name --output tsv)
+CURRENT_USER_OBJECT_ID=$(az_call ad signed-in-user show --query id --output tsv)
 
 # If signed-in-user doesn't work, try alternative method
 if [ -z "$CURRENT_USER_OBJECT_ID" ] || [ "$CURRENT_USER_OBJECT_ID" == "null" ]; then
   log_info "Trying alternative method to get Object ID from email..."
-  CURRENT_USER_OBJECT_ID=$(az ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
+  CURRENT_USER_OBJECT_ID=$(az_call ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
 fi
 
 # Verify we got a valid Object ID
@@ -50,7 +94,7 @@ fi
 echo ""
 
 # Verify Storage Blob Data Contributor role on all Storage Accounts
-echo "3. Verifying Storage Blob Data Contributor role assignments..."
+log_info "3. Verifying Storage Blob Data Contributor role assignments..."
 echo ""
 
 GRANTED=0
@@ -59,10 +103,10 @@ for ENV in dev test stage prod; do
   SA_NAME="tfstate${ORGANIZATION_FOR_SA}${PROJECT}${ENV}"
   SA_SCOPE="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG_NAME}/providers/Microsoft.Storage/storageAccounts/${SA_NAME}"
 
-  echo "=== Verifying access to ${SA_NAME} (${ENV} environment) ==="
+  log_info "=== Verifying access to ${SA_NAME} (${ENV} environment) ==="
 
   # Check if Storage Account exists
-  if ! az storage account show \
+  if ! az_call storage account show \
     --name "$SA_NAME" \
     --resource-group "$RG_NAME" \
     --output none 2>/dev/null; then
@@ -73,7 +117,7 @@ for ENV in dev test stage prod; do
   fi
 
   # Check if role assignment exists
-  ROLE_ASSIGNMENT=$(az role assignment list \
+  ROLE_ASSIGNMENT=$(az_call role assignment list \
     --assignee "$CURRENT_USER_OBJECT_ID" \
     --scope "$SA_SCOPE" \
     --role "Storage Blob Data Contributor" \
@@ -92,23 +136,23 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Verification Summary ==="
+log_info "=== Verification Summary ==="
 if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
   log_success "All verifications passed!"
   echo ""
-  echo "Verified:"
-  echo "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "Verified:"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
   exit 0
 elif [ $ERRORS -eq 0 ]; then
   log_warning "Verification completed with ${WARNINGS} warning(s)"
   echo ""
-  echo "Verified:"
-  echo "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "Verified:"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
   exit 0
 else
   log_error "Verification failed with ${ERRORS} error(s) and ${WARNINGS} warning(s)"
   echo ""
-  echo "Status:"
-  echo "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "Status:"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
   exit 1
 fi

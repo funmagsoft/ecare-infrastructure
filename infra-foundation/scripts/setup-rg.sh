@@ -1,13 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: setup-rg.sh
+# Component: infra-foundation
+# Purpose: Create Azure Resource Groups for all environments (dev/test/stage/prod).
+# =============================================================================
+# Usage:
+#   ./setup-rg.sh [--dry-run|--execute] [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./setup-rg.sh [--dry-run|--execute] [-h|--help]
+
+Create Azure Resource Groups for all environments (dev/test/stage/prod).
+
+Options:
+  --dry-run     Print planned actions without executing
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
 
-echo "=== Creating Resource Groups ==="
+log_info "=== Creating Resource Groups ==="
 log_dry_run
 log_info "Subscription: $SUBSCRIPTION_ID"
 log_info "Location: $LOCATION"
@@ -20,13 +63,13 @@ CREATED=0
 for ENV in dev test stage prod; do
   RG_NAME="rg-${PROJECT}-${ENV}"
 
-  echo "--- Creating Resource Group for ${ENV} environment ---"
-  echo "Resource Group: $RG_NAME"
-  echo "Location: $LOCATION"
+  log_info "--- Creating Resource Group for ${ENV} environment ---"
+  log_info "Resource Group: $RG_NAME"
+  log_info "Location: $LOCATION"
 
   # Check if Resource Group already exists
   if [ "$DRY_RUN" != true ]; then
-    if az group show --name "$RG_NAME" --output none 2>/dev/null; then
+    if az_call group show --name "$RG_NAME" --output none 2>/dev/null; then
       log_warning "Resource Group $RG_NAME already exists, skipping..."
       CREATED=$((CREATED + 1))
       echo ""
@@ -35,8 +78,8 @@ for ENV in dev test stage prod; do
   fi
 
   # Create Resource Group
-  echo "Creating Resource Group..."
-  if run_cmd az group create \
+  log_info "Creating Resource Group..."
+  if az_exec group create \
     --name "$RG_NAME" \
     --location "$LOCATION" \
     --tags \
@@ -56,7 +99,7 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Resource Group Creation Summary ==="
+log_info "=== Resource Group Creation Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
   log_info "Would create Resource Groups: 4 (one per environment)"

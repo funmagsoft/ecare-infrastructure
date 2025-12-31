@@ -1,61 +1,83 @@
-#!/bin/bash
-
-# ============================================================================
-# Setup Access for Current User to Terraform State Storage
-# ============================================================================
-# This script grants Storage Blob Data Contributor access to the current user
-# on all Terraform state Storage Accounts (dev, test, stage, prod).
-#
-# This is required for Phase 0 setup to allow the user to:
-# - Initialize Terraform locally
-# - Read and write Terraform state files
-# - Browse state files in Azure Portal
-#
-# Called by: setup-phase0.sh
-#
+#!/usr/bin/env bash
+# =============================================================================
+# Script: setup-access-user.sh
+# Component: infra-foundation
+# Purpose: Grant current user access to Terraform state Storage Accounts.
+# =============================================================================
 # Usage:
-#   ./scripts/setup-access-user.sh [--dry-run]
-#
-# Options:
-#   --dry-run  Preview changes without executing them
-#
-# Note: Additional users can be granted access via Terraform bootstrap module
-# by configuring users_with_state_access in terraform.tfvars.
-# ============================================================================
+#   ./setup-access-user.sh [--dry-run|--execute] [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./setup-access-user.sh [--dry-run|--execute] [-h|--help]
+
+Grant "Storage Blob Data Contributor" access for the currently signed-in Azure user
+to all Terraform state Storage Accounts (dev/test/stage/prod).
+
+Options:
+  --dry-run     Print planned actions without executing
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+  - Uses az_call account show + az_call ad signed-in-user show to resolve the principal.
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
 
-echo "=== Granting Storage Blob Data Contributor Access to Current User ==="
+log_info "=== Granting Storage Blob Data Contributor Access to Current User ==="
 log_dry_run
 log_info "Subscription: $SUBSCRIPTION_ID"
 echo ""
 
 # Get current user information
 if [ "$DRY_RUN" = true ]; then
-  echo "[DRY-RUN] az account show --query user.name --output tsv" >&2
-  echo "[DRY-RUN] az ad signed-in-user show --query id --output tsv" >&2
+  echo "[DRY-RUN] az_call account show --query user.name --output tsv" >&2
+  echo "[DRY-RUN] az_call ad signed-in-user show --query id --output tsv" >&2
   CURRENT_USER_EMAIL="<current-user-email>"
   CURRENT_USER_OBJECT_ID="<current-user-object-id>"
 else
-  CURRENT_USER_EMAIL=$(az account show --query user.name --output tsv)
-  CURRENT_USER_OBJECT_ID=$(az ad signed-in-user show --query id --output tsv)
+  CURRENT_USER_EMAIL=$(az_call account show --query user.name --output tsv)
+  CURRENT_USER_OBJECT_ID=$(az_call ad signed-in-user show --query id --output tsv)
 
   # If signed-in-user doesn't work, try alternative method
   if [ -z "$CURRENT_USER_OBJECT_ID" ] || [ "$CURRENT_USER_OBJECT_ID" == "null" ]; then
     log_info "Trying alternative method to get Object ID from email..."
-    CURRENT_USER_OBJECT_ID=$(az ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
+    CURRENT_USER_OBJECT_ID=$(az_call ad user show --id "$CURRENT_USER_EMAIL" --query id --output tsv 2>/dev/null || echo "")
   fi
 
   # Verify we got a valid Object ID
   if [ -z "$CURRENT_USER_OBJECT_ID" ] || [ "$CURRENT_USER_OBJECT_ID" == "null" ]; then
     log_error "Could not find Object ID for user $CURRENT_USER_EMAIL"
     log_info "Try using Azure Portal to assign the role manually, or use your Object ID directly:"
-    log_info "  az role assignment create --assignee <your-object-id> --role 'Storage Blob Data Contributor' --scope <scope>"
+    log_info "  az_call role assignment create --assignee <your-object-id> --role 'Storage Blob Data Contributor' --scope <scope>"
     exit 1
   fi
 fi
@@ -76,7 +98,7 @@ for ENV in dev test stage prod; do
   log_info "--- Granting access to ${SA_NAME} ---"
 
   # Grant Storage Blob Data Contributor role
-  if run_cmd az role assignment create \
+  if az_exec role assignment create \
     --assignee "$CURRENT_USER_OBJECT_ID" \
     --role "Storage Blob Data Contributor" \
     --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG_NAME}/providers/Microsoft.Storage/storageAccounts/${SA_NAME}" \
@@ -86,7 +108,7 @@ for ENV in dev test stage prod; do
   else
     # Check if role already exists
     if [ "$DRY_RUN" != true ]; then
-      if az role assignment list \
+      if az_call role assignment list \
         --assignee "$CURRENT_USER_OBJECT_ID" \
         --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG_NAME}/providers/Microsoft.Storage/storageAccounts/${SA_NAME}" \
         --role "Storage Blob Data Contributor" \
@@ -108,7 +130,7 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Access Grant Summary ==="
+log_info "=== Access Grant Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
   log_info "Would grant access to Storage Accounts: 4 (one per environment)"

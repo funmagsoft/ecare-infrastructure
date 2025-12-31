@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Global project configuration variables
 # These are project-specific constants and should not be changed per deployment
 

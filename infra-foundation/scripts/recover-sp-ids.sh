@@ -1,13 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: recover-sp-ids.sh
+# Component: infra-foundation
+# Purpose: Recover service principal IDs from Azure for troubleshooting/bootstrapping.
+# =============================================================================
+# Usage:
+#   ./recover-sp-ids.sh [--dry-run|--execute] [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./recover-sp-ids.sh [--dry-run|--execute] [-h|--help]
+
+Query Azure/Entra and print recovered Service Principal / Application IDs used by automation.
+
+Options:
+  --dry-run     Print planned actions without executing (no effect for read-only steps)
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script with minimal validation (parse args, validate minimal env vars, set subscription)
 init_script_minimal "$@"
 
-echo "=== Recovering Service Principal IDs from Azure ==="
+log_info "=== Recovering Service Principal IDs from Azure ==="
 log_dry_run
 log_info "Subscription: $SUBSCRIPTION_ID"
 log_info "Project: $PROJECT"
@@ -41,7 +84,7 @@ for ENV in dev test stage prod; do
   log_info "--- Recovering ${SP_NAME} ---"
 
   if [ "$DRY_RUN" = true ]; then
-    echo "[DRY-RUN] az ad sp list --filter \"displayName eq '${SP_NAME}'\" --query \"[0].{AppId:appId, ObjectId:id}\" --output json" >&2
+    echo "[DRY-RUN] az_call ad sp list --filter \"displayName eq '${SP_NAME}'\" --query \"[0].{AppId:appId, ObjectId:id}\" --output json" >&2
     APP_ID="<app-id-would-be-retrieved>"
     OBJECT_ID="<object-id-would-be-retrieved>"
     log_success "App ID (Client ID): $APP_ID"
@@ -51,7 +94,7 @@ for ENV in dev test stage prod; do
     RECOVERED=$((RECOVERED + 1))
   else
     # Get Service Principal details
-    SP_INFO=$(az ad sp list \
+    SP_INFO=$(az_call ad sp list \
       --filter "displayName eq '${SP_NAME}'" \
       --query "[0].{AppId:appId, ObjectId:id, DisplayName:displayName}" \
       --output json)
@@ -84,7 +127,7 @@ for ENV in dev test stage prod; do
 done
 
 # Summary
-echo "=== Recovery Summary ==="
+log_info "=== Recovery Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
   log_info "Would recover Service Principals: 4 (one per environment)"

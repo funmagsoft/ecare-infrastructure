@@ -18,10 +18,14 @@ Core helper functions for shell scripts.
 
 **Categories:**
 
-- **Output Functions**: `print_header()`, `print_success()`, `print_error()`, `print_warning()`, `print_info()`
+- **Logging Functions**: `log_info()`, `log_success()`, `log_warning()`, `log_error()`, `log_dry_run()`,
+  `log_dry_run_complete()`
 - **Command Checks**: `check_command()`, `check_required_commands()`
 - **Azure CLI Helpers**: `check_azure_login()`, `get_subscription_id()`, `get_tenant_id()`, `check_resource_exists()`
-- **Environment Helpers**: `validate_environment()`, `load_env_file()`, `get_project_root()`
+- **Environment Helpers**: `validate_environment()`, `load_env_file()`, `load_dotenv()`, `get_project_root()`
+- **Dry-Run Helpers**: `parse_dry_run()`, `run_cmd()`, `run_cmd_capture()`, `write_file()`, `clear_file()`
+- **Script Initialization**: `init_script()`, `init_script_minimal()`
+- **Directory Helpers**: `get_script_dir()`, `get_base_dir()`
 - **Git Helpers**: `validate_conventional_commit()`
 
 ### `globals.sh`
@@ -91,7 +95,7 @@ Validates commit messages against Conventional Commits format.
 ### Basic Usage
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Source shared functions
@@ -99,25 +103,25 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/shared/scripts/common.sh"
 
 # Use functions
-print_header "My Script"
+log_info "My Script"
 check_command az || exit 1
 check_azure_login || exit 1
 validate_environment "${ENV}" || exit 1
 
-print_success "Script completed successfully!"
+log_success "Script completed successfully!"
 ```
 
 ### Example: Foundation Script
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # infra-foundation/scripts/setup-phase0.sh
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/shared/scripts/common.sh"
 
-print_header "Phase 0 Infrastructure Setup"
+log_info "Phase 0 Infrastructure Setup"
 
 # Check prerequisites
 check_required_commands az jq || exit 1
@@ -133,14 +137,14 @@ validate_environment "${ENV}" || exit 1
 ### Example: Identity Script
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # infra-identity/scripts/add-service.sh
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/shared/scripts/common.sh"
 
-print_header "Add New Service"
+log_info "Add New Service"
 
 # Use shared functions
 check_required_commands terraform || exit 1
@@ -151,54 +155,58 @@ validate_conventional_commit "feat(identity): add new service" || exit 1
 
 ## Function Reference
 
-### Output Functions
+### Logging Functions
 
-#### `print_header <message>`
-
-Prints a formatted header with separators.
-
-```bash
-print_header "Deploying Infrastructure"
-# Output:
-# ==========================================
-# Deploying Infrastructure
-# ==========================================
-```
-
-#### `print_success <message>`
+#### `log_success <message>`
 
 Prints a success message with checkmark.
 
 ```bash
-print_success "Resource created successfully"
+log_success "Resource created successfully"
 # Output: ✓ Resource created successfully
 ```
 
-#### `print_error <message>`
+#### `log_error <message>`
 
 Prints an error message with cross (to stderr).
 
 ```bash
-print_error "Failed to create resource"
+log_error "Failed to create resource"
 # Output: ✗ Failed to create resource
 ```
 
-#### `print_warning <message>`
+#### `log_warning <message>`
 
 Prints a warning message with warning symbol.
 
 ```bash
-print_warning "Resource already exists"
+log_warning "Resource already exists"
 # Output: ⚠ Resource already exists
 ```
 
-#### `print_info <message>`
+#### `log_info <message>`
 
 Prints an informational message.
 
 ```bash
-print_info "Loading configuration"
+log_info "Loading configuration"
 # Output: ℹ Loading configuration
+```
+
+#### `log_dry_run`
+
+Prints a dry-run header when DRY_RUN is true.
+
+```bash
+log_dry_run
+```
+
+#### `log_dry_run_complete`
+
+Prints a dry-run completion message when DRY_RUN is true.
+
+```bash
+log_dry_run_complete
 ```
 
 ### Command Checks
@@ -209,9 +217,9 @@ Checks if a command exists. Returns 0 if exists, 1 if not.
 
 ```bash
 if check_command az; then
-  print_success "Azure CLI found"
+  log_success "Azure CLI found"
 else
-  print_error "Azure CLI not found"
+  log_error "Azure CLI not found"
   exit 1
 fi
 ```
@@ -232,6 +240,14 @@ Checks if logged in to Azure CLI. Returns 0 if logged in, 1 if not.
 
 ```bash
 check_azure_login || exit 1
+```
+
+#### `check_azure_cli`
+
+Checks that Azure CLI is installed and authenticated.
+
+```bash
+check_azure_cli || exit 1
 ```
 
 #### `get_subscription_id`
@@ -258,7 +274,7 @@ Checks if an Azure resource exists. Returns 0 if exists, 1 if not.
 
 ```bash
 if check_resource_exists "/subscriptions/.../resourceGroups/rg-ecare-dev"; then
-  print_success "Resource Group exists"
+  log_success "Resource Group exists"
 fi
 ```
 
@@ -281,6 +297,14 @@ load_env_file              # Loads .env
 load_env_file ".env.dev"   # Loads .env.dev
 ```
 
+#### `load_dotenv`
+
+Loads `.env` from the repository root and exports variables.
+
+```bash
+load_dotenv
+```
+
 #### `get_project_root`
 
 Returns the absolute path to the monorepo root.
@@ -288,6 +312,85 @@ Returns the absolute path to the monorepo root.
 ```bash
 PROJECT_ROOT=$(get_project_root)
 echo "Project root: $PROJECT_ROOT"
+```
+
+### Dry-Run Helpers
+
+#### `parse_dry_run [args]`
+
+Parses `--dry-run` and `--execute` flags and sets `DRY_RUN` accordingly.
+
+```bash
+DRY_RUN=true
+parse_dry_run "$@"
+```
+
+#### `run_cmd <command> [args...]`
+
+Runs a command or echoes it when `DRY_RUN` is true.
+
+```bash
+run_cmd az group list
+```
+
+#### `run_cmd_capture <command> [args...]`
+
+Runs a command with output capture or prints a dry-run message.
+
+```bash
+run_cmd_capture az account show
+```
+
+#### `write_file <file> <content>`
+
+Appends content to a file or prints a dry-run message.
+
+```bash
+write_file ".env" "SUBSCRIPTION_ID=..."
+```
+
+#### `clear_file <file>`
+
+Truncates a file or prints a dry-run message.
+
+```bash
+clear_file ".env"
+```
+
+### Script Initialization
+
+#### `init_script [args]`
+
+Loads `.env`, parses dry-run flags, validates required variables, and sets the Azure subscription.
+
+```bash
+init_script "$@"
+```
+
+#### `init_script_minimal [args]`
+
+Loads `.env`, parses dry-run flags, validates minimal variables, and sets the Azure subscription.
+
+```bash
+init_script_minimal "$@"
+```
+
+### Directory Helpers
+
+#### `get_script_dir`
+
+Returns the directory of the calling script.
+
+```bash
+SCRIPT_DIR=$(get_script_dir)
+```
+
+#### `get_base_dir <script_dir>`
+
+Returns the monorepo base directory relative to a script directory.
+
+```bash
+BASE_DIR=$(get_base_dir "$SCRIPT_DIR")
 ```
 
 ### Git Helpers
@@ -337,7 +440,7 @@ Each environment has a unique 8-character deployment identifier used for resourc
 **Usage:**
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Source shared functions (which automatically sources globals.sh)

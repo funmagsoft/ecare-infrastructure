@@ -1,13 +1,62 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: setup-state-storage.sh
+# Component: infra-foundation
+# Purpose: Create and configure Terraform state Storage Accounts for all environments.
+# =============================================================================
+# Usage:
+#   ./setup-state-storage.sh [--dry-run|--execute] [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./setup-state-storage.sh [--dry-run|--execute] [-h|--help]
+
+Create and configure Terraform state Storage Accounts (dev/test/stage/prod).
+
+Actions per environment:
+  - Create Storage Account tfstate<org><project><env>
+  - Create container: tfstate
+  - Enable blob versioning and soft delete
+
+Options:
+  --dry-run     Print planned actions without executing
+  --execute     Execute actions (default)
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+  - Requires Resource Groups to exist (run setup-rg.sh first).
+
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+  esac
+done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
 
-echo "=== Creating Terraform State Storage Accounts ==="
+log_info "=== Creating Terraform State Storage Accounts ==="
 log_dry_run
 log_info "Subscription: $SUBSCRIPTION_ID"
 log_info "Location: $LOCATION"
@@ -18,13 +67,13 @@ for ENV in dev test stage prod; do
   RG_NAME="rg-${PROJECT}-${ENV}"
   SA_NAME="tfstate${ORGANIZATION_FOR_SA}${PROJECT}${ENV}"
 
-  echo "--- Creating Storage Account for ${ENV} environment ---"
-  echo "Resource Group: $RG_NAME"
-  echo "Storage Account: $SA_NAME"
+  log_info "--- Creating Storage Account for ${ENV} environment ---"
+  log_info "Resource Group: $RG_NAME"
+  log_info "Storage Account: $SA_NAME"
 
   # Verify Resource Group exists (skip check in dry-run mode)
   if [ "$DRY_RUN" != true ]; then
-    if ! az group show --name "$RG_NAME" --output none 2>/dev/null; then
+    if ! az_call group show --name "$RG_NAME" --output none 2>/dev/null; then
       log_error "Resource Group $RG_NAME does not exist. Create it first (Step 3)."
       exit 1
     fi
@@ -33,8 +82,8 @@ for ENV in dev test stage prod; do
   fi
 
   # Create Storage Account
-  echo "Creating Storage Account..."
-  run_cmd az storage account create \
+  log_info "Creating Storage Account..."
+  az_exec storage account create \
     --name "$SA_NAME" \
     --resource-group "$RG_NAME" \
     --location "$LOCATION" \
@@ -56,7 +105,7 @@ for ENV in dev test stage prod; do
 
   # Create container
   log_info "Creating container 'tfstate'..."
-  run_cmd az storage container create \
+  az_exec storage container create \
     --name tfstate \
     --account-name "$SA_NAME" \
     --auth-mode login \
@@ -66,7 +115,7 @@ for ENV in dev test stage prod; do
 
   # Enable blob versioning and soft delete
   log_info "Enabling blob versioning and soft delete..."
-  run_cmd az storage account blob-service-properties update \
+  az_exec storage account blob-service-properties update \
     --account-name "$SA_NAME" \
     --resource-group "$RG_NAME" \
     --enable-versioning true \
@@ -80,5 +129,5 @@ for ENV in dev test stage prod; do
   echo ""
 done
 
-echo "=== All Storage Accounts Created ==="
+log_info "=== All Storage Accounts Created ==="
 log_dry_run_complete

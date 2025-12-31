@@ -1,19 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Script: verify-phase0.sh
+# Component: infra-foundation
+# Purpose: Run Phase 0 verification checks (resource groups, state storage, user access).
+# =============================================================================
+# Usage:
+#   ./verify-phase0.sh [-h|--help]
+# =============================================================================
 
-# Source common functions
+set -Eeuo pipefail
+
+IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/common.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Initialize script (parse args, validate env vars, set subscription)
-# Note: verify scripts don't need --dry-run, but we use init_script for consistency
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/common.sh"
+# shellcheck source=/dev/null
+source "${REPO_ROOT}/shared/scripts/globals.sh"
+
+
+setup_traps
+usage() {
+  cat <<'EOF'
+Usage: ./verify-phase0.sh [-h|--help]
+
+Run Phase 0 verification checks (resource groups, state storage, user access).
+
+Options:
+  -h, --help    Show this help and exit
+
+Notes:
+  - Requires Azure CLI (az) and an active login (az login).
+
+EOF
+}
+
+if [ $# -gt 0 ]; then
+  case "${1:-}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+fi
+
+# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
 
-echo "=== Phase 0 Infrastructure Verification ==="
-echo "This script verifies Phase 0 setup (created by setup-all.sh):"
-echo "  - Resource Groups"
-echo "  - Storage Accounts for Terraform state"
-echo "  - Current user access to state storage"
+log_info "=== Phase 0 Infrastructure Verification ==="
+log_info "This script verifies Phase 0 setup (created by setup-phase0.sh):"
+log_info "  - Resource Groups"
+log_info "  - Storage Accounts for Terraform state"
+log_info "  - Current user access to state storage"
 echo ""
 log_info "Script directory: $SCRIPT_DIR"
 log_info "Subscription: $SUBSCRIPTION_ID"
@@ -43,9 +87,9 @@ for verify_script in "${VERIFY_SCRIPTS[@]}"; do
   fi
 
   echo ""
-  echo "================================================================================"
-  echo "Running: $verify_script"
-  echo "================================================================================"
+  log_info "================================================================================"
+  log_info "Running: $verify_script"
+  log_info "================================================================================"
   echo ""
 
   # Run the verification script and capture exit code
@@ -63,31 +107,31 @@ done
 
 # Final Summary
 echo ""
-echo "================================================================================"
-echo "=== Phase 0 Verification Summary ==="
-echo "================================================================================"
+log_info "================================================================================"
+log_info "=== Phase 0 Verification Summary ==="
+log_info "================================================================================"
 echo ""
 
 if [ $TOTAL_ERRORS -eq 0 ]; then
   log_success "All Phase 0 verifications passed!"
   echo ""
-  echo "Verified Phase 0 components:"
-  echo "  ✓ Resource Groups (dev, test, stage, prod)"
-  echo "  ✓ Storage Accounts for Terraform state (with versioning and soft delete)"
-  echo "  ✓ Current user access (Storage Blob Data Contributor)"
+  log_info "Verified Phase 0 components:"
+  log_success "Resource Groups (dev, test, stage, prod)"
+  log_success "Storage Accounts for Terraform state (with versioning and soft delete)"
+  log_success "Current user access (Storage Blob Data Contributor)"
   echo ""
-  echo "Next step: Deploy Terraform bootstrap to create Service Principals and GitHub OIDC"
-  echo "  cd terraform/environments/dev && terraform init && terraform apply"
+  log_info "Next step: Deploy Terraform bootstrap to create Service Principals and GitHub OIDC"
+  log_info "  cd terraform/environments/dev && terraform init && terraform apply"
   echo ""
   exit 0
 else
   log_error "Phase 0 verification completed with $TOTAL_ERRORS error(s)"
   echo ""
-  echo "Failed verifications:"
+  log_error "Failed verifications:"
   for failed in "${FAILED_VERIFICATIONS[@]}"; do
-    echo "  ✗ $failed" >&2
+    log_error "$failed"
   done
   echo ""
-  echo "Please review the output above and fix the issues before proceeding."
+  log_info "Please review the output above and fix the issues before proceeding."
   exit 1
 fi
