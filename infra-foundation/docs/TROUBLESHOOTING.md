@@ -384,7 +384,7 @@ mgmt_subnet_allowed_ssh_ips = [
 
 ```bash
 az network vnet-gateway show \
-  --name vpn-gw-ecare-dev \
+  --name vgw-ecare-dev \
   --resource-group rg-ecare-dev \
   --query "provisioningState" -o tsv
 ```
@@ -395,7 +395,7 @@ Expected: `Succeeded`
 
 ```bash
 az network vnet-gateway vpn-client generate \
-  --name vpn-gw-ecare-dev \
+  --name vgw-ecare-dev \
   --resource-group rg-ecare-dev \
   --processor-architecture Amd64
 ```

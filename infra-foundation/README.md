@@ -129,6 +129,9 @@ Each environment directory contains:
 cp .env.example .env
 # Edit .env with your TENANT_ID, SUBSCRIPTION_ID, LOCATION
 
+# Go to infra-foundation
+cd infra-foundation
+
 # Create Phase 0 infrastructure
 ./scripts/setup-phase0.sh
 ./scripts/verify-phase0.sh
@@ -156,7 +159,7 @@ cd ../../..
 
 **Note**: In the monorepo structure, you may need to adjust paths relative to the repository root.
 
-**For detailed operational procedures, see [RUNBOOK.md](./docs/RUNBOOK.md)**
+**For detailed operational procedures, see [DEPLOYMENT.md](./docs/DEPLOYMENT.md)**
 
 ## Phase 0 Setup (Prerequisites)
 
