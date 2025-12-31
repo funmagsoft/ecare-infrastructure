@@ -16,7 +16,7 @@ deployment_id = "a1b2c3d4"  # Unique identifier for this environment (use same I
 organization_name   = "hycom"
 organization_for_sa = "hycom"
 enable_bootstrap    = true
-# terraform_repos = ["infra-foundation", "infra-platform", "infra-identity"]  # Optional: override default repos
+# terraform_repos = ["ecare-infrastructure"]  # Optional: override default repos
 
 # Users with access to Terraform state Storage Account
 # To get a user's Object ID: az ad user show --id <user-email> --query id --output tsv

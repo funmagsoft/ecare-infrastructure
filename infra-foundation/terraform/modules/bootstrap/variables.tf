@@ -54,12 +54,10 @@ variable "terraform_repos" {
     Full repository names will be constructed as: organization_name/repo-name
 
     Default repositories:
-    - infra-foundation
-    - infra-platform
-    - infra-identity
+    - ecare-infrastructure
   EOT
   type        = list(string)
-  default     = ["infra-foundation", "infra-platform", "infra-identity"]
+  default     = ["ecare-infrastructure"]
 
   validation {
     condition = alltrue([

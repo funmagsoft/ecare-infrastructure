@@ -54,7 +54,7 @@ module "bootstrap" {
 | organization_name | GitHub organization name | `string` | - | yes |
 | organization_for_sa | Organization name for Storage Account naming | `string` | - | yes |
 | project_name | Project name | `string` | - | yes |
-| terraform_repos | List of Terraform repository names (without organization prefix) | `list(string)` | `["infra-foundation", "infra-platform", "infra-identity"]` | no |
+| terraform_repos | List of Terraform repository names (without organization prefix) | `list(string)` | `["ecare-infrastructure"]` | no |
 | users_with_state_access | List of Azure AD user Object IDs with Storage Blob Data Contributor role | `list(string)` | `[]` | no |
 
 ## Outputs
@@ -86,7 +86,7 @@ For example, with `organization_name = "hycom"` and default repos:
 You can override the default list by providing `terraform_repos` variable:
 
 ```hcl
-terraform_repos = ["infra-foundation", "infra-platform", "infra-identity", "custom-repo"]
+terraform_repos = ["ecare-infrastructure", "custom-repo"]
 ```
 
 ### Important: Bootstrap is for Terraform State, Not Service Deployment
