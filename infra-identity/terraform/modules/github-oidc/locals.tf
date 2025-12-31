@@ -10,7 +10,7 @@ locals {
     Environment   = var.environment
     Project       = var.project_name
     ManagedBy     = "Terraform"
-    Phase         = "Workload"
+    Phase         = title(var.phase)
     GitRepository = "ecare-infrastructure"
     TerraformPath = "workload/terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id
@@ -66,7 +66,7 @@ locals {
   # Adding 4-character hash ensures uniqueness even if repo/branch combinations collide
   service_repo_display_names = {
     for name, cfg in var.service_repos :
-    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 6)}"
+    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 6)}-${var.phase}-${var.phase}-${var.deployment_id}"
   }
 
   # GitOps repository display names
@@ -74,7 +74,7 @@ locals {
   # Adding 4-character hash ensures uniqueness if multiple repos transform to same name
   gitops_repo_display_names = {
     for repo in var.gitops_repos :
-    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}-${substr(sha256(repo), 0, 6)}"
+    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}-${substr(sha256(repo), 0, 6)}-${var.phase}-${var.deployment_id}"
   }
 }
 

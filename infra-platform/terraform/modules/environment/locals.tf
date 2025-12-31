@@ -9,7 +9,7 @@ locals {
     Environment   = var.environment
     Project       = var.project_name
     ManagedBy     = "Terraform"
-    Phase         = "Platform"
+    Phase         = title(var.phase)
     GitRepository = "ecare-infrastructure"
     TerraformPath = "platform/terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id

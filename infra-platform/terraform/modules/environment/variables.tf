@@ -8,6 +8,16 @@ variable "environment" {
   }
 }
 
+variable "phase" {
+  description = "Phase identifier for resource naming and tags"
+  type        = string
+
+  validation {
+    condition     = contains(["foundation", "platform", "workload"], var.phase)
+    error_message = "phase must be one of: foundation, platform, workload."
+  }
+}
+
 variable "organization_name" {
   description = "Organization name for resource naming"
   type        = string

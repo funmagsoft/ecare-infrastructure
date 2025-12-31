@@ -41,6 +41,7 @@ module "github_oidc_integration" {
   source = "../github-oidc"
 
   environment         = var.environment
+  phase               = var.phase
   project_name        = var.project_name
   deployment_id       = var.deployment_id
   resource_group_name = data.azurerm_resource_group.main.name
@@ -75,6 +76,7 @@ module "workload_identity" {
   project_name        = var.project_name
   service_name        = each.key
   environment         = var.environment
+  phase               = var.phase
   deployment_id       = var.deployment_id
   resource_group_name = data.azurerm_resource_group.main.name
   location            = data.azurerm_resource_group.main.location

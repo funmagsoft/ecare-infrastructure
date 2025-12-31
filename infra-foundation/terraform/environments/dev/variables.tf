@@ -8,6 +8,17 @@ variable "environment" {
   }
 }
 
+variable "phase" {
+  description = "Fixed phase identifier for infra-foundation"
+  type        = string
+  default     = "foundation"
+
+  validation {
+    condition     = var.phase == "foundation"
+    error_message = "phase must be \"foundation\" for infra-foundation."
+  }
+}
+
 variable "deployment_id" {
   description = "Unique deployment identifier (8 lowercase alphanumeric characters). Use the same ID across all phases (foundation/identity/platform) for easy cleanup."
   type        = string

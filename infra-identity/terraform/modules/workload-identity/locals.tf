@@ -4,9 +4,9 @@
 
 locals {
   # Resource naming patterns
-  managed_identity_name = "mi-${var.project_name}-${var.service_name}-${var.environment}"
+  managed_identity_name = "mi-${var.project_name}-${var.service_name}-${var.environment}-${var.phase}-${var.deployment_id}"
   service_account_name  = "sa-${var.service_name}"
-  federated_cred_name   = "fic-${var.project_name}-${var.service_name}-${var.environment}"
+  federated_cred_name   = "fic-${var.project_name}-${var.service_name}-${var.environment}-${var.phase}-${var.deployment_id}"
   fic_subject           = "system:serviceaccount:${var.namespace}:${local.service_account_name}"
 
   # Determine if Azure access is needed (UAMI and FIC are only created when needed)
@@ -25,7 +25,7 @@ locals {
       Project       = var.project_name
       Service       = var.service_name
       ManagedBy     = "Terraform"
-      Phase         = "Workload"
+      Phase         = title(var.phase)
       GitRepository = "ecare-infrastructure"
       TerraformPath = "workload/terraform/environments/${var.environment}"
       DeploymentId  = var.deployment_id

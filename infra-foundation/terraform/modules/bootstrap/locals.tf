@@ -8,7 +8,7 @@ locals {
     Environment   = var.environment
     Project       = var.project_name
     ManagedBy     = "Terraform"
-    Phase         = "Foundation"
+    Phase         = title(var.phase)
     GitRepository = "ecare-infrastructure"
     TerraformPath = "foundation/terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id
@@ -48,7 +48,7 @@ locals {
   # FIC display names: GitHub{Repo}Env-{environment}-{hash}
   fic_display_names = {
     for repo in local.terraform_repos_full :
-    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 6)}"
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 6)}-${var.phase}-${var.deployment_id}"
   }
 }
 

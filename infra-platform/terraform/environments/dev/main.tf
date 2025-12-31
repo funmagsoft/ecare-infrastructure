@@ -2,6 +2,7 @@ module "environment" {
   source = "../../modules/environment"
 
   environment       = var.environment
+  phase             = var.phase
   deployment_id     = var.deployment_id
   organization_name = var.organization_name
   project_name      = var.project_name

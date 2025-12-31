@@ -8,6 +8,17 @@ variable "environment" {
   }
 }
 
+variable "phase" {
+  description = "Fixed phase identifier for infra-identity"
+  type        = string
+  default     = "workload"
+
+  validation {
+    condition     = var.phase == "workload"
+    error_message = "phase must be \"workload\" for infra-identity."
+  }
+}
+
 variable "deployment_id" {
   description = "Unique deployment identifier (8 lowercase alphanumeric characters). Use the same ID across all phases (foundation/identity/platform) for easy cleanup."
   type        = string
