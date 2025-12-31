@@ -2,22 +2,21 @@
 # Local Variables
 #------------------------------------------------------------------------------
 
-# Local variables
 locals {
   # Required tags - these must always be present
   required_tags = {
     Environment   = var.environment
     Project       = var.project_name
     ManagedBy     = "Terraform"
-    Phase         = "Platform"
+    Phase         = "Foundation"
     GitRepository = "ecare-infrastructure"
-    TerraformPath = "platform/terraform/environments/${var.environment}"
+    TerraformPath = "foundation/terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id
   }
 
   # Merge required tags with additional tags
-  # Required tags take precedence (merge order: var.tags first, then required_tags)
-  common_tags = merge(
+  # Required tags take precedence (merge order: var.tags first, then required_tags overwrite)
+  merged_tags = merge(
     var.tags,
     local.required_tags
   )
@@ -34,13 +33,23 @@ locals {
   ]
 
   # Tags map used for validation
-  tags_for_validation = local.common_tags
+  tags_for_validation = local.merged_tags
 
-  # Extract foundation outputs
-  vnet_id        = data.terraform_remote_state.foundation.outputs.vnet_id
-  aks_subnet_id  = data.terraform_remote_state.foundation.outputs.aks_subnet_id
-  data_subnet_id = data.terraform_remote_state.foundation.outputs.data_subnet_id
-  mgmt_subnet_id = data.terraform_remote_state.foundation.outputs.mgmt_subnet_id
+  # Azure AD uses "Key=Value" string tags
+  ad_tags = [
+    for key, value in local.merged_tags : "${key}=${value}"
+  ]
+
+  # Full Terraform repository names (org/repo)
+  terraform_repos_full = [
+    for repo in var.terraform_repos : "${var.organization_name}/${repo}"
+  ]
+
+  # FIC display names: GitHub{Repo}Env-{environment}-{hash}
+  fic_display_names = {
+    for repo in local.terraform_repos_full :
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 4)}"
+  }
 }
 
 #------------------------------------------------------------------------------

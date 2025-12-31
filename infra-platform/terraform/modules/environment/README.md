@@ -216,8 +216,8 @@ The module enforces tag validation to ensure all required tags are present:
 - `Project` - Project name
 - `ManagedBy` - Always set to "Terraform"
 - `Phase` - Always set to "Platform"
-- `GitRepository` - Always set to "infra-platform"
-- `TerraformPath` - Path to Terraform configuration (e.g., "terraform/environments/dev")
+- `GitRepository` - Always set to "ecare-infrastructure"
+- `TerraformPath` - Path to Terraform configuration (e.g., "platform/terraform/environments/dev")
 - `DeploymentId` - Deployment identifier for this environment
 
 **Additional Tags**:

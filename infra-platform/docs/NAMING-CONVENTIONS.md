@@ -501,8 +501,8 @@ All resources created by Terraform include these tags:
 - `Project`: ecare
 - `ManagedBy`: Terraform
 - `Phase`: Platform
-- `GitRepository`: infra-platform
-- `TerraformPath`: terraform/environments/{env}
+- `GitRepository`: ecare-infrastructure
+- `TerraformPath`: platform/terraform/environments/{env}
 - `DeploymentId`: 8-character unique identifier (e.g., a1b2c3d4)
 
 **Example:**
@@ -513,8 +513,8 @@ tags = {
   Project       = "ecare"
   ManagedBy     = "Terraform"
   Phase         = "Platform"
-  GitRepository = "infra-platform"
-  TerraformPath = "terraform/environments/dev"
+  GitRepository = "ecare-infrastructure"
+  TerraformPath = "platform/terraform/environments/dev"
   DeploymentId  = "a1b2c3d4"
 }
 ```

@@ -4,14 +4,16 @@
 
 # Local variables
 locals {
+  location = data.azurerm_resource_group.main.location
+
   # Required tags - these must always be present
   required_tags = {
     Environment   = var.environment
     Project       = var.project_name
     ManagedBy     = "Terraform"
-    Phase         = "Platform"
+    Phase         = "Foundation"
     GitRepository = "ecare-infrastructure"
-    TerraformPath = "platform/terraform/environments/${var.environment}"
+    TerraformPath = "foundation/terraform/environments/${var.environment}"
     DeploymentId  = var.deployment_id
   }
 
@@ -35,12 +37,6 @@ locals {
 
   # Tags map used for validation
   tags_for_validation = local.common_tags
-
-  # Extract foundation outputs
-  vnet_id        = data.terraform_remote_state.foundation.outputs.vnet_id
-  aks_subnet_id  = data.terraform_remote_state.foundation.outputs.aks_subnet_id
-  data_subnet_id = data.terraform_remote_state.foundation.outputs.data_subnet_id
-  mgmt_subnet_id = data.terraform_remote_state.foundation.outputs.mgmt_subnet_id
 }
 
 #------------------------------------------------------------------------------

@@ -195,8 +195,8 @@ All resources are tagged with:
 - `Project`: ecare
 - `ManagedBy`: Terraform
 - `Phase`: Platform
-- `GitRepository`: infra-platform
-- `TerraformPath`: terraform/environments/{env}
+- `GitRepository`: ecare-infrastructure
+- `TerraformPath`: platform/terraform/environments/{env}
 - `DeploymentId`: Unique 8-char identifier for cleanup
 - `Module`: Specific module name (aks, storage, etc.)
 
