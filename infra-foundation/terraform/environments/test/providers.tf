@@ -1,7 +1,7 @@
 provider "azurerm" {
   features {}
 
-  # Optional: recommended in CI/CD
+  # Required in azurerm 4.x. Uses var.subscription_id if provided, otherwise falls back to Azure CLI subscription.
   subscription_id = var.subscription_id
 }
 

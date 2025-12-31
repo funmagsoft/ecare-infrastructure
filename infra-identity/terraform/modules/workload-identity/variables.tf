@@ -72,8 +72,8 @@ variable "aks_oidc_issuer" {
   description = "AKS OIDC issuer URL (from AKS output)"
   type        = string
   validation {
-    condition     = can(regex("^https://[a-z0-9.-]+\\.oic\\.prod-aks\\.[a-z]+\\.azure\\.com/[a-f0-9-]+/?$", var.aks_oidc_issuer))
-    error_message = "aks_oidc_issuer must be a valid AKS OIDC issuer URL (format: https://*.oic.prod-aks.*.azure.com/<guid>)."
+    condition     = can(regex("^https://[a-z0-9.-]+\\.oic\\.prod-aks\\.(azure\\.com|[a-z]+\\.azure\\.com)(/[a-f0-9-]+)+/?$", var.aks_oidc_issuer))
+    error_message = "aks_oidc_issuer must be a valid AKS OIDC issuer URL (format: https://*.oic.prod-aks.*.azure.com/<guid>/...)."
   }
 }
 

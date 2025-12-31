@@ -19,7 +19,7 @@ variable "deployment_id" {
 }
 
 variable "subscription_id" {
-  description = "Azure subscription ID. Optional locally; recommended in CI/CD."
+  description = "Azure subscription ID. If not provided, Terraform will use ARM_SUBSCRIPTION_ID environment variable or Azure CLI authenticated subscription."
   type        = string
   default     = null
   nullable    = true

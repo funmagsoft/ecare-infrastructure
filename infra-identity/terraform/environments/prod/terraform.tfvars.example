@@ -3,9 +3,9 @@
 # terraform.tfvars is in .gitignore, so your sensitive data won't be committed
 
 # Azure Configuration
-# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
-# Recommended to set explicitly in CI/CD: subscription_id = "your-subscription-id"
-# subscription_id = null  # Optional: set to null to use active subscription
+# subscription_id is required in azurerm 4.x
+# Get your subscription ID: az account show --query id --output tsv
+subscription_id = "your-subscription-id-here"
 
 # Environment Configuration
 environment   = "prod"

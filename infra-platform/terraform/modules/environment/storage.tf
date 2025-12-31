@@ -20,6 +20,7 @@ module "storage" {
   blob_soft_delete_retention_days      = var.storage_blob_soft_delete_retention_days
   enable_soft_delete_container         = var.storage_enable_soft_delete_container
   container_soft_delete_retention_days = var.storage_container_soft_delete_retention_days
+  cross_tenant_replication_enabled     = var.storage_cross_tenant_replication_enabled
 
   # Private Endpoint configuration
   subnet_id = local.data_subnet_id

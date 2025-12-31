@@ -136,7 +136,7 @@ module "environment" {
 | aks_user_node_pool_min_count | Minimum node count for AKS user node pool | `number` | `1` | no |
 | aks_user_node_pool_max_count | Maximum node count for AKS user node pool | `number` | `3` | no |
 | aks_user_node_pool_os_disk_size_gb | OS disk size for AKS user nodes | `number` | `128` | no |
-| aks_enable_auto_scaling | Enable auto-scaling for AKS user node pool | `bool` | `true` | no |
+| aks_auto_scaling_enabled | Enable auto-scaling for AKS user node pool | `bool` | `true` | no |
 | aks_oidc_issuer_enabled | Enable OIDC issuer for AKS (required for Workload Identity) | `bool` | `true` | no |
 | aks_workload_identity_enabled | Enable Workload Identity for AKS | `bool` | `true` | no |
 | aks_azure_policy_enabled | Enable Azure Policy add-on for AKS | `bool` | `true` | no |

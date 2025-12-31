@@ -49,7 +49,7 @@ module "aks" {
   user_node_pool_vm_size   = "Standard_A2_v2"
   user_node_pool_min_count = 1
   user_node_pool_max_count = 3
-  enable_auto_scaling      = true
+  auto_scaling_enabled      = true
 
   # Features (IMPORTANT for Phase 3!)
   oidc_issuer_enabled       = true  # Required for Workload Identity
@@ -111,7 +111,7 @@ module "aks" {
 | oidc_issuer_enabled | Enable OIDC issuer (required for Workload Identity) | `bool` | `true` | no |
 | workload_identity_enabled | Enable Workload Identity | `bool` | `true` | no |
 | azure_policy_enabled | Enable Azure Policy add-on | `bool` | `true` | no |
-| enable_auto_scaling | Enable auto-scaling for user node pool | `bool` | `true` | no |
+| auto_scaling_enabled | Enable auto-scaling for user node pool | `bool` | `true` | no |
 | log_analytics_workspace_id | Log Analytics Workspace ID for monitoring | `string` | - | no |
 | enable_container_insights | Enable Azure Monitor Container Insights | `bool` | `true` | no |
 | tags | Tags to apply to all resources | `map(string)` | `{}` | no |
@@ -336,7 +336,7 @@ module "aks" {
   user_node_pool_vm_size   = "Standard_B2s"  # Burstable for dev
   user_node_pool_min_count = 1
   user_node_pool_max_count = 3
-  enable_auto_scaling      = true
+  auto_scaling_enabled     = true
 
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
@@ -373,7 +373,7 @@ module "aks" {
   user_node_pool_vm_size   = "Standard_D2s_v3"  # Production-grade VMs
   user_node_pool_min_count = 3
   user_node_pool_max_count = 10
-  enable_auto_scaling      = true
+  auto_scaling_enabled     = true
 
   oidc_issuer_enabled       = true
   workload_identity_enabled = true

@@ -4,10 +4,9 @@
 # IMPORTANT: For production, consider using environment variables for sensitive data
 
 # Azure Configuration
-# subscription_id is optional - if not set, Terraform uses active subscription from Azure CLI
-# RECOMMENDED for production: Set explicitly in CI/CD or via environment variable
-# subscription_id = "your-subscription-id"  # Recommended for production
-# subscription_id = null  # Optional: set to null to use active subscription
+# subscription_id is required in azurerm 4.x
+# Get your subscription ID: az account show --query id --output tsv
+subscription_id = "your-subscription-id-here"
 
 # Environment Configuration
 environment   = "prod"

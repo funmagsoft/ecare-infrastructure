@@ -20,6 +20,7 @@ module "environment" {
   storage_blob_soft_delete_retention_days      = var.storage_blob_soft_delete_retention_days
   storage_enable_soft_delete_container         = var.storage_enable_soft_delete_container
   storage_container_soft_delete_retention_days = var.storage_container_soft_delete_retention_days
+  storage_cross_tenant_replication_enabled     = var.storage_cross_tenant_replication_enabled
 
   # Key Vault
   key_vault_sku                        = var.key_vault_sku
@@ -63,7 +64,7 @@ module "environment" {
   aks_user_node_pool_max_count         = var.aks_user_node_pool_max_count
   aks_user_node_pool_os_disk_size_gb   = var.aks_user_node_pool_os_disk_size_gb
   aks_user_node_pool_node_count        = var.aks_user_node_pool_node_count
-  aks_enable_auto_scaling              = var.aks_enable_auto_scaling
+  aks_auto_scaling_enabled             = var.aks_auto_scaling_enabled
   aks_oidc_issuer_enabled              = var.aks_oidc_issuer_enabled
   aks_workload_identity_enabled        = var.aks_workload_identity_enabled
   aks_azure_policy_enabled             = var.aks_azure_policy_enabled

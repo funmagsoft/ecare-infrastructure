@@ -109,6 +109,12 @@ variable "storage_container_soft_delete_retention_days" {
   default     = 7
 }
 
+variable "storage_cross_tenant_replication_enabled" {
+  description = "Enable cross-tenant replication for storage account"
+  type        = bool
+  default     = false
+}
+
 #------------------------------------------------------------------------------
 # Key Vault Variables
 #------------------------------------------------------------------------------
@@ -328,7 +334,7 @@ variable "aks_user_node_pool_node_count" {
   default     = 1
 }
 
-variable "aks_enable_auto_scaling" {
+variable "aks_auto_scaling_enabled" {
   description = "Enable auto-scaling for AKS user node pool"
   type        = bool
   default     = true

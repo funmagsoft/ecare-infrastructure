@@ -20,7 +20,7 @@ variable "deployment_id" {
 }
 
 variable "subscription_id" {
-  description = "Azure subscription ID. Optional locally; recommended in CI/CD."
+  description = "Azure subscription ID. If not provided, Terraform will use ARM_SUBSCRIPTION_ID environment variable or Azure CLI authenticated subscription."
   type        = string
   default     = null
   nullable    = true
@@ -140,6 +140,12 @@ variable "storage_container_soft_delete_retention_days" {
     condition     = var.storage_container_soft_delete_retention_days >= 1 && var.storage_container_soft_delete_retention_days <= 365
     error_message = "storage_container_soft_delete_retention_days must be between 1 and 365 days."
   }
+}
+
+variable "storage_cross_tenant_replication_enabled" {
+  description = "Enable cross-tenant replication for storage account"
+  type        = bool
+  default     = false
 }
 
 #------------------------------------------------------------------------------
@@ -422,7 +428,7 @@ variable "aks_user_node_pool_node_count" {
   }
 }
 
-variable "aks_enable_auto_scaling" {
+variable "aks_auto_scaling_enabled" {
   description = "Enable auto-scaling for AKS user node pool"
   type        = bool
   default     = true

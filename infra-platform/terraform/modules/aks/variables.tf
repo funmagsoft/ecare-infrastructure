@@ -184,7 +184,7 @@ variable "azure_policy_enabled" {
   default     = true
 }
 
-variable "enable_auto_scaling" {
+variable "auto_scaling_enabled" {
   description = "Enable auto-scaling for user node pool"
   type        = bool
   default     = true

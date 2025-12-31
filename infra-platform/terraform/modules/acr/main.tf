@@ -18,21 +18,10 @@ resource "azurerm_container_registry" "this" {
   }
 
   # Retention policy (Premium SKU only)
-  dynamic "retention_policy" {
-    for_each = var.sku == "Premium" ? [1] : []
-    content {
-      days    = var.retention_days
-      enabled = true
-    }
-  }
+  retention_policy_in_days = var.sku == "Premium" ? var.retention_days : null
 
   # Trust policy (Premium SKU only)
-  dynamic "trust_policy" {
-    for_each = var.sku == "Premium" && var.trust_policy_enabled ? [1] : []
-    content {
-      enabled = true
-    }
-  }
+  trust_policy_enabled = var.sku == "Premium" ? var.trust_policy_enabled : false
 
   tags = merge(
     var.tags,

@@ -19,7 +19,7 @@ variable "deployment_id" {
 }
 
 variable "subscription_id" {
-  description = "Azure subscription ID. Optional locally; recommended in CI/CD."
+  description = "Azure subscription ID. Required in azurerm 4.x. If null, you must set ARM_SUBSCRIPTION_ID environment variable."
   type        = string
   default     = null
   nullable    = true

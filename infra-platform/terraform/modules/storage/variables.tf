@@ -42,6 +42,12 @@ variable "account_replication_type" {
   default     = "LRS"
 }
 
+variable "cross_tenant_replication_enabled" {
+  description = "Enable cross-tenant replication for storage account"
+  type        = bool
+  default     = false
+}
+
 variable "enable_https_traffic_only" {
   description = "Enable HTTPS traffic only"
   type        = bool
