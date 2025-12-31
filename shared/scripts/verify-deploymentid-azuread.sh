@@ -4,21 +4,27 @@ set -euo pipefail
 
 # verify-deploymentid-azuread.sh
 #
-# Verifies Entra ID objects named like: <name>-<DeploymentId>
-# by comparing Microsoft Graph results with expected objects derived from Terraform state (azuread_*).
+# Verifies Entra ID objects named like: <name>-<phase>-<DeploymentId>
+# where:
+#   - phase in Entra is lowercase: foundation|platform|workload
+#
+# It compares Microsoft Graph scan results with expected objects derived from Terraform state (azuread_*).
 #
 # Modes:
-# - expected: only checks that TF-expected objects exist in Entra (direct lookup by IDs)
-# - scan:     scans Entra for objects whose displayName ends with "-<DeploymentId>" and compares with TF
+# - expected: only checks that TF-expected objects exist in Entra (direct lookup by IDs) and enforces suffix
+# - scan:     scans Entra for objects whose displayName ends with "-<phase>-<DeploymentId>" and compares with TF
 # - both:     expected + scan (default)
 #
 # Optional behavior:
 # - --fail-on-extra true|false (default: true)
 #   If false, "extra" objects found during scan will be reported but will NOT fail the script.
-#   Missing objects always fail (because TF expected them to exist).
+#   Missing objects always fail.
 
 TF_DIR=""
 DEPLOYMENT_ID=""
+PHASE_IN=""
+PHASE_ARM=""
+PHASE_ENTRA=""
 MODE="both"          # expected | scan | both
 PREFIX=""            # optional optimization: startswith(displayName,'prefix') AND endswith(...)
 FAIL_ON_EXTRA="true"
@@ -32,20 +38,22 @@ help() {
 verify-deploymentid-azuread.sh
 
 Compares Entra ID objects named like:
-  <name>-<DeploymentId>
-against expected objects from Terraform state (azuread provider).
+  <name>-<phase>-<DeploymentId>
+where phase is lowercase: foundation|platform|workload
 
 Usage:
-  verify-deploymentid-azuread.sh --tf-dir <path> [options]
+  verify-deploymentid-azuread.sh --tf-dir <path> --phase <foundation|platform|workload> [options]
 
 Required:
   --tf-dir <path>              Path to the Terraform root module directory (required).
+  --phase <value>              Phase value identifying the Terraform state scope.
+                               Allowed (case-insensitive): foundation|platform|workload
 
 Options:
   --deployment-id <id>         DeploymentId value. If omitted, the script will try:
                                terraform output -raw deployment_id
                                terraform output -raw DeploymentId
-  --mode <expected|scan|both>  expected: verify TF-expected objects exist in Entra (direct lookup)
+  --mode <expected|scan|both>  expected: verify TF-expected objects exist in Entra (direct lookup + suffix enforcement)
                                scan:     list Entra objects by suffix and report missing/extra vs TF
                                both:     do both (default)
   --prefix <string>            Optional optimization: adds startswith(displayName,'<prefix>') to Graph filter.
@@ -64,9 +72,25 @@ Notes:
     If your tenant/policies restrict this, use --mode expected.
 
 Examples:
-  ./verify-deploymentid-azuread.sh --tf-dir ./infra-identity/terraform/environments/dev --deployment-id a1b2c3d4
-  ./verify-deploymentid-azuread.sh --tf-dir ./infra-foundation/terraform/environments/dev --mode both --fail-on-extra false
+  ./verify-deploymentid-azuread.sh --tf-dir ./infra-foundation/terraform/environments/dev --phase foundation
+  ./verify-deploymentid-azuread.sh --tf-dir ./infra-platform/terraform/environments/dev --phase Platform --fail-on-extra false
 EOF
+}
+
+normalize_phase() {
+  local in="$1"
+  local lower
+  lower="$(printf "%s" "$in" | tr '[:upper:]' '[:lower:]')"
+
+  case "$lower" in
+    foundation) echo "foundation|Foundation" ;;
+    platform)   echo "platform|Platform" ;;
+    workload)   echo "workload|Workload" ;;
+    *)
+      echo "ERROR: invalid --phase value: $in (allowed: foundation|platform|workload)" >&2
+      exit 2
+      ;;
+  esac
 }
 
 # ----------------------------
@@ -76,6 +100,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --tf-dir)          TF_DIR="$2"; shift 2 ;;
     --deployment-id)   DEPLOYMENT_ID="$2"; shift 2 ;;
+    --phase)           PHASE_IN="$2"; shift 2 ;;
     --mode)            MODE="$2"; shift 2 ;;
     --prefix)          PREFIX="$2"; shift 2 ;;
     --fail-on-extra)   FAIL_ON_EXTRA="$2"; shift 2 ;;
@@ -97,6 +122,14 @@ if [[ ! -d "$TF_DIR" ]]; then
   echo "ERROR: --tf-dir does not exist or is not a directory: $TF_DIR" >&2
   exit 2
 fi
+if [[ -z "$PHASE_IN" ]]; then
+  echo "ERROR: --phase is required (foundation|platform|workload)." >&2
+  exit 2
+fi
+pair="$(normalize_phase "$PHASE_IN")"
+PHASE_ENTRA="${pair%%|*}"
+PHASE_ARM="${pair##*|}"
+
 if [[ "$MODE" != "expected" && "$MODE" != "scan" && "$MODE" != "both" ]]; then
   echo "ERROR: --mode must be one of: expected, scan, both" >&2
   exit 2
@@ -129,10 +162,12 @@ if [[ -z "${DEPLOYMENT_ID}" ]]; then
   exit 2
 fi
 
-SUFFIX="-${DEPLOYMENT_ID}"
+SUFFIX="-${PHASE_ENTRA}-${DEPLOYMENT_ID}"
 
 echo "Terraform dir:    ${TF_DIR}"
 echo "DeploymentId:     ${DEPLOYMENT_ID}"
+echo "Phase (Entra):    ${PHASE_ENTRA}"
+echo "Phase (ARM):      ${PHASE_ARM}"
 echo "Suffix match:     *${SUFFIX}"
 echo "Mode:             ${MODE}"
 echo "Prefix opt:       ${PREFIX:-<none>}"
@@ -284,15 +319,15 @@ scan_actual_groups() {
 }
 
 # ----------------------------
-# Direct existence checks (no advanced queries required)
+# Direct existence checks (by ID) + suffix enforcement
 # ----------------------------
-graph_get_application_by_object_id() {
+graph_get_application_by_object_id_json() {
   local oid="$1"
   az rest --method GET --uri "https://graph.microsoft.com/v1.0/applications/${oid}?\$select=id,appId,displayName" \
-    --only-show-errors -o json >/dev/null
+    --only-show-errors -o json
 }
 
-graph_get_application_by_app_id() {
+graph_get_application_by_app_id_json() {
   local appid="$1"
   local appid_escaped
   appid_escaped="$(graph_escape_odata "$appid")"
@@ -300,25 +335,26 @@ graph_get_application_by_app_id() {
     --only-show-errors -o json
 }
 
-graph_get_sp_by_object_id() {
+graph_get_sp_by_object_id_json() {
   local oid="$1"
   az rest --method GET --uri "https://graph.microsoft.com/v1.0/servicePrincipals/${oid}?\$select=id,appId,displayName" \
-    --only-show-errors -o json >/dev/null
+    --only-show-errors -o json
 }
 
-graph_get_group_by_object_id() {
+graph_get_group_by_object_id_json() {
   local oid="$1"
   az rest --method GET --uri "https://graph.microsoft.com/v1.0/groups/${oid}?\$select=id,displayName" \
-    --only-show-errors -o json >/dev/null
+    --only-show-errors -o json
 }
 
 expected_direct_check() {
   local label="$1" expected_file="$2" kind="$3"
   local missing=0
+  local name_mismatch=0
 
   local count
   count="$(wc -l < "$expected_file" | tr -d ' ')"
-  echo "${label}: expected ${count} (direct Graph existence check)"
+  echo "${label}: expected ${count} (direct Graph existence check + suffix enforcement)"
 
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
@@ -327,37 +363,72 @@ expected_direct_check() {
     appid="$(echo "$line" | jq -r '.app_id // empty')"
     dname="$(echo "$line" | jq -r '.display_name // empty')"
 
-    local ok="false"
+    local json found_name
+    found_name=""
+
     if [[ "$kind" == "application" ]]; then
-      if [[ -n "$oid" ]] && graph_get_application_by_object_id "$oid"; then
-        ok="true"
-      elif [[ -n "$appid" ]]; then
-        if graph_get_application_by_app_id "$appid" | jq -e '.value | length > 0' >/dev/null 2>&1; then
-          ok="true"
+      if [[ -n "$oid" ]]; then
+        if json="$(graph_get_application_by_object_id_json "$oid" 2>/dev/null)"; then
+          found_name="$(echo "$json" | jq -r '.displayName // empty')"
         fi
       fi
-    elif [[ "$kind" == "servicePrincipal" ]]; then
-      if [[ -n "$oid" ]] && graph_get_sp_by_object_id "$oid"; then
-        ok="true"
+      if [[ -z "$found_name" && -n "$appid" ]]; then
+        if json="$(graph_get_application_by_app_id_json "$appid" 2>/dev/null)"; then
+          found_name="$(echo "$json" | jq -r '.value[0].displayName // empty')"
+        fi
       fi
-    elif [[ "$kind" == "group" ]]; then
-      if [[ -n "$oid" ]] && graph_get_group_by_object_id "$oid"; then
-        ok="true"
-      fi
-    fi
 
-    if [[ "$ok" != "true" ]]; then
-      missing=$((missing + 1))
-      if [[ "$kind" == "application" ]]; then
+      if [[ -z "$found_name" ]]; then
+        missing=$((missing + 1))
         echo "  MISSING: ${dname} | object_id=${oid:-"-"} | app_id=${appid:-"-"}"
-      else
+        continue
+      fi
+
+      if [[ "$found_name" != *"$SUFFIX" ]]; then
+        name_mismatch=$((name_mismatch + 1))
+        echo "  NAME_MISMATCH: expected suffix ${SUFFIX} but found '${found_name}' | object_id=${oid:-"-"} | app_id=${appid:-"-"}"
+      fi
+
+    elif [[ "$kind" == "servicePrincipal" ]]; then
+      if [[ -n "$oid" ]] && json="$(graph_get_sp_by_object_id_json "$oid" 2>/dev/null)"; then
+        found_name="$(echo "$json" | jq -r '.displayName // empty')"
+      fi
+
+      if [[ -z "$found_name" ]]; then
+        missing=$((missing + 1))
         echo "  MISSING: ${dname} | object_id=${oid:-"-"}"
+        continue
+      fi
+
+      if [[ "$found_name" != *"$SUFFIX" ]]; then
+        name_mismatch=$((name_mismatch + 1))
+        echo "  NAME_MISMATCH: expected suffix ${SUFFIX} but found '${found_name}' | object_id=${oid:-"-"}"
+      fi
+
+    elif [[ "$kind" == "group" ]]; then
+      if [[ -n "$oid" ]] && json="$(graph_get_group_by_object_id_json "$oid" 2>/dev/null)"; then
+        found_name="$(echo "$json" | jq -r '.displayName // empty')"
+      fi
+
+      if [[ -z "$found_name" ]]; then
+        missing=$((missing + 1))
+        echo "  MISSING: ${dname} | object_id=${oid:-"-"}"
+        continue
+      fi
+
+      if [[ "$found_name" != *"$SUFFIX" ]]; then
+        name_mismatch=$((name_mismatch + 1))
+        echo "  NAME_MISMATCH: expected suffix ${SUFFIX} but found '${found_name}' | object_id=${oid:-"-"}"
       fi
     fi
   done < "$expected_file"
 
   if [[ "$missing" -gt 0 ]]; then
     echo "${label}: missing ${missing}"
+    return 1
+  fi
+  if [[ "$name_mismatch" -gt 0 ]]; then
+    echo "${label}: name mismatches ${name_mismatch}"
     return 1
   fi
 
@@ -425,7 +496,7 @@ compare_scan_sets() {
 
 rc=0
 
-# 1) expected existence
+# 1) expected existence (+ naming)
 if [[ "$MODE" == "expected" || "$MODE" == "both" ]]; then
   if [[ "$INCLUDE_APPS" == "true" ]]; then
     expected_direct_check "apps" "${tmpdir}/expected_apps.jsonl" "application" || rc=1

@@ -5,20 +5,23 @@ set -euo pipefail
 # verify-deploymentid-arg.sh
 #
 # Verifies (via Azure Resource Graph) that:
-# 1) All TAGGABLE ARM resources managed by the Terraform state in --tf-dir AND tagged with DeploymentId
-#    are present in Azure Resource Graph for the same DeploymentId.
-# 2) There are no "extra" ARM resources in Azure Resource Graph with the same DeploymentId
+# 1) All TAGGABLE ARM resources managed by the Terraform state in --tf-dir AND tagged with:
+#       - DeploymentId=<id>
+#       - Phase=<Foundation|Platform|Workload>   (ARM tag value - TitleCase)
+#    are present in Azure Resource Graph for the same tag pair.
+# 2) There are no "extra" ARM resources in Azure Resource Graph with the same tag pair
 #    that are not present in Terraform state.
 #
 # Requirements: terraform, az, jq
 # Azure CLI extension: resource-graph (installed automatically, non-interactive)
-#
-# Usage:
-#   ./verify-deploymentid-arg.sh --tf-dir <path> [--deployment-id <id>] [--subscription <subId>]
-#   ./verify-deploymentid-arg.sh -h|--help
 
-TAG_KEY="DeploymentId"
+DEPLOYMENT_TAG_KEY="DeploymentId"
+PHASE_TAG_KEY="Phase"
+
 DEPLOYMENT_ID=""
+PHASE_IN=""
+PHASE_ARM=""
+PHASE_ENTRA=""
 SUBSCRIPTION_ID=""
 FIRST=1000
 TF_DIR=""
@@ -27,33 +30,55 @@ help() {
   cat <<'EOF'
 verify-deploymentid-arg.sh
 
-Verifies Terraform-managed, taggable ARM resources against Azure Resource Graph using a DeploymentId tag.
+Verifies Terraform-managed, taggable ARM resources against Azure Resource Graph using:
+  DeploymentId tag + Phase tag.
 
 It checks:
-  - Missing: resources present in Terraform state (taggable + tagged with DeploymentId) but not found in Azure ARG.
-  - Extra:   resources found in Azure ARG with DeploymentId but not present in Terraform state.
+  - Missing: resources present in Terraform state (taggable + tagged DeploymentId+Phase) but not found in Azure ARG.
+  - Extra:   resources found in Azure ARG with DeploymentId+Phase but not present in Terraform state.
 
 IMPORTANT:
   - This script verifies only TAGGABLE ARM resources (those with 'tags' in Terraform state).
-  - Non-taggable resources require an additional "ARM id existence" check (separate script/variant).
+  - Non-taggable resources require a separate existence check.
 
 Usage:
-  verify-deploymentid-arg.sh --tf-dir <path> [options]
+  verify-deploymentid-arg.sh --tf-dir <path> --phase <foundation|platform|workload> [options]
+
+Required:
+  --tf-dir <path>           Path to the Terraform root module directory.
+  --phase <value>           Phase value identifying the Terraform state scope.
+                            Allowed (case-insensitive): foundation|platform|workload
 
 Options:
-  --tf-dir <path>         Path to the Terraform root module directory (required).
-  --deployment-id <id>    DeploymentId value. If omitted, the script will try:
-                          terraform output -raw deployment_id
-                          terraform output -raw DeploymentId
-  --subscription <id>     Azure subscription id. If omitted, uses current az account.
-  --tag-key <name>        Tag key to use (default: DeploymentId).
-  --first <n>             Page size for ARG queries (default: 1000).
-  -h, --help              Show this help and exit.
+  --deployment-id <id>      DeploymentId value. If omitted, the script will try:
+                            terraform output -raw deployment_id
+                            terraform output -raw DeploymentId
+  --subscription <id>       Azure subscription id. If omitted, uses current az account.
+  --deployment-tag-key <k>  Deployment tag key (default: DeploymentId).
+  --phase-tag-key <k>       Phase tag key (default: Phase).
+  --first <n>               Page size for ARG queries (default: 1000).
+  -h, --help                Show this help and exit.
 
 Examples:
-  ./verify-deploymentid-arg.sh --tf-dir infra-platform/terraform/environments/dev --deployment-id a1b2c3d4
-  ./verify-deploymentid-arg.sh --tf-dir ./terraform/environments/prod
+  ./verify-deploymentid-arg.sh --tf-dir infra-foundation/terraform/environments/dev --phase foundation
+  ./verify-deploymentid-arg.sh --tf-dir infra-platform/terraform/environments/dev --phase Platform --deployment-id a1b2c3d4
 EOF
+}
+
+normalize_phase() {
+  local in="$1"
+  local lower
+  lower="$(printf "%s" "$in" | tr '[:upper:]' '[:lower:]')"
+
+  case "$lower" in
+    foundation) echo "foundation|Foundation" ;;
+    platform)   echo "platform|Platform" ;;
+    workload)   echo "workload|Workload" ;;
+    *)
+      echo "ERROR: invalid --phase value: $in (allowed: foundation|platform|workload)" >&2
+      exit 2
+      ;;
+  esac
 }
 
 # ----------------------------
@@ -61,12 +86,14 @@ EOF
 # ----------------------------
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --tf-dir)        TF_DIR="$2"; shift 2 ;;
-    --deployment-id) DEPLOYMENT_ID="$2"; shift 2 ;;
-    --subscription)  SUBSCRIPTION_ID="$2"; shift 2 ;;
-    --tag-key)       TAG_KEY="$2"; shift 2 ;;
-    --first)         FIRST="$2"; shift 2 ;;
-    -h|--help)       help; exit 0 ;;
+    --tf-dir)               TF_DIR="$2"; shift 2 ;;
+    --deployment-id)        DEPLOYMENT_ID="$2"; shift 2 ;;
+    --phase)                PHASE_IN="$2"; shift 2 ;;
+    --subscription)         SUBSCRIPTION_ID="$2"; shift 2 ;;
+    --deployment-tag-key)   DEPLOYMENT_TAG_KEY="$2"; shift 2 ;;
+    --phase-tag-key)        PHASE_TAG_KEY="$2"; shift 2 ;;
+    --first)                FIRST="$2"; shift 2 ;;
+    -h|--help)              help; exit 0 ;;
     *) echo "Unknown arg: $1" >&2; echo >&2; help >&2; exit 2 ;;
   esac
 done
@@ -82,6 +109,17 @@ if [[ ! -d "$TF_DIR" ]]; then
   echo "ERROR: --tf-dir does not exist or is not a directory: $TF_DIR" >&2
   exit 2
 fi
+
+if [[ -z "$PHASE_IN" ]]; then
+  echo "ERROR: --phase is required (foundation|platform|workload)." >&2
+  echo >&2
+  help >&2
+  exit 2
+fi
+
+pair="$(normalize_phase "$PHASE_IN")"
+PHASE_ENTRA="${pair%%|*}"   # not used in this script; kept for symmetry
+PHASE_ARM="${pair##*|}"
 
 command -v terraform >/dev/null
 command -v az >/dev/null
@@ -122,10 +160,12 @@ if [[ -z "${DEPLOYMENT_ID}" ]]; then
   exit 2
 fi
 
-echo "Terraform dir:  ${TF_DIR}"
-echo "Subscription:   ${SUBSCRIPTION_ID}"
-echo "Tag key:        ${TAG_KEY}"
-echo "DeploymentId:   ${DEPLOYMENT_ID}"
+echo "Terraform dir:      ${TF_DIR}"
+echo "Subscription:       ${SUBSCRIPTION_ID}"
+echo "Deployment tag key: ${DEPLOYMENT_TAG_KEY}"
+echo "Phase tag key:      ${PHASE_TAG_KEY}"
+echo "DeploymentId:       ${DEPLOYMENT_ID}"
+echo "Phase (ARM):        ${PHASE_ARM}"
 echo
 
 STATE_JSON="$(terraform -chdir="$TF_DIR" show -json)"
@@ -134,9 +174,11 @@ STATE_JSON="$(terraform -chdir="$TF_DIR" show -json)"
 # - managed only
 # - ARM id only
 # - taggable only (values.tags object present)
-# - must already have the DeploymentId tag in state (detects tagging bugs early)
+# - must have DeploymentId and Phase tags in state (detects tagging bugs early)
 mapfile -t EXPECTED_IDS < <(
-  echo "$STATE_JSON" | jq -r --arg tagKey "$TAG_KEY" --arg depId "$DEPLOYMENT_ID" '
+  echo "$STATE_JSON" | jq -r \
+    --arg depKey "$DEPLOYMENT_TAG_KEY" --arg depId "$DEPLOYMENT_ID" \
+    --arg phaseKey "$PHASE_TAG_KEY" --arg phase "$PHASE_ARM" '
     def collect_resources(m):
       (m.resources // []) + ((m.child_modules // []) | map(collect_resources(.)) | add);
 
@@ -144,7 +186,8 @@ mapfile -t EXPECTED_IDS < <(
     | map(select(.mode == "managed"))
     | map(select(.values.id? and (.values.id | type=="string") and (.values.id | startswith("/subscriptions/"))))
     | map(select(.values.tags? and (.values.tags | type=="object")))
-    | map(select(.values.tags[$tagKey]? == $depId))
+    | map(select(.values.tags[$depKey]? == $depId))
+    | map(select(.values.tags[$phaseKey]? == $phase))
     | map(.values.id)
     | unique
     | .[]
@@ -153,9 +196,9 @@ mapfile -t EXPECTED_IDS < <(
 
 EXPECTED_COUNT="${#EXPECTED_IDS[@]}"
 
-echo "Terraform state: found ${EXPECTED_COUNT} taggable ARM resources with ${TAG_KEY}=${DEPLOYMENT_ID}"
+echo "Terraform state: found ${EXPECTED_COUNT} taggable ARM resources with ${DEPLOYMENT_TAG_KEY}=${DEPLOYMENT_ID} and ${PHASE_TAG_KEY}=${PHASE_ARM}"
 if [[ "$EXPECTED_COUNT" -eq 0 ]]; then
-  echo "Nothing to verify (no taggable resources in state matching DeploymentId)."
+  echo "Nothing to verify (no taggable resources in state matching DeploymentId+Phase)."
   exit 0
 fi
 echo
@@ -173,12 +216,13 @@ fetch_arg_rows() {
 
     local kql
     kql="Resources
-| where isnotempty(tags['${TAG_KEY}'])
-| where tostring(tags['${TAG_KEY}']) == '${DEPLOYMENT_ID}'
+| where isnotempty(tags['${DEPLOYMENT_TAG_KEY}'])
+| where isnotempty(tags['${PHASE_TAG_KEY}'])
+| where tostring(tags['${DEPLOYMENT_TAG_KEY}']) == '${DEPLOYMENT_ID}'
+| where tostring(tags['${PHASE_TAG_KEY}']) == '${PHASE_ARM}'
 | project id, name, type, resourceGroup
 | order by id asc"
 
-    # Output TSV with columns: id, name, type, rg
     local rows
     rows="$(az graph query \
       --subscriptions "${SUBSCRIPTION_ID}" \
@@ -206,18 +250,15 @@ fetch_arg_rows() {
   done
 }
 
-# 1) Pull actual ARG rows and IDs
 fetch_arg_rows > "${tmpdir}/actual_rows.tsv"
 cut -f1 "${tmpdir}/actual_rows.tsv" | sed '/^$/d' | sort -u > "${tmpdir}/actual_ids.txt"
 
 ACTUAL_COUNT="$(wc -l < "${tmpdir}/actual_ids.txt" | tr -d ' ')"
-echo "Azure Resource Graph: found ${ACTUAL_COUNT} ARM resources with ${TAG_KEY}=${DEPLOYMENT_ID}"
+echo "Azure Resource Graph: found ${ACTUAL_COUNT} ARM resources with ${DEPLOYMENT_TAG_KEY}=${DEPLOYMENT_ID} and ${PHASE_TAG_KEY}=${PHASE_ARM}"
 echo
 
-# 2) Expected IDs
 printf "%s\n" "${EXPECTED_IDS[@]}" | sed '/^$/d' | sort -u > "${tmpdir}/expected_ids.txt"
 
-# 3) Compare sets
 comm -23 "${tmpdir}/expected_ids.txt" "${tmpdir}/actual_ids.txt" > "${tmpdir}/missing.txt" || true
 comm -13 "${tmpdir}/expected_ids.txt" "${tmpdir}/actual_ids.txt" > "${tmpdir}/extra.txt" || true
 
@@ -225,7 +266,7 @@ missing_count="$(wc -l < "${tmpdir}/missing.txt" | tr -d ' ')"
 extra_count="$(wc -l < "${tmpdir}/extra.txt" | tr -d ' ')"
 
 if [[ "$missing_count" -eq 0 && "$extra_count" -eq 0 ]]; then
-  echo "OK: Resource Graph matches Terraform state for taggable resources (DeploymentId scope)."
+  echo "OK: Resource Graph matches Terraform state for taggable resources (DeploymentId+Phase scope)."
   exit 0
 fi
 
