@@ -85,7 +85,8 @@ for ENV in dev test stage prod; do
     --tags \
       Environment="${ENV}" \
       Project="${PROJECT}" \
-      ManagedBy="terraform" \
+      ManagedBy="Bootstrap" \
+      Purpose="terraform-state" \
       CreatedDate="$(date +%Y-%m-%d)" \
     --output none; then
     log_success "Resource Group ${RG_NAME} created successfully"

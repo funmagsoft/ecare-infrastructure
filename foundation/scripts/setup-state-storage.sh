@@ -96,8 +96,10 @@ for ENV in dev test stage prod; do
     --tags \
       Environment="${ENV}" \
       Project="${PROJECT}" \
-      ManagedBy="terraform" \
+      ManagedBy="Bootstrap" \
       Purpose="terraform-state" \
+      Phase="Foundation" \
+      GitRepository="ecare-infrastructure" \
       CreatedDate="$(date +%Y-%m-%d)" \
     --output none
 

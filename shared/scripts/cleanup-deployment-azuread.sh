@@ -53,7 +53,7 @@ Required:
     --tf-dir <path>              Terraform root module dir (reads terraform output -raw deployment_id/DeploymentId)
 
 Options:
-  --prefix <string>             Optional optimization: startswith(displayName,'<prefix>') AND endswith(...)
+  --prefix <string>              Optional optimization: startswith(displayName,'<prefix>') AND endswith(...)
   --apply                        Perform deletions (otherwise dry-run)
   --confirm <string>             Must equal: "DELETE <deploymentId> <phase>"
                                  Example: --confirm "DELETE a1b2c3d4 foundation"
