@@ -1,4 +1,4 @@
-# Infrastructure Identity
+# Infrastructure Workload
 
 Workload Identities (UAMI), Federated Identity Credentials (FIC), and RBAC for application services running on AKS in the ecare project.
 
@@ -69,7 +69,7 @@ All resources are tagged with a unique `deployment_id` (8-character alphanumeric
 **Purpose:**
 
 - Enables automated cleanup of ALL resources (Azure + Entra ID) using a single command
-- Must be consistent across all phases (foundation/identity/platform) for each environment
+- Must be consistent across all phases (foundation/platform/workload) for each environment
 - Allows tracking which resources belong to which deployment
 
 **Where deployment_id is used:**

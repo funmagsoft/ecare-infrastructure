@@ -19,9 +19,9 @@ ecare-infrastructure/
 │   ├── scripts/          # Foundation-specific scripts
 │   └── docs/             # Foundation documentation
 ├── workload/
-│   ├── terraform/        # Identity Terraform modules
-│   ├── scripts/          # Identity-specific scripts
-│   └── docs/             # Identity documentation
+│   ├── terraform/        # Workload Terraform modules
+│   ├── scripts/          # Workload-specific scripts
+│   └── docs/             # Workload documentation
 └── platform/
     ├── terraform/        # Platform Terraform modules
     ├── scripts/          # Platform-specific scripts
