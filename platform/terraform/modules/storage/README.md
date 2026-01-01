@@ -111,7 +111,7 @@ Resources follow this naming pattern:
 - Containers: User-defined (default: `app-data`, `logs`, `backups`)
 - Private Endpoints: `{storage_account_name}-{service}-pe` (e.g., `stecaredev-blob-pe`)
 
-## Storage Account Name Constraints
+### Storage Account Name Constraints
 
 - Must be globally unique across all Azure
 - 3-24 characters, lowercase letters and numbers only
@@ -173,9 +173,9 @@ module "storage" {
 }
 ```
 
-## Access from Applications
+### Access from Applications
 
-### Using Managed Identity (Recommended)
+#### Using Managed Identity (Recommended)
 
 ```bash
 # Application uses Azure AD authentication with Managed Identity
@@ -186,7 +186,7 @@ az role assignment create \
   --scope <storage-account-id>
 ```
 
-### Using Connection String (Not Recommended)
+#### Using Connection String (Not Recommended)
 
 ```bash
 # Store connection string in Key Vault

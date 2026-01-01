@@ -59,11 +59,11 @@ module "bootstrap" {
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| service_principal_app_id | Application (Client) ID of the Service Principal |
-| service_principal_object_id | Object ID of the Service Principal |
-| federated_identity_credentials | Map of repository names to their FIC IDs |
+| Name | Description | Sensitive |
+|------|-------------|-----------|
+| service_principal_app_id | Application (Client) ID of the Service Principal | no |
+| service_principal_object_id | Object ID of the Service Principal | no |
+| federated_identity_credentials | Map of repository names to their FIC IDs | no |
 
 ## Module-Specific Configuration
 
@@ -191,7 +191,7 @@ This module is standalone and does not depend on other modules. However, it crea
 - Azure AD permissions to create Service Principals and App Registrations
 - Azure CLI authenticated (`az login`)
 
-## Federated Identity Credentials
+### Federated Identity Credentials
 
 For each repository in `terraform_repos`, the module creates a Federated Identity Credential with:
 
@@ -201,7 +201,7 @@ For each repository in `terraform_repos`, the module creates a Federated Identit
 
 This allows GitHub Actions workflows in the specified repository and environment to authenticate to Azure using OIDC.
 
-## RBAC Roles
+### RBAC Roles
 
 The Service Principal is assigned the following roles:
 

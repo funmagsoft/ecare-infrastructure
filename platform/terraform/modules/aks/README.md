@@ -65,16 +65,16 @@ module "aks" {
 }
 ```
 
-## Node Pools
+### Node Pools
 
-### System Node Pool
+#### System Node Pool
 
 - Runs critical system pods (CoreDNS, metrics-server, etc.)
 - `only_critical_addons_enabled = true`
 - Fixed node count (no auto-scaling)
 - Recommended: 3 nodes for HA
 
-### User Node Pool
+#### User Node Pool
 
 - Runs application workloads
 - Auto-scaling enabled (min/max configurable)
@@ -384,7 +384,7 @@ module "aks" {
 }
 ```
 
-## Cost Optimization
+### Cost Optimization
 
 - Use Burstable VMs (B-series) for dev: `Standard_B2s`
 - Use auto-scaling with low min_count

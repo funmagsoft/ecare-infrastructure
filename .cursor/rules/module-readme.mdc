@@ -237,7 +237,7 @@ Document required Terraform and provider versions:
 - Use tables for structured data (Inputs, Outputs)
 - Keep line length reasonable (max 120 characters)
 - Use descriptive link text if links are included
-- Every file MUST end with exactly one empty line
+- Every file MUST end with exactly one '\n'
 
 ## Important Notes
 

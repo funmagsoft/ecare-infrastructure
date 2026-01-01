@@ -155,9 +155,9 @@ module "service_bus" {
 }
 ```
 
-## Access from Applications
+### Access from Applications
 
-### Using Managed Identity (Recommended)
+#### Using Managed Identity (Recommended)
 
 ```bash
 # Grant application identity access
@@ -167,7 +167,7 @@ az role assignment create \
   --scope <servicebus-namespace-id>
 ```
 
-### Using Connection String (Not Recommended)
+#### Using Connection String (Not Recommended)
 
 ```bash
 # Store connection string in Key Vault

@@ -202,7 +202,7 @@ module "postgresql" {
 }
 ```
 
-## Backup and Restore
+### Backup and Restore
 
 - Automatic backups daily
 - Point-in-time restore to any time within retention period

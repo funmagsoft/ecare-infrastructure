@@ -158,15 +158,15 @@ module "aks" {
 }
 ```
 
-## Docker Login
+### Docker Login
 
-### Using Azure CLI (Managed Identity)
+#### Using Azure CLI (Managed Identity)
 
 ```bash
 az acr login --name acrecaredev
 ```
 
-### Using Docker
+#### Using Docker
 
 ```bash
 docker login acrecaredev.azurecr.io

@@ -211,9 +211,9 @@ module "key_vault" {
 }
 ```
 
-## Storing Secrets
+### Storing Secrets
 
-### Using Azure CLI
+#### Using Azure CLI
 
 ```bash
 # Store a secret
@@ -229,7 +229,7 @@ az keyvault secret show \
   --query "value" -o tsv
 ```
 
-### Using Terraform
+#### Using Terraform
 
 ```hcl
 resource "azurerm_key_vault_secret" "db_password" {
@@ -239,7 +239,7 @@ resource "azurerm_key_vault_secret" "db_password" {
 }
 ```
 
-### From Applications (Managed Identity)
+#### From Applications (Managed Identity)
 
 ```python
 from azure.identity import DefaultAzureCredential

@@ -125,7 +125,7 @@ Kubernetes Service Accounts are always created in the AKS namespace (from platfo
 
 ## Examples
 
-### Dev Environment
+### Development Environment
 
 ```hcl
 module "environment" {
@@ -153,7 +153,7 @@ module "environment" {
 }
 ```
 
-### Prod Environment
+### Production Environment
 
 ```hcl
 module "environment" {
