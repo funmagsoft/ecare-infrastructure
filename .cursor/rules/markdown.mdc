@@ -17,7 +17,7 @@ alwaysApply: true
 - Titles must be in Title Case
 - Wrap lines at 120 characters where possible
 - Keep line length reasonable (max 120 characters)
-- Always add empty trailing lines at the end of files
+- Always add empty one trailing line at the end of files
 - Avoid passive voice; keep sentences short
 - Bold key terms using **double asterisks**
 - Do not auto-generate table of contents unless explicitly requested
