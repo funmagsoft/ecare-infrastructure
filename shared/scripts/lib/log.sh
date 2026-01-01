@@ -19,8 +19,8 @@ _log_line() {
   shift
   local msg
   msg="$(_join_args_space "$@")"
-  printf '%s [%s] %s
-' "$(_log_ts)" "$level" "$msg" >&2
+  # Pad level to keep message column aligned across log levels.
+  printf '%s [%-7s] - %s\n' "$(_log_ts)" "$level" "$msg" >&2
 }
 
 log_info() { _log_line INFO "$@"; }
