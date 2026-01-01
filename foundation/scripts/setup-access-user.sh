@@ -24,6 +24,7 @@ setup_traps
 usage() {
   cat <<'EOF'
 Usage: ./setup-access-user.sh [--dry-run|--execute] [-h|--help]
+       ./setup-access-user.sh [--dry-run|--execute] [--env <env>] [--all-envs] [-h|--help]
 
 Grant "Storage Blob Data Contributor" access for the currently signed-in Azure user
 to all Terraform state Storage Accounts (dev/test/stage/prod).
@@ -31,6 +32,8 @@ to all Terraform state Storage Accounts (dev/test/stage/prod).
 Options:
   --dry-run     Print planned actions without executing
   --execute     Execute actions (default)
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -42,15 +45,18 @@ EOF
 
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
+    -h|--help) usage; exit 0 ;;
+    --dry-run|--execute|--env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
 done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
+
+parse_env_args "$@"
+check_required_commands az
+az_require_login
 
 log_info "=== Granting Storage Blob Data Contributor Access to Current User ==="
 log_dry_run
@@ -91,7 +97,7 @@ ERRORS=0
 GRANTED=0
 
 # Grant access to all State Storage Accounts
-for ENV in dev test stage prod; do
+for ENV in "${TARGET_ENVS[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
   SA_NAME="tfstate${ORGANIZATION_FOR_SA}${PROJECT}${ENV}"
 
@@ -133,7 +139,7 @@ done
 log_info "=== Access Grant Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
-  log_info "Would grant access to Storage Accounts: 4 (one per environment)"
+  log_info "Would grant access to Storage Accounts: ${#TARGET_ENVS[@]} (selected environments)"
 else
   if [ $ERRORS -eq 0 ]; then
     log_success "Access granted to ${GRANTED} Storage Account(s)"

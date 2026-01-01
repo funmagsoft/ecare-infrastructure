@@ -23,11 +23,13 @@ source "${REPO_ROOT}/shared/scripts/globals.sh"
 setup_traps
 usage() {
   cat <<'EOF'
-Usage: ./verify-phase0.sh [-h|--help]
+Usage: ./verify-phase0.sh [--env <env>] [--all-envs] [-h|--help]
 
 Run Phase 0 verification checks (resource groups, state storage, user access).
 
 Options:
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -36,22 +38,21 @@ Notes:
 EOF
 }
 
-if [ $# -gt 0 ]; then
-  case "${1:-}" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      usage
-      exit 1
-      ;;
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
-fi
+done
 
 # Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
+
+parse_env_args "$@"
+check_required_commands az
+az_require_login
 
 log_info "=== Phase 0 Infrastructure Verification ==="
 log_info "This script verifies Phase 0 setup (created by setup-phase0.sh):"
@@ -61,6 +62,7 @@ log_info "  - Current user access to state storage"
 echo ""
 log_info "Script directory: $SCRIPT_DIR"
 log_info "Subscription: $SUBSCRIPTION_ID"
+log_info "Environments: $(envs_to_string)"
 echo ""
 
 TOTAL_ERRORS=0
@@ -92,8 +94,8 @@ for verify_script in "${VERIFY_SCRIPTS[@]}"; do
   log_info "================================================================================"
   echo ""
 
-  # Run the verification script and capture exit code
-  if bash "$script_path"; then
+  # Run the verification script and propagate common flags
+  if bash "$script_path" "$@"; then
     log_success "$verify_script completed successfully"
   else
     exit_code=$?
@@ -116,7 +118,7 @@ if [ $TOTAL_ERRORS -eq 0 ]; then
   log_success "All Phase 0 verifications passed!"
   echo ""
   log_info "Verified Phase 0 components:"
-  log_success "Resource Groups (dev, test, stage, prod)"
+  log_success "Resource Groups ($(envs_to_string))"
   log_success "Storage Accounts for Terraform state (with versioning and soft delete)"
   log_success "Current user access (Storage Blob Data Contributor)"
   echo ""

@@ -24,12 +24,15 @@ setup_traps
 usage() {
   cat <<'EOF'
 Usage: ./setup-rg.sh [--dry-run|--execute] [-h|--help]
+       ./setup-rg.sh [--dry-run|--execute] [--env <env>] [--all-envs] [-h|--help]
 
 Create Azure Resource Groups for all environments (dev/test/stage/prod).
 
 Options:
   --dry-run     Print planned actions without executing
   --execute     Execute actions (default)
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -49,6 +52,10 @@ done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
+parse_env_args "$@"
+
+check_required_commands az
+az_require_login
 
 log_info "=== Creating Resource Groups ==="
 log_dry_run
@@ -59,8 +66,8 @@ echo ""
 ERRORS=0
 CREATED=0
 
-# Create Resource Groups for all environments
-for ENV in dev test stage prod; do
+# Create Resource Groups
+for ENV in "${TARGET_ENVS[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
 
   log_info "--- Creating Resource Group for ${ENV} environment ---"
@@ -86,7 +93,11 @@ for ENV in dev test stage prod; do
       Environment="${ENV}" \
       Project="${PROJECT}" \
       ManagedBy="Bootstrap" \
-      Purpose="terraform-state" \
+      ProvisionedBy="az-cli-script" \
+      Phase="Foundation" \
+      GitRepository="ecare-infrastructure" \
+      TerraformPath="infra-foundation/terraform/environments/${ENV}" \
+      Purpose="foundation-resource-group" \
       CreatedDate="$(date +%Y-%m-%d)" \
     --output none; then
     log_success "Resource Group ${RG_NAME} created successfully"
@@ -103,7 +114,7 @@ done
 log_info "=== Resource Group Creation Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
-  log_info "Would create Resource Groups: 4 (one per environment)"
+  log_info "Would create Resource Groups for: $(envs_to_string)"
 else
   if [ $ERRORS -eq 0 ]; then
     log_success "Resource Groups created/verified: ${CREATED}/4"

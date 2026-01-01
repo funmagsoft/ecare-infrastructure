@@ -23,13 +23,15 @@ source "${REPO_ROOT}/shared/scripts/globals.sh"
 setup_traps
 usage() {
   cat <<'EOF'
-Usage: ./recover-sp-ids.sh [--dry-run|--execute] [-h|--help]
+Usage: ./recover-sp-ids.sh [--dry-run|--execute] [--env <env>] [--all-envs] [-h|--help]
 
 Query Azure/Entra and print recovered Service Principal / Application IDs used by automation.
 
 Options:
   --dry-run     Print planned actions without executing (no effect for read-only steps)
   --execute     Execute actions (default)
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -40,20 +42,24 @@ EOF
 
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
+    -h|--help) usage; exit 0 ;;
+    --dry-run|--execute|--env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
 done
 
 # Initialize script with minimal validation (parse args, validate minimal env vars, set subscription)
 init_script_minimal "$@"
 
+parse_env_args "$@"
+check_required_commands az jq
+az_require_login
+
 log_info "=== Recovering Service Principal IDs from Azure ==="
 log_dry_run
 log_info "Subscription: $SUBSCRIPTION_ID"
 log_info "Project: $PROJECT"
+log_info "Environments: $(envs_to_string)"
 echo ""
 
 # Initialize service-principals.env file
@@ -75,7 +81,7 @@ ERRORS=0
 RECOVERED=0
 
 # Recover Service Principal IDs for each environment
-for ENV in dev test stage prod; do
+for ENV in "${TARGET_ENVS[@]}"; do
   SP_NAME="sp-gha-${PROJECT}-infra-${ENV}"
   ENV_UPPER=$(echo "$ENV" | tr '[:lower:]' '[:upper:]')
   APP_ID_VAR="${ENV_UPPER}_SP_APP_ID"
@@ -130,7 +136,7 @@ done
 log_info "=== Recovery Summary ==="
 if [ "$DRY_RUN" = true ]; then
   log_info "*** DRY-RUN MODE: No changes were made ***"
-  log_info "Would recover Service Principals: 4 (one per environment)"
+  log_info "Would recover Service Principals: ${#TARGET_ENVS[@]} (selected environments)"
 else
   if [ $ERRORS -eq 0 ]; then
     log_success "Recovered ${RECOVERED} Service Principal(s)"

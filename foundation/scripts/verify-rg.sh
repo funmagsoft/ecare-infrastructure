@@ -23,11 +23,13 @@ source "${REPO_ROOT}/shared/scripts/globals.sh"
 setup_traps
 usage() {
   cat <<'EOF'
-Usage: ./verify-rg.sh [-h|--help]
+Usage: ./verify-rg.sh [--env <env>] [--all-envs] [-h|--help]
 
 Verify Resource Groups exist for all environments.
 
 Options:
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -36,22 +38,24 @@ Notes:
 EOF
 }
 
-if [ $# -gt 0 ]; then
-  case "${1:-}" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      usage
-      exit 1
-      ;;
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
-fi
+done
 
-# Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
+
+parse_env_args "$@"
+check_required_commands az jq
+az_require_login
+parse_env_args "$@"
+
+check_required_commands az jq
+az_require_login
 
 log_info "=== Resource Group Verification ==="
 log_info "Subscription: $SUBSCRIPTION_ID"
@@ -75,7 +79,7 @@ az_call account set --subscription "$SUBSCRIPTION_ID"
 
 echo ""
 log_info "2. Checking Resource Groups..."
-for ENV in dev test stage prod; do
+for ENV in "${TARGET_ENVS[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
 
   log_info "=== Verifying ${RG_NAME} (${ENV} environment) ==="
@@ -132,10 +136,20 @@ for ENV in dev test stage prod; do
         log_warning "Tag Project mismatch: expected $PROJECT, got $PROJECT_TAG"
       fi
 
-      if [ "$MANAGED_BY_TAG" == "terraform" ]; then
-        log_success "Tag ManagedBy: $MANAGED_BY_TAG"
+      case "$MANAGED_BY_TAG" in
+        terraform|Terraform|Bootstrap|bootstrap)
+          log_success "Tag ManagedBy: $MANAGED_BY_TAG"
+          ;;
+        *)
+          log_warning "Tag ManagedBy: $MANAGED_BY_TAG (expected: Terraform|Bootstrap)"
+          ;;
+      esac
+
+      PHASE_TAG=$(echo "$RG_TAGS" | jq -r '.Phase // "missing"')
+      if [ "$PHASE_TAG" == "Foundation" ]; then
+        log_success "Tag Phase: $PHASE_TAG"
       else
-        log_warning "Tag ManagedBy: $MANAGED_BY_TAG (expected: terraform)"
+        log_warning "Tag Phase: $PHASE_TAG (expected: Foundation)"
       fi
     else
       log_warning "No tags found on Resource Group"
@@ -156,12 +170,12 @@ if [ $ERRORS -eq 0 ]; then
   log_success "All verifications passed!"
   echo ""
   log_info "Verified:"
-  log_info "  - Resource Groups verified: ${VERIFIED}/4"
+  log_info "  - Resource Groups verified: ${VERIFIED}/${#TARGET_ENVS[@]}"
   exit 0
 else
   log_error "Verification failed with ${ERRORS} error(s)"
   echo ""
   log_info "Status:"
-  log_info "  - Resource Groups verified: ${VERIFIED}/4"
+  log_info "  - Resource Groups verified: ${VERIFIED}/${#TARGET_ENVS[@]}"
   exit 1
 fi

@@ -24,6 +24,7 @@ setup_traps
 usage() {
   cat <<'EOF'
 Usage: ./setup-phase0.sh [--dry-run|--execute] [-h|--help]
+       ./setup-phase0.sh [--dry-run|--execute] [--env <env>] [--all-envs] [-h|--help]
 
 Run the Phase 0 setup sequence for foundation:
   1) setup-rg.sh
@@ -33,6 +34,8 @@ Run the Phase 0 setup sequence for foundation:
 Options:
   --dry-run     Print planned actions without executing (propagated to child scripts)
   --execute     Execute actions (default)
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 EOF
@@ -40,10 +43,9 @@ EOF
 
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
+    -h|--help) usage; exit 0 ;;
+    --dry-run|--execute|--env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
 done
 
@@ -51,10 +53,15 @@ done
 # Note: setup-phase0 propagates --dry-run to child scripts.
 init_script "$@"
 
+parse_env_args "$@"
+check_required_commands az
+az_require_login
+
 log_info "=== Phase 0 Infrastructure Setup ==="
 log_dry_run
 log_info "Script directory: $SCRIPT_DIR"
 log_info "Subscription: $SUBSCRIPTION_ID"
+log_info "Environments: $(envs_to_string)"
 echo ""
 
 TOTAL_ERRORS=0
@@ -91,25 +98,14 @@ for setup_script in "${SETUP_SCRIPTS[@]}"; do
   log_info "================================================================================"
   echo ""
 
-  # Run the setup script and pass through --dry-run if set
-  if [ "$DRY_RUN" = true ]; then
-    if bash "$script_path" --dry-run; then
-      log_success "$setup_script completed successfully"
-    else
-      exit_code=$?
-      log_error "$setup_script failed with exit code: $exit_code"
-      FAILED_SETUPS+=("$setup_script (exit code: $exit_code)")
-      TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
-    fi
+  # Run the setup script and pass through common flags (--dry-run/--execute, --env/--all-envs)
+  if bash "$script_path" "$@"; then
+    log_success "$setup_script completed successfully"
   else
-    if bash "$script_path"; then
-      log_success "$setup_script completed successfully"
-    else
-      exit_code=$?
-      log_error "$setup_script failed with exit code: $exit_code"
-      FAILED_SETUPS+=("$setup_script (exit code: $exit_code)")
-      TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
-    fi
+    exit_code=$?
+    log_error "$setup_script failed with exit code: $exit_code"
+    FAILED_SETUPS+=("$setup_script (exit code: $exit_code)")
+    TOTAL_ERRORS=$((TOTAL_ERRORS + 1))
   fi
 
   echo ""
@@ -126,7 +122,7 @@ if [ $TOTAL_ERRORS -eq 0 ]; then
   log_success "All setup scripts completed successfully!"
   echo ""
   log_info "Created Phase 0 components:"
-  log_success "Resource Groups (dev, test, stage, prod)"
+  log_success "Resource Groups ($(envs_to_string))"
   log_success "Storage Accounts for Terraform state (with versioning and soft delete)"
   log_success "Current user access to state storage (Storage Blob Data Contributor)"
   echo ""
@@ -135,11 +131,10 @@ if [ $TOTAL_ERRORS -eq 0 ]; then
   echo ""
   if [ "$DRY_RUN" != true ]; then
     log_info "Next steps:"
-    log_info "  1. Verify Phase 0 setup: ./scripts/verify-phase0.sh"
-    log_info "  2. Deploy Terraform bootstrap: cd terraform/environments/dev && terraform apply"
-    log_info "  3. Verify complete setup: ./scripts/verify-all.sh"
-    log_info "  4. Configure GitHub Secrets (see documentation)"
-    log_info "  5. Proceed with Phase 1 deployment (network, VPN, etc.)"
+    log_info "  1. Verify Phase 0 setup: ./verify-phase0.sh"
+    log_info "  2. Deploy Terraform bootstrap: cd foundation/terraform/environments/<env> && terraform init && terraform apply"
+    log_info "  3. Configure GitHub Secrets (see documentation)"
+    log_info "  4. Proceed with subsequent phases (platform/workload)"
   fi
   exit 0
 else

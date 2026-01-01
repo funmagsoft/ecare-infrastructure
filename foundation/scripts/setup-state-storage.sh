@@ -23,7 +23,7 @@ source "${REPO_ROOT}/shared/scripts/globals.sh"
 setup_traps
 usage() {
   cat <<'EOF'
-Usage: ./setup-state-storage.sh [--dry-run|--execute] [-h|--help]
+Usage: ./setup-state-storage.sh [--dry-run|--execute] [--env <env>] [--all-envs] [-h|--help]
 
 Create and configure Terraform state Storage Accounts (dev/test/stage/prod).
 
@@ -35,6 +35,8 @@ Actions per environment:
 Options:
   --dry-run     Print planned actions without executing
   --execute     Execute actions (default)
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -46,15 +48,18 @@ EOF
 
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
+    -h|--help) usage; exit 0 ;;
+    --dry-run|--execute|--env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
 done
 
 # Initialize script (parse args, validate env vars, set subscription)
 init_script "$@"
+
+parse_env_args "$@"
+check_required_commands az
+az_require_login
 
 log_info "=== Creating Terraform State Storage Accounts ==="
 log_dry_run
@@ -63,7 +68,7 @@ log_info "Location: $LOCATION"
 echo ""
 
 # Create Storage Accounts for all environments
-for ENV in dev test stage prod; do
+for ENV in "${TARGET_ENVS[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
   SA_NAME="tfstate${ORGANIZATION_FOR_SA}${PROJECT}${ENV}"
 
@@ -97,9 +102,11 @@ for ENV in dev test stage prod; do
       Environment="${ENV}" \
       Project="${PROJECT}" \
       ManagedBy="Bootstrap" \
+      ProvisionedBy="az-cli-script" \
       Purpose="terraform-state" \
       Phase="Foundation" \
       GitRepository="ecare-infrastructure" \
+      TerraformPath="infra-foundation/terraform/environments/${ENV}" \
       CreatedDate="$(date +%Y-%m-%d)" \
     --output none
 

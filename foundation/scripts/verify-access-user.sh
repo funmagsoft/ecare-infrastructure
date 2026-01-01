@@ -23,11 +23,13 @@ source "${REPO_ROOT}/shared/scripts/globals.sh"
 setup_traps
 usage() {
   cat <<'EOF'
-Usage: ./verify-access-user.sh [-h|--help]
+Usage: ./verify-access-user.sh [--env <env>] [--all-envs] [-h|--help]
 
 Verify current user access to Terraform state Storage Accounts.
 
 Options:
+  --env <env>   Target a single environment (repeatable): dev|test|stage|prod
+  --all-envs    Target all environments (default)
   -h, --help    Show this help and exit
 
 Notes:
@@ -36,22 +38,21 @@ Notes:
 EOF
 }
 
-if [ $# -gt 0 ]; then
-  case "${1:-}" in
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      usage
-      exit 1
-      ;;
+for arg in "$@"; do
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --env|--environment|--all-envs) : ;;
+    *) usage; exit 1 ;;
   esac
-fi
+done
 
 # Verify scripts do not modify resources; dry-run is not applicable.
 DRY_RUN=false
 init_script
+
+parse_env_args "$@"
+check_required_commands az
+az_require_login
 
 log_info "=== Current User Access Verification ==="
 log_info "Subscription: $SUBSCRIPTION_ID"
@@ -98,7 +99,7 @@ log_info "3. Verifying Storage Blob Data Contributor role assignments..."
 echo ""
 
 GRANTED=0
-for ENV in dev test stage prod; do
+for ENV in "${TARGET_ENVS[@]}"; do
   RG_NAME="rg-${PROJECT}-${ENV}"
   SA_NAME="tfstate${ORGANIZATION_FOR_SA}${PROJECT}${ENV}"
   SA_SCOPE="/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RG_NAME}/providers/Microsoft.Storage/storageAccounts/${SA_NAME}"
@@ -141,18 +142,18 @@ if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
   log_success "All verifications passed!"
   echo ""
   log_info "Verified:"
-  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/${#TARGET_ENVS[@]} Storage Accounts"
   exit 0
 elif [ $ERRORS -eq 0 ]; then
   log_warning "Verification completed with ${WARNINGS} warning(s)"
   echo ""
   log_info "Verified:"
-  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/${#TARGET_ENVS[@]} Storage Accounts"
   exit 0
 else
   log_error "Verification failed with ${ERRORS} error(s) and ${WARNINGS} warning(s)"
   echo ""
   log_info "Status:"
-  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/4 Storage Accounts"
+  log_info "  - Storage Blob Data Contributor role assigned: ${GRANTED}/${#TARGET_ENVS[@]} Storage Accounts"
   exit 1
 fi

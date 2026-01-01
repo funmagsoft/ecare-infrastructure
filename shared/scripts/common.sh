@@ -9,6 +9,10 @@ source "${SCRIPT_LIB_DIR}/log.sh"
 # shellcheck source=/dev/null
 source "${SCRIPT_LIB_DIR}/error.sh"
 # shellcheck source=/dev/null
+source "${SCRIPT_LIB_DIR}/args.sh"
+# shellcheck source=/dev/null
+source "${SCRIPT_LIB_DIR}/confirm.sh"
+# shellcheck source=/dev/null
 source "${SCRIPT_LIB_DIR}/dry_run.sh"
 # shellcheck source=/dev/null
 source "${SCRIPT_LIB_DIR}/env.sh"
