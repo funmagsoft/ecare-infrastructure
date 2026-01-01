@@ -62,11 +62,11 @@ locals {
   }
 
   # Service repository display names
-  # Format: GitHub{RepositoryName}Branch-{branch}-{hash}
+  # Format: GitHub{RepositoryName}Branch-{branch}-{hash}-{phase}-{deployment_id}
   # Adding 4-character hash ensures uniqueness even if repo/branch combinations collide
   service_repo_display_names = {
     for name, cfg in var.service_repos :
-    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 6)}-${var.phase}-${var.phase}-${var.deployment_id}"
+    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 6)}-${var.phase}-${var.deployment_id}"
   }
 
   # GitOps repository display names
