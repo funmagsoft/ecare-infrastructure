@@ -5,12 +5,8 @@
 # Local variables for Storage Account naming
 locals {
   # Create deterministic hash from org+project+env+location
-  # Using MD5 hash and taking first 4 characters for uniqueness
-  name_hash = substr(
-    md5("${lower(var.organization_name)}${lower(var.project_name)}${lower(var.environment)}${lower(var.location)}"),
-    0,
-    4
-  )
+  # Using MD5 hash and taking first 6 characters for uniqueness
+  name_hash = substr(md5("${lower(var.organization_name)}${lower(var.project_name)}${lower(var.environment)}${lower(var.location)}"), 0, 6)
 
   # Format: st{org}{project}{env}{hash}
   # Example: sthycomecaredev1a2b (20 characters)

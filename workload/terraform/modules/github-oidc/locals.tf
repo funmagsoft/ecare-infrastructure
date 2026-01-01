@@ -48,13 +48,6 @@ locals {
     for key, value in local.merged_tags : "${key}=${value}"
   ]
 
-  # Stable repo list for app/SP display name hashing
-  app_repos = sort(distinct(concat(
-    [for _, cfg in var.service_repos : cfg.repo],
-    var.gitops_repos
-  )))
-  app_repos_hash = substr(sha256(join(",", local.app_repos)), 0, 6)
-
   # GitHub OIDC configuration constants
   # These are used for all Federated Identity Credentials in this module
   # Issuer: GitHub's OIDC provider URL (fixed for all GitHub Actions workflows)
@@ -69,19 +62,17 @@ locals {
   }
 
   # Service repository display names
-  # Format: GitHub{RepositoryName}Branch-{branch}-{hash}-{phase}-{deployment_id}
-  # Adding 4-character hash ensures uniqueness even if repo/branch combinations collide
+  # Format: GitHub{RepositoryName}Branch-{branch}-{phase}-{deployment_id}
   service_repo_display_names = {
     for name, cfg in var.service_repos :
-    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${substr(sha256("${cfg.repo}:${cfg.branch}:${name}"), 0, 6)}-${var.phase}-${var.deployment_id}"
+    name => "GitHub${replace(title(replace(cfg.repo, "/", "-")), "-", "")}Branch-${replace(cfg.branch, "/", "-")}-${var.phase}-${var.deployment_id}"
   }
 
   # GitOps repository display names
-  # Format: GitHub{RepositoryName}Env-{environment}-{hash}
-  # Adding 4-character hash ensures uniqueness if multiple repos transform to same name
+  # Format: GitHub{RepositoryName}Env-{environment}-{phase}-{deployment_id}
   gitops_repo_display_names = {
     for repo in var.gitops_repos :
-    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}-${substr(sha256(repo), 0, 6)}-${var.phase}-${var.deployment_id}"
+    repo => "${local.format_repo_display_name[repo]}Env-${var.environment}-${var.phase}-${var.deployment_id}"
   }
 }
 

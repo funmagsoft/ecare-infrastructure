@@ -45,13 +45,10 @@ locals {
     for repo in var.terraform_repos : "${var.organization_name}/${repo}"
   ]
 
-  # Hash used in app/SP display name for uniqueness
-  terraform_repos_hash = substr(sha256(join(",", sort(local.terraform_repos_full))), 0, 6)
-
-  # FIC display names: GitHub{Repo}Env-{environment}-{hash}
+  # FIC display names: GitHub{Repo}Env-{environment}-{phase}-{deployment_id}
   fic_display_names = {
     for repo in local.terraform_repos_full :
-    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${substr(sha256(repo), 0, 6)}-${var.phase}-${var.deployment_id}"
+    repo => "GitHub${replace(title(replace(repo, "/", "-")), "-", "")}Env-${var.environment}-${var.phase}-${var.deployment_id}"
   }
 }
 

@@ -7,7 +7,7 @@
 # This application will be used to authenticate service and GitOps repositories
 # Display name includes deployment_id for easy identification and cleanup
 resource "azuread_application" "gha" {
-  display_name = "sp-gha-${var.project_name}-${var.environment}-${local.app_repos_hash}-${var.phase}-${var.deployment_id}"
+  display_name = "sp-gha-${var.project_name}-${var.environment}-${var.phase}-${var.deployment_id}"
 
   tags = local.ad_tags
 }

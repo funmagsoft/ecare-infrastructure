@@ -43,7 +43,6 @@ repos:
         args:
           - '--args=-no-color'
         files: '\.tf$'
-        exclude: '^terraform/environments/.*/backend\.tf$'
 
       # Check Terraform documentation (disabled - can be enabled if needed)
       # - id: terraform_docs
@@ -75,7 +74,6 @@ repos:
           # - terraform_standard_module_structure (environments don't need main.tf after refactoring)
           # - terraform_workspace_remote (not applicable to our structure)
         files: '\.tf$'
-        exclude: '^terraform/environments/.*/data\.tf$'  # Exclude data.tf from environments
 
       # Checkov - Security scanning (disabled - requires checkov installation)
       # - id: terraform_checkov

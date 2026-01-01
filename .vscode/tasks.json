@@ -16,162 +16,9 @@
       }
     },
     {
-      "label": "Terraform: Format Foundation",
-      "type": "shell",
-      "command": "terraform fmt -recursive",
-      "options": {
-        "cwd": "${workspaceFolder}/foundation/terraform"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Format Identity",
-      "type": "shell",
-      "command": "terraform fmt -recursive",
-      "options": {
-        "cwd": "${workspaceFolder}/workload/terraform"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Format Platform",
-      "type": "shell",
-      "command": "terraform fmt -recursive",
-      "options": {
-        "cwd": "${workspaceFolder}/platform/terraform"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Init Foundation Dev",
-      "type": "shell",
-      "command": "terraform init",
-      "options": {
-        "cwd": "${workspaceFolder}/foundation/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Init Identity Dev",
-      "type": "shell",
-      "command": "terraform init",
-      "options": {
-        "cwd": "${workspaceFolder}/workload/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Init Platform Dev",
-      "type": "shell",
-      "command": "terraform init",
-      "options": {
-        "cwd": "${workspaceFolder}/platform/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Validate Foundation Dev",
-      "type": "shell",
-      "command": "terraform validate",
-      "options": {
-        "cwd": "${workspaceFolder}/foundation/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Validate Identity Dev",
-      "type": "shell",
-      "command": "terraform validate",
-      "options": {
-        "cwd": "${workspaceFolder}/workload/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Terraform: Validate Platform Dev",
-      "type": "shell",
-      "command": "terraform validate",
-      "options": {
-        "cwd": "${workspaceFolder}/platform/terraform/environments/dev"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Scripts: Verify Foundation Phase0",
-      "type": "shell",
-      "command": "./scripts/verify-phase0.sh",
-      "options": {
-        "cwd": "${workspaceFolder}/foundation"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Scripts: Verify Foundation All",
-      "type": "shell",
-      "command": "./scripts/verify-all.sh",
-      "options": {
-        "cwd": "${workspaceFolder}/foundation"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
       "label": "Pre-commit: Run All Files",
       "type": "shell",
       "command": "pre-commit run --all-files",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Git: Add and Commit",
-      "type": "shell",
-      "command": "git add . && git commit -m \"${input:commitMessage}\"",
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
@@ -193,7 +40,8 @@
     {
       "id": "commitMessage",
       "type": "promptString",
-      "description": "Enter commit message"
+      "description": "Enter commit message",
+      "default": ""
     },
     {
       "id": "commitType",
