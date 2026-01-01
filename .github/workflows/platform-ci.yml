@@ -4,13 +4,13 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'infra-platform/**'
+      - 'platform/**'
       - 'shared/**'
       - '.github/workflows/platform-ci.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'infra-platform/**'
+      - 'platform/**'
       - 'shared/**'
 
 jobs:
@@ -31,15 +31,15 @@ jobs:
           terraform_version: "~> 1.5"
 
       - name: Terraform Format Check
-        working-directory: infra-platform/terraform
+        working-directory: platform/terraform
         run: terraform fmt -check -recursive
 
       - name: Terraform Init
-        working-directory: infra-platform/terraform/environments/${{ matrix.environment }}
+        working-directory: platform/terraform/environments/${{ matrix.environment }}
         run: terraform init -backend=false
 
       - name: Terraform Validate
-        working-directory: infra-platform/terraform/environments/${{ matrix.environment }}
+        working-directory: platform/terraform/environments/${{ matrix.environment }}
         run: terraform validate
 
   scripts-test:
@@ -55,7 +55,7 @@ jobs:
 
       - name: Run shellcheck on platform scripts
         run: |
-          find infra-platform/scripts -name "*.sh" -type f -exec shellcheck {} \; || true
+          find platform/scripts -name "*.sh" -type f -exec shellcheck {} \; || true
 
       - name: Test shared scripts sourcing
         run: |

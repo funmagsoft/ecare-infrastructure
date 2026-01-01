@@ -16,9 +16,9 @@ Common shell functions and utilities.
 
 The shared components eliminate code duplication and ensure consistency across:
 
-- **infra-foundation**: Core networking and Terraform authentication
-- **infra-identity**: Identity and access control
-- **infra-platform**: Platform services (AKS, ACR, databases)
+- **foundation**: Core networking and Terraform authentication
+- **workload**: Identity and access control
+- **platform**: Platform services (AKS, ACR, databases)
 
 ## Usage
 
@@ -90,6 +90,6 @@ Current version: **1.0.0**
 
 - [Main README](../README.md)
 - [Scripts Documentation](./scripts/README.md)
-- [Foundation README](../infra-foundation/README.md)
-- [Identity README](../infra-identity/README.md)
-- [Platform README](../infra-platform/README.md)
+- [Foundation README](../foundation/README.md)
+- [Identity README](../workload/README.md)
+- [Platform README](../platform/README.md)

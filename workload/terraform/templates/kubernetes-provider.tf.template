@@ -1,0 +1,48 @@
+# Kubernetes Provider Configuration Template
+#
+# This template documents the Kubernetes provider configuration pattern.
+# Copy this file to environments/<environment>/kubernetes-provider.tf and update environment-specific values.
+#
+# Note: Kubernetes provider requires AKS connection information from platform remote state.
+# This provider configuration is separate from providers.tf because it depends on remote state data sources.
+
+#------------------------------------------------------------------------------
+# Remote State: platform (for AKS connection info)
+#------------------------------------------------------------------------------
+
+data "terraform_remote_state" "platform" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = "rg-ecare-{env}"             # CHANGE: Replace {env} with environment name
+    storage_account_name = "tfstatemagsoftecare{env}"   # CHANGE: Replace {env} with environment name (no hyphens)
+    container_name       = "tfstate"
+    key                  = "platform/terraform.tfstate"
+  }
+}
+
+#------------------------------------------------------------------------------
+# Kubernetes Provider
+#------------------------------------------------------------------------------
+
+provider "kubernetes" {
+  host                   = data.terraform_remote_state.platform.outputs.aks_host
+  cluster_ca_certificate = base64decode(data.terraform_remote_state.platform.outputs.aks_cluster_ca_certificate)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "kubelogin"
+    args = [
+      "get-token",
+      "--login", "azurecli",
+      "--server-id", "6dae42f8-4368-4678-94ff-3960e28e3630"  # Azure Kubernetes Service AAD Server
+    ]
+  }
+}
+
+# Example for 'dev' environment:
+# resource_group_name  = "rg-ecare-dev"
+# storage_account_name = "tfstatemagsoftecaredev"
+#
+# Example for 'prod' environment:
+# resource_group_name  = "rg-ecare-prod"
+# storage_account_name = "tfstatemagsoftecareprod"

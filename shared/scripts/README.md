@@ -6,9 +6,9 @@ Common shell functions used across all infrastructure repositories in the ecare-
 
 This library eliminates code duplication by providing a single source of truth for common shell functions used in:
 
-- `infra-foundation/scripts/` - Foundation infrastructure scripts
-- `infra-identity/scripts/` - Identity infrastructure scripts
-- `infra-platform/scripts/` - Platform infrastructure scripts
+- `foundation/scripts/` - Foundation infrastructure scripts
+- `workload/scripts/` - Identity infrastructure scripts
+- `platform/scripts/` - Platform infrastructure scripts
 
 ## Files
 
@@ -117,7 +117,7 @@ log_success "Script completed successfully!"
 #!/usr/bin/env bash
 set -euo pipefail
 
-# infra-foundation/scripts/setup-phase0.sh
+# foundation/scripts/setup-phase0.sh
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/shared/scripts/common.sh"
 
@@ -140,7 +140,7 @@ validate_environment "${ENV}" || exit 1
 #!/usr/bin/env bash
 set -euo pipefail
 
-# infra-identity/scripts/add-service.sh
+# workload/scripts/add-service.sh
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${REPO_ROOT}/shared/scripts/common.sh"
 
@@ -460,14 +460,14 @@ echo "Deployment ID for $ENV: $DEPLOYMENT_ID"
 RESOURCE_GROUP="rg-${PROJECT}-dev"
 ```
 
-**Note:** The `globals.sh` file is automatically sourced by `common.sh` in infra-foundation. Other components should source it explicitly if needed.
+**Note:** The `globals.sh` file is automatically sourced by `common.sh` in foundation. Other components should source it explicitly if needed.
 
 ## Version History
 
 ### 1.0.0 (2024-12-30)
 
 - Initial release
-- Extracted common functions from infra-foundation and infra-identity
+- Extracted common functions from foundation and workload
 - Added comprehensive documentation
 - Categories: Output, Command Checks, Azure CLI, Environment, Git
 
@@ -486,5 +486,5 @@ When adding new shared functions:
 For issues or questions about shared scripts, see:
 
 - Main README: `../../README.md`
-- Foundation docs: `../../infra-foundation/docs/`
-- Identity docs: `../../infra-identity/docs/`
+- Foundation docs: `../../foundation/docs/`
+- Identity docs: `../../workload/docs/`

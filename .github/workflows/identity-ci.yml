@@ -4,13 +4,13 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'infra-identity/**'
+      - 'workload/**'
       - 'shared/**'
       - '.github/workflows/identity-ci.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'infra-identity/**'
+      - 'workload/**'
       - 'shared/**'
 
 jobs:
@@ -31,15 +31,15 @@ jobs:
           terraform_version: "~> 1.5"
 
       - name: Terraform Format Check
-        working-directory: infra-identity/terraform
+        working-directory: workload/terraform
         run: terraform fmt -check -recursive
 
       - name: Terraform Init
-        working-directory: infra-identity/terraform/environments/${{ matrix.environment }}
+        working-directory: workload/terraform/environments/${{ matrix.environment }}
         run: terraform init -backend=false
 
       - name: Terraform Validate
-        working-directory: infra-identity/terraform/environments/${{ matrix.environment }}
+        working-directory: workload/terraform/environments/${{ matrix.environment }}
         run: terraform validate
 
   scripts-test:
@@ -55,9 +55,9 @@ jobs:
 
       - name: Run shellcheck on identity scripts
         run: |
-          find infra-identity/scripts -name "*.sh" -type f -exec shellcheck {} \;
+          find workload/scripts -name "*.sh" -type f -exec shellcheck {} \;
 
       - name: Test shared scripts sourcing
         run: |
-          cd infra-identity/scripts
+          cd workload/scripts
           bash -c "source ./common.sh && print_version"

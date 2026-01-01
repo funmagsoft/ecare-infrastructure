@@ -2,9 +2,9 @@
 
 This is the unified infrastructure repository for the ecare project, combining:
 
-- **infra-foundation**: Core networking infrastructure (VNet, NSG, VPN Gateway) and Terraform authentication (Service Principals, RBAC)
-- **infra-identity**: Identity and access control (GitHub OIDC, Workload Identity for AKS)
-- **infra-platform**: Platform services (AKS, ACR, databases, Key Vault) - *(coming soon)*
+- **foundation**: Core networking infrastructure (VNet, NSG, VPN Gateway) and Terraform authentication (Service Principals, RBAC)
+- **workload**: Identity and access control (GitHub OIDC, Workload Identity for AKS)
+- **platform**: Platform services (AKS, ACR, databases, Key Vault) - *(coming soon)*
 - **shared**: Common scripts and utilities used across all infrastructure repositories
 
 ## Repository Structure
@@ -14,15 +14,15 @@ ecare-infrastructure/
 ├── shared/
 │   ├── scripts/          # Shared shell functions
 │   └── docs/             # Cross-repository documentation
-├── infra-foundation/
+├── foundation/
 │   ├── terraform/        # Foundation Terraform modules
 │   ├── scripts/          # Foundation-specific scripts
 │   └── docs/             # Foundation documentation
-├── infra-identity/
+├── workload/
 │   ├── terraform/        # Identity Terraform modules
 │   ├── scripts/          # Identity-specific scripts
 │   └── docs/             # Identity documentation
-└── infra-platform/
+└── platform/
     ├── terraform/        # Platform Terraform modules
     ├── scripts/          # Platform-specific scripts
     └── docs/             # Platform documentation
@@ -32,9 +32,9 @@ ecare-infrastructure/
 
 Each infrastructure component maintains **separate Terraform state files**:
 
-- `infra-foundation/terraform.tfstate` - Core networking and Terraform authentication
-- `infra-platform/terraform.tfstate` - Platform services (AKS, ACR, databases)
-- `infra-identity/terraform.tfstate` - Identity and access control
+- `foundation/terraform.tfstate` - Core networking and Terraform authentication
+- `platform/terraform.tfstate` - Platform services (AKS, ACR, databases)
+- `workload/terraform.tfstate` - Identity and access control
 
 This separation ensures:
 - Independent deployments
@@ -112,41 +112,41 @@ cd ecare-infrastructure
 
 ```bash
 # 1. Deploy Foundation (networking, Terraform auth)
-cd infra-foundation/terraform/environments/dev
+cd foundation/terraform/environments/dev
 terraform init
 terraform apply
 
 # 2. Deploy Platform (AKS, ACR, databases)
-cd ../../../infra-platform/terraform/environments/dev
+cd ../../../platform/terraform/environments/dev
 terraform init
 terraform apply
 
 # 3. Deploy Identity (GitHub OIDC, Workload Identity)
-cd ../../../infra-identity/terraform/environments/dev
+cd ../../../workload/terraform/environments/dev
 terraform init
 terraform apply
 ```
 
 ## Documentation
 
-- **[infra-foundation](./infra-foundation/README.md)**: Core networking and Terraform authentication
-  - [Architecture](./infra-foundation/docs/ARCHITECTURE.md)
-  - [Runbook](./infra-foundation/docs/RUNBOOK.md)
-  - [Troubleshooting](./infra-foundation/docs/TROUBLESHOOTING.md)
-- **[infra-identity](./infra-identity/README.md)**: Identity and access control
-  - [Architecture](./infra-identity/docs/ARCHITECTURE.md)
-  - [Deployment](./infra-identity/docs/DEPLOYMENT.md)
-  - [Troubleshooting](./infra-identity/docs/TROUBLESHOOTING.md)
-  - [Naming Conventions](./infra-identity/docs/NAMING-CONVENTIONS.md)
+- **[foundation](./foundation/README.md)**: Core networking and Terraform authentication
+  - [Architecture](./foundation/docs/ARCHITECTURE.md)
+  - [Runbook](./foundation/docs/RUNBOOK.md)
+  - [Troubleshooting](./foundation/docs/TROUBLESHOOTING.md)
+- **[workload](./workload/README.md)**: Identity and access control
+  - [Architecture](./workload/docs/ARCHITECTURE.md)
+  - [Deployment](./workload/docs/DEPLOYMENT.md)
+  - [Troubleshooting](./workload/docs/TROUBLESHOOTING.md)
+  - [Naming Conventions](./workload/docs/NAMING-CONVENTIONS.md)
 - **[shared](./shared/README.md)**: Common scripts and utilities
 
 ## Migration Notes
 
 This monorepo was created on 2024-12-30 by merging three separate repositories:
 
-- `infra-foundation` - Full git history preserved
-- `infra-identity` - Full git history preserved
-- `infra-platform` - Full git history preserved
+- `foundation` - Full git history preserved
+- `workload` - Full git history preserved
+- `platform` - Full git history preserved
 
 All commit history from the original repositories has been preserved using git subtree merge strategy.
 

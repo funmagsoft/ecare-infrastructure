@@ -72,8 +72,8 @@ Notes:
     If your tenant/policies restrict this, use --mode expected.
 
 Examples:
-  ./verify-deploymentid-azuread.sh --tf-dir ./infra-foundation/terraform/environments/dev --phase foundation
-  ./verify-deploymentid-azuread.sh --tf-dir ./infra-platform/terraform/environments/dev --phase Platform --fail-on-extra false
+  ./verify-deploymentid-azuread.sh --tf-dir ./foundation/terraform/environments/dev --phase foundation
+  ./verify-deploymentid-azuread.sh --tf-dir ./platform/terraform/environments/dev --phase Platform --fail-on-extra false
 EOF
 }
 

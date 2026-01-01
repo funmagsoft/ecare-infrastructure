@@ -1,0 +1,44 @@
+# Terraform Backend and Provider Versions Template
+#
+# This template documents the backend and provider configuration pattern.
+# Copy this file to environments/<environment>/versions.tf and update environment-specific values.
+#
+# Note: Terraform backend blocks cannot use variables - they must contain literal values.
+
+terraform {
+  required_version = ">= 1.5.0"
+
+  backend "azurerm" {
+    # Environment-specific configuration
+    # Update these values when setting up a new environment:
+    # - resource_group_name:  rg-ecare-{env}
+    # - storage_account_name: tfstatehycomecare{env}
+    # - container_name:       tfstate (same for all environments)
+    # - key:                  workload/terraform.tfstate (same for all environments)
+    # - use_azuread_auth:     true (same for all environments)
+    resource_group_name  = "rg-ecare-{env}"             # CHANGE: Replace {env} with environment name
+    storage_account_name = "tfstatehycomecare{env}"     # CHANGE: Replace {env} with environment name (no hyphens)
+    container_name       = "tfstate"
+    key                  = "workload/terraform.tfstate"
+    use_azuread_auth     = true
+  }
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 3.0"
+    }
+  }
+}
+
+# Example for 'dev' environment:
+# resource_group_name  = "rg-ecare-dev"
+# storage_account_name = "tfstatehycomecaredev"
+#
+# Example for 'prod' environment:
+# resource_group_name  = "rg-ecare-prod"
+# storage_account_name = "tfstatehycomecareprod"

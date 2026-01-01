@@ -4,7 +4,7 @@
     {
       "label": "Terraform: Format All",
       "type": "shell",
-      "command": "terraform fmt -recursive infra-foundation/terraform && terraform fmt -recursive infra-identity/terraform && terraform fmt -recursive infra-platform/terraform",
+      "command": "terraform fmt -recursive foundation/terraform && terraform fmt -recursive workload/terraform && terraform fmt -recursive platform/terraform",
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
@@ -20,7 +20,7 @@
       "type": "shell",
       "command": "terraform fmt -recursive",
       "options": {
-        "cwd": "${workspaceFolder}/infra-foundation/terraform"
+        "cwd": "${workspaceFolder}/foundation/terraform"
       },
       "problemMatcher": [],
       "presentation": {
@@ -33,7 +33,7 @@
       "type": "shell",
       "command": "terraform fmt -recursive",
       "options": {
-        "cwd": "${workspaceFolder}/infra-identity/terraform"
+        "cwd": "${workspaceFolder}/workload/terraform"
       },
       "problemMatcher": [],
       "presentation": {
@@ -46,7 +46,7 @@
       "type": "shell",
       "command": "terraform fmt -recursive",
       "options": {
-        "cwd": "${workspaceFolder}/infra-platform/terraform"
+        "cwd": "${workspaceFolder}/platform/terraform"
       },
       "problemMatcher": [],
       "presentation": {
@@ -59,7 +59,7 @@
       "type": "shell",
       "command": "terraform init",
       "options": {
-        "cwd": "${workspaceFolder}/infra-foundation/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/foundation/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -72,7 +72,7 @@
       "type": "shell",
       "command": "terraform init",
       "options": {
-        "cwd": "${workspaceFolder}/infra-identity/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/workload/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -85,7 +85,7 @@
       "type": "shell",
       "command": "terraform init",
       "options": {
-        "cwd": "${workspaceFolder}/infra-platform/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/platform/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -98,7 +98,7 @@
       "type": "shell",
       "command": "terraform validate",
       "options": {
-        "cwd": "${workspaceFolder}/infra-foundation/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/foundation/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -111,7 +111,7 @@
       "type": "shell",
       "command": "terraform validate",
       "options": {
-        "cwd": "${workspaceFolder}/infra-identity/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/workload/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -124,7 +124,7 @@
       "type": "shell",
       "command": "terraform validate",
       "options": {
-        "cwd": "${workspaceFolder}/infra-platform/terraform/environments/dev"
+        "cwd": "${workspaceFolder}/platform/terraform/environments/dev"
       },
       "problemMatcher": [],
       "presentation": {
@@ -137,7 +137,7 @@
       "type": "shell",
       "command": "./scripts/verify-phase0.sh",
       "options": {
-        "cwd": "${workspaceFolder}/infra-foundation"
+        "cwd": "${workspaceFolder}/foundation"
       },
       "problemMatcher": [],
       "presentation": {
@@ -150,7 +150,7 @@
       "type": "shell",
       "command": "./scripts/verify-all.sh",
       "options": {
-        "cwd": "${workspaceFolder}/infra-foundation"
+        "cwd": "${workspaceFolder}/foundation"
       },
       "problemMatcher": [],
       "presentation": {

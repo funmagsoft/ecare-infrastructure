@@ -207,12 +207,12 @@ module "{module_name}" {
 
 ### 12. Prerequisites
 
-List prerequisites from Phase 1 (infra-foundation):
+List prerequisites from Phase 1 (foundation):
 
 ```markdown
 ## Prerequisites
 
-From Phase 1 (infra-foundation):
+From Phase 1 (foundation):
 
 - {Prerequisite 1}
 - {Prerequisite 2}

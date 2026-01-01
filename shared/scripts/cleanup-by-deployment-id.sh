@@ -207,7 +207,7 @@ cleanup_service_principals() {
   done <<< "$sps"
 }
 
-# Cleanup Managed Identities (from infra-identity phase)
+# Cleanup Managed Identities (from workload phase)
 cleanup_managed_identities() {
   local deployment_id="$1"
   local dry_run="$2"

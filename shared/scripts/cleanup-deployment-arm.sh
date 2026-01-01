@@ -58,7 +58,7 @@ Options:
 
 Examples:
   ./cleanup-deployment-arm.sh --deployment-id a1b2c3d4 --phase foundation
-  ./cleanup-deployment-arm.sh --tf-dir ./infra-foundation/terraform/environments/dev --phase foundation
+  ./cleanup-deployment-arm.sh --tf-dir ./foundation/terraform/environments/dev --phase foundation
   ./cleanup-deployment-arm.sh --deployment-id a1b2c3d4 --phase foundation --apply --confirm "DELETE a1b2c3d4 foundation"
 EOF
 }

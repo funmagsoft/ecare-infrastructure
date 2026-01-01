@@ -1,0 +1,211 @@
+# Environment Module
+
+Terraform module that encapsulates all workload identity configuration for an environment, eliminating code duplication across environments by providing a single source of truth for identity management.
+
+## Resources Created
+
+- **User Assigned Managed Identities (UAMI)** - One per service (conditional, only if Azure access is needed)
+- **Federated Identity Credentials (FIC)** - GitHub OIDC credentials for passwordless deployments (conditional)
+- **RBAC Role Assignments** - Conditional role assignments for Key Vault, Storage, and Service Bus access
+- **Kubernetes Service Accounts** - Service accounts in the AKS namespace with Workload Identity annotations
+
+## Features
+
+- Single source of truth for all workload identity configuration
+- Eliminates ~90% of code duplication across environments
+- Automatic propagation of changes to all environments
+- Consistent identity configuration across all environments
+- Conditional resource creation (only creates UAMI/FIC if Azure access is needed)
+- Support for custom RBAC roles
+- Integration with AKS Workload Identity
+
+## Usage
+
+```hcl
+module "environment" {
+  source = "../../modules/environment"
+
+  environment  = var.environment
+  project_name = var.project_name
+
+  services = var.services
+  gitops_repos = var.gitops_repos
+
+  tags = var.tags
+}
+```
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| environment | Environment name (dev, test, stage, prod) | `string` | - | yes |
+| project_name | Project name | `string` | `"ecare"` | no |
+| services | Map of services to create workload identities for | `map(object)` | `{}` | no |
+| gitops_repos | List of GitOps repositories (full names in org/repo-name format) for environment-based OIDC integration | `list(string)` | `[]` | no |
+| tags | Additional tags to merge with required tags. Required tags cannot be overridden. | `map(string)` | `{}` | no |
+
+### Services Object Structure
+
+Each service in the `services` map should have the following structure:
+
+```hcl
+services = {
+  billing = {
+    repo                    = "funmagsoft/billing-service"
+    branch                  = "main"
+    enable_key_vault_access = true
+    enable_storage_access   = true
+    enable_service_bus_access = false
+    additional_roles = [
+      # {
+      #   role  = "Reader"
+      #   scope = "/subscriptions/<sub-id>/resourceGroups/rg-ecare-dev"
+      # }
+    ]
+  }
+}
+```
+
+## Outputs
+
+| Name | Description | Sensitive |
+|------|-------------|-----------|
+| github_oidc_service_principal_app_id | Application (Client) ID of the Service Principal for GitHub Actions (service repositories) | no |
+| github_oidc_service_principal_object_id | Object ID of the Service Principal for GitHub Actions (service repositories) | no |
+| github_oidc_federated_identity_credentials | Map of service names to their Federated Identity Credential IDs (GitHub OIDC for service repositories) | no |
+| github_oidc_gitops_federated_identity_credentials | Map of GitOps repository names to their Federated Identity Credential IDs (GitHub OIDC for GitOps repositories per environment) | no |
+| workload_identities | Map of workload identities per service with identity_id, identity_client_id, identity_principal_id, and federated_credential_id | no |
+
+## Module-Specific Configuration
+
+### Workload Identity Creation
+
+The module creates User Assigned Managed Identities (UAMI) only when Azure access is needed. A UAMI is created if any of the following conditions are met:
+
+- `enable_key_vault_access = true`
+- `enable_storage_access = true`
+- `enable_service_bus_access = true`
+- `additional_roles` list is not empty
+
+### Federated Identity Credentials
+
+Federated Identity Credentials (FIC) are created for GitHub OIDC authentication. The FIC is configured with:
+
+- **Issuer**: AKS OIDC issuer URL (from platform remote state)
+- **Subject**: `system:serviceaccount:{namespace}:sa-{service_name}`
+- **Audience**: `api://AzureADTokenExchange`
+
+### RBAC Role Assignments
+
+The module conditionally assigns RBAC roles based on service configuration:
+
+- **Key Vault Secrets User** - Assigned when `enable_key_vault_access = true`
+- **Storage Blob Data Contributor** - Assigned when `enable_storage_access = true`
+- **Azure Service Bus Data Owner** - Assigned when `enable_service_bus_access = true`
+- **Custom Roles** - Assigned from `additional_roles` list
+
+### Kubernetes Service Accounts
+
+Kubernetes Service Accounts are always created in the AKS namespace (from platform remote state). The Service Account is annotated with the Managed Identity client ID when Azure access is enabled.
+
+## Naming Convention
+
+- **Managed Identity**: `mi-{project_name}-{service_name}-{environment}` (e.g., `mi-ecare-billing-dev`)
+- **Service Account**: `sa-{service_name}` (e.g., `sa-billing`)
+- **Federated Identity Credential**: `fic-{project_name}-{service_name}-{environment}` (e.g., `fic-ecare-billing-dev`)
+
+## Security Features
+
+- Conditional resource creation (only creates UAMI/FIC when needed)
+- Precondition checks ensure required IDs are provided when access is enabled
+- Tags aligned with platform/foundation conventions
+- Workload Identity integration for secure, passwordless authentication
+- Tag validation ensures all required tags are present and non-empty
+
+## Examples
+
+### Dev Environment
+
+```hcl
+module "environment" {
+  source = "../../modules/environment"
+
+  environment  = "dev"
+  project_name = "ecare"
+
+  services = {
+    billing = {
+      repo                    = "funmagsoft/billing-service"
+      branch                  = "main"
+      enable_key_vault_access = true
+      enable_storage_access   = true
+      enable_service_bus_access = false
+    }
+  }
+
+  gitops_repos = ["hycom/gitops"]
+
+  tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+  }
+}
+```
+
+### Prod Environment
+
+```hcl
+module "environment" {
+  source = "../../modules/environment"
+
+  environment  = "prod"
+  project_name = "ecare"
+
+  services = {
+    billing = {
+      repo                    = "funmagsoft/billing-service"
+      branch                  = "main"
+      enable_key_vault_access = true
+      enable_storage_access   = true
+      enable_service_bus_access = true
+      additional_roles = [
+        {
+          role  = "Reader"
+          scope = "/subscriptions/<sub-id>/resourceGroups/rg-ecare-prod"
+        }
+      ]
+    }
+  }
+
+  gitops_repos = ["hycom/gitops"]
+
+  tags = {
+    CostCenter = "Engineering"
+    Team       = "DevOps"
+    Compliance = "SOC2"
+  }
+}
+```
+
+## Integration with Other Modules
+
+This module integrates with:
+
+- **platform** (via remote state) - Retrieves Key Vault, Storage Account, Service Bus, AKS namespace, ACR ID, AKS cluster ID, and OIDC issuer URL
+- **foundation** (via remote state) - Retrieves Resource Group and location information
+- **github-oidc module** - Creates Service Principal and FIC for service repositories (GitHub Actions OIDC)
+- **workload-identity module** - Creates individual workload identities per service (AKS Workload Identity)
+
+## Prerequisites
+
+- Resource Group must exist (created in Phase 0)
+- AKS cluster must be deployed (via platform)
+- Key Vault, Storage Account, and Service Bus must be deployed (via platform) if access is needed
+- Remote state from foundation and platform must be accessible
+
+## Terraform Version
+
+- **Terraform**: `>= 1.5.0`
+- **AzureRM Provider**: `~> 3.80`
+- **Kubernetes Provider**: `~> 2.0`

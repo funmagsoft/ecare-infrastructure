@@ -64,7 +64,7 @@ Options:
 
 Examples:
   ./cleanup-deployment-azuread.sh --deployment-id a1b2c3d4 --phase foundation
-  ./cleanup-deployment-azuread.sh --tf-dir ./infra-identity/terraform/environments/dev --phase foundation
+  ./cleanup-deployment-azuread.sh --tf-dir ./workload/terraform/environments/dev --phase foundation
   ./cleanup-deployment-azuread.sh --deployment-id a1b2c3d4 --phase foundation --apply --confirm "DELETE a1b2c3d4 foundation"
 EOF
 }

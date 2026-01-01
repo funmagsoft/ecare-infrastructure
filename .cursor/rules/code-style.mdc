@@ -70,7 +70,7 @@ Every resource must include the `tags = local.common_tags` argument. `local.comm
 
 ## 6. Project-Specific Context
 
-- **Remote State:** When referencing `infra-foundation`, always use `data.terraform_remote_state.foundation`.
+- **Remote State:** When referencing `foundation`, always use `data.terraform_remote_state.foundation`.
 - **AKS:** Ensure `workload_identity_enabled = true` and `oidc_issuer_enabled = true` are configured for modern identity management.
 - **Dependencies:** Use `depends_on` sparingly, primarily for RBAC or complex API-driven sequences (e.g., AKS and Namespaces).
 
