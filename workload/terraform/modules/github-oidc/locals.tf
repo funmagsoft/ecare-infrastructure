@@ -48,6 +48,13 @@ locals {
     for key, value in local.merged_tags : "${key}=${value}"
   ]
 
+  # Stable repo list for app/SP display name hashing
+  app_repos = sort(distinct(concat(
+    [for _, cfg in var.service_repos : cfg.repo],
+    var.gitops_repos
+  )))
+  app_repos_hash = substr(sha256(join(",", local.app_repos)), 0, 6)
+
   # GitHub OIDC configuration constants
   # These are used for all Federated Identity Credentials in this module
   # Issuer: GitHub's OIDC provider URL (fixed for all GitHub Actions workflows)

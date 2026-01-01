@@ -8,6 +8,8 @@ terraform.tfplan
 .terraformrc
 terraform.rc
 
+# Ignore Terraform working directories
+.terraform/
 # Ignore all Terraform lock files by default…
 .terraform.lock.hcl
 # But keep lock files for root modules (environments) tracked

@@ -22,7 +22,7 @@ data "azurerm_storage_account" "state" {
 # This application will be used to authenticate Terraform repositories for infrastructure management
 # Display name includes deployment_id for easy identification and cleanup
 resource "azuread_application" "gha" {
-  display_name = "sp-gha-${var.project_name}-${var.environment}-${var.phase}-${var.deployment_id}"
+  display_name = "sp-gha-${var.project_name}-${var.environment}-${local.terraform_repos_hash}-${var.phase}-${var.deployment_id}"
 
   tags = local.ad_tags
 }

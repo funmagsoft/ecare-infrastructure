@@ -4,9 +4,10 @@
 
 locals {
   # Resource naming patterns
-  managed_identity_name = "mi-${var.project_name}-${var.service_name}-${var.environment}-${var.phase}-${var.deployment_id}"
+  name_hash             = substr(sha256(var.service_name), 0, 6)
+  managed_identity_name = "mi-${var.project_name}-${var.service_name}-${var.environment}-${local.name_hash}-${var.phase}-${var.deployment_id}"
   service_account_name  = "sa-${var.service_name}"
-  federated_cred_name   = "fic-${var.project_name}-${var.service_name}-${var.environment}-${var.phase}-${var.deployment_id}"
+  federated_cred_name   = "fic-${var.project_name}-${var.service_name}-${var.environment}-${local.name_hash}-${var.phase}-${var.deployment_id}"
   fic_subject           = "system:serviceaccount:${var.namespace}:${local.service_account_name}"
 
   # Determine if Azure access is needed (UAMI and FIC are only created when needed)
