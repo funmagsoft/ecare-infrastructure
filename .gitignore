@@ -1,6 +1,4 @@
 # Terraform
-.terraform/
-.terraform.lock.hcl
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
@@ -9,6 +7,13 @@
 terraform.tfplan
 .terraformrc
 terraform.rc
+
+# Ignore all Terraform lock files by default…
+.terraform.lock.hcl
+# But keep lock files for root modules (environments) tracked
+!foundation/terraform/environments/**/.terraform.lock.hcl
+!platform/terraform/environments/**/.terraform.lock.hcl
+!workload/terraform/environments/**/.terraform.lock.hcl
 
 # Environment files
 .env
