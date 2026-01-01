@@ -161,22 +161,22 @@ locals {
   services = {
     # Example service
     # billing = {
-    #   repo                    = "funmagsoft/billing-service"
-    #   branch                  = "main"
-    #   enable_key_vault_access = true
-    #   enable_storage_access   = true
+    #   repo                      = "funmagsoft/billing-service"
+    #   branch                    = "main"
+    #   enable_key_vault_access   = true
+    #   enable_storage_access     = true
     #   enable_service_bus_access = false
-    #   additional_roles = []
+    #   additional_roles          = []
     # }
 
     # Service: ${SERVICE_NAME}
     ${SERVICE_NAME} = {
-      repo                    = "${REPO_NAME}"
-      branch                  = "main"
-      enable_key_vault_access = ${ENABLE_KV}
-      enable_storage_access   = ${ENABLE_STORAGE}
+      repo                      = "${REPO_NAME}"
+      branch                    = "main"
+      enable_key_vault_access   = ${ENABLE_KV}
+      enable_storage_access     = ${ENABLE_STORAGE}
       enable_service_bus_access = ${ENABLE_SB}
-      additional_roles        = []
+      additional_roles          = []
     }
   }
 }
@@ -190,12 +190,12 @@ locals {
   services = {
     # Example service
     # billing = {
-    #   repo                    = "funmagsoft/billing-service"
-    #   branch                  = "main"
-    #   enable_key_vault_access = true
-    #   enable_storage_access   = true
+    #   repo                      = "funmagsoft/billing-service"
+    #   branch                    = "main"
+    #   enable_key_vault_access   = true
+    #   enable_storage_access     = true
     #   enable_service_bus_access = false
-    #   additional_roles = []
+    #   additional_roles          = []
     # }
   }
 }

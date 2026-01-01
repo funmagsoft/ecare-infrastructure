@@ -23,8 +23,7 @@ require_env_vars() {
   if [[ "${#missing[@]}" -gt 0 ]]; then
     log_error "Missing required variables:"
     for v in "${missing[@]}"; do
-      printf '  - %s
-' "$v" >&2
+      printf '  - %s\n' "$v" >&2
     done
     die "Aborting due to missing required configuration."
   fi

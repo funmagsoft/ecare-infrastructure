@@ -32,11 +32,3 @@ cmd_exec() {
   fi
   "$@"
 }
-
-cmd_exec_quiet() {
-  if is_dry_run; then
-    log_info "[DRY-RUN]" "$(format_cmd "$@")"
-    return 0
-  fi
-  "$@" >/dev/null
-}

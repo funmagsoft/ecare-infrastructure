@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-check_command() {
-  local cmd="$1"
-  command -v "$cmd" >/dev/null 2>&1
-}
-
 check_required_commands() {
   local missing=()
   local cmd

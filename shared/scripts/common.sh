@@ -19,13 +19,7 @@ source "${SCRIPT_LIB_DIR}/az.sh"
 # shellcheck source=/dev/null
 source "${SCRIPT_LIB_DIR}/checks.sh"
 # shellcheck source=/dev/null
-source "${SCRIPT_LIB_DIR}/git.sh"
-# shellcheck source=/dev/null
 source "${SCRIPT_LIB_DIR}/init.sh"
-# shellcheck source=/dev/null
-source "${SCRIPT_LIB_DIR}/naming.sh"
-# shellcheck source=/dev/null
-source "${SCRIPT_LIB_DIR}/vpn.sh"
 
 # Backward-compatible names
 load_dotenv() { dotenv_load_if_exists "$REPO_ROOT"; }

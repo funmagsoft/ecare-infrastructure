@@ -26,6 +26,3 @@ az_set_subscription() {
   local subscription_id="$1"
   az_exec account set --subscription "$subscription_id"
 }
-
-az_account_id() { az_require_login; az_call account show --query id -o tsv; }
-az_tenant_id()  { az_require_login; az_call account show --query tenantId -o tsv; }

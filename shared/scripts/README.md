@@ -20,13 +20,12 @@ Core helper functions for shell scripts.
 
 - **Logging Functions**: `log_info()`, `log_success()`, `log_warning()`, `log_error()`, `log_dry_run()`,
   `log_dry_run_complete()`
-- **Command Checks**: `check_command()`, `check_required_commands()`
+- **Command Checks**: `check_required_commands()`
 - **Azure CLI Helpers**: `check_azure_login()`, `get_subscription_id()`, `get_tenant_id()`, `check_resource_exists()`
 - **Environment Helpers**: `validate_environment()`, `load_env_file()`, `load_dotenv()`, `get_project_root()`
 - **Dry-Run Helpers**: `parse_dry_run()`, `run_cmd()`, `run_cmd_capture()`, `write_file()`, `clear_file()`
 - **Script Initialization**: `init_script()`, `init_script_minimal()`
 - **Directory Helpers**: `get_script_dir()`, `get_base_dir()`
-- **Git Helpers**: `validate_conventional_commit()`
 
 ### `globals.sh`
 
@@ -104,7 +103,6 @@ source "${REPO_ROOT}/shared/scripts/common.sh"
 
 # Use functions
 log_info "My Script"
-check_command az || exit 1
 check_azure_login || exit 1
 validate_environment "${ENV}" || exit 1
 
@@ -148,7 +146,6 @@ log_info "Add New Service"
 
 # Use shared functions
 check_required_commands terraform || exit 1
-validate_conventional_commit "feat(identity): add new service" || exit 1
 
 # ... rest of script
 ```
@@ -210,19 +207,6 @@ log_dry_run_complete
 ```
 
 ### Command Checks
-
-#### `check_command <command>`
-
-Checks if a command exists. Returns 0 if exists, 1 if not.
-
-```bash
-if check_command az; then
-  log_success "Azure CLI found"
-else
-  log_error "Azure CLI not found"
-  exit 1
-fi
-```
 
 #### `check_required_commands <command1> [command2] ...`
 
@@ -393,18 +377,6 @@ Returns the monorepo base directory relative to a script directory.
 BASE_DIR=$(get_base_dir "$SCRIPT_DIR")
 ```
 
-### Git Helpers
-
-#### `validate_conventional_commit <message>`
-
-Validates a commit message against Conventional Commits format.
-
-```bash
-validate_conventional_commit "feat(identity): add new service" || exit 1
-```
-
-Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`, `revert`
-
 ### Version Info
 
 #### `print_version`
@@ -469,7 +441,7 @@ RESOURCE_GROUP="rg-${PROJECT}-dev"
 - Initial release
 - Extracted common functions from foundation and workload
 - Added comprehensive documentation
-- Categories: Output, Command Checks, Azure CLI, Environment, Git
+- Categories: Output, Command Checks, Azure CLI, Environment
 
 ## Contributing
 

@@ -29,12 +29,6 @@ log_warning() { log_warn "$@"; }
 log_error() { _log_line ERROR "$@"; }
 log_success() { _log_line SUCCESS "$@"; }
 
-log_debug() {
-  if [[ "${LOG_LEVEL:-}" == "debug" ]]; then
-    _log_line DEBUG "$@"
-  fi
-}
-
 log_dry_run_banner() {
   if [[ "${DRY_RUN:-false}" == true ]]; then
     _log_line INFO "DRY-RUN MODE: no changes will be made"
