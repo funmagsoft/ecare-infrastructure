@@ -137,10 +137,10 @@ Resources follow this naming pattern:
 
 ### Why No `-infra-` Suffix?
 
-The Service Principal name (`sp-gha-{project_name}-{environment}`) does **not** include the `-infra-` suffix to distinguish it from bootstrap Service Principals:
+The Service Principal name (`sp-gha-{project}-{env}-{phase}-{deployment_id}`) does **not** include the `-infra-` suffix to distinguish it from bootstrap Service Principals:
 
-- **Service SPs** (this module): `sp-gha-{project_name}-{environment}` - for service repositories (application deployments)
-- **Bootstrap SPs** (`foundation`): `sp-gha-{project_name}-infra-{environment}` - for Terraform repositories (infrastructure management)
+- **Service SPs** (this module): `sp-gha-{project}-{env}-{phase}-{deployment_id}` - for service repositories (application deployments)
+- **Bootstrap SPs** (`foundation`): `sp-gha-infra-{project}-{env}-{phase}-{deployment_id}` - for Terraform repositories (infrastructure management)
 
 This naming convention makes it immediately clear which Service Principal is used for application deployment (CI/CD workflows) versus infrastructure management (Terraform operations).
 
