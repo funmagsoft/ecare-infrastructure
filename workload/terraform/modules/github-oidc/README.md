@@ -18,7 +18,6 @@ Terraform module that creates Service Principals, Federated Identity Credentials
 - Creates Federated Identity Credentials for each service repository
 - Assigns necessary RBAC roles for ACR build and AKS deployment operations
 - Configurable list of service repositories
-- Optional AKS RBAC Writer role for deployments
 - Supports all environments (dev, test, stage, prod)
 
 ## Usage

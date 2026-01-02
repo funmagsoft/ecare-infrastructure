@@ -390,6 +390,19 @@ GitHub OIDC subjects differ by repository type:
 - Service repos: `repo:{org}/{repo}:ref:refs/heads/{branch}`
 - GitOps repos: `repo:{org}/{repo}:environment:{environment}`
 
+Role assignments for the two Service Principals:
+
+- Terraform automation SP (bootstrap)
+  - `Contributor` on the resource group
+  - `User Access Administrator` on the resource group
+  - `Storage Blob Data Contributor` on the state storage account
+- Application deployment SP (workload)
+  - `Contributor` on ACR
+  - `Azure Kubernetes Service Cluster User Role` on AKS
+  - `Azure Kubernetes Service RBAC Writer` on AKS
+- Users listed in `users_with_state_access` receive
+  -  `Storage Blob Data Contributor` role on the state storage account.
+
 AKS Workload Identity (per service) uses:
 
 - Issuer: AKS OIDC issuer URL
