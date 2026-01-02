@@ -5,7 +5,7 @@ Terraform module that creates Service Principals, Federated Identity Credentials
 ## Resources Created
 
 - **Application Registration** - Azure AD application for Service Principal
-- **Service Principal** - Azure AD identity for GitHub Actions (`sp-gha-{project}-infra-{env}`)
+- **Service Principal** - Azure AD identity for GitHub Actions (`sp-gha-infra-{project}-{env}-{phase}-{deployment_id}`)
 - **Federated Identity Credentials** - OIDC credentials for GitHub Actions (one per repository per environment)
 - **RBAC Role Assignments**:
   - **Contributor** on Resource Group (for Service Principal)
@@ -107,16 +107,16 @@ terraform_repos = ["ecare-infrastructure", "custom-repo"]
 
 Resources follow this naming pattern:
 
-- **Service Principal**: `sp-gha-{project_name}-infra-{environment}` (e.g., `sp-gha-ecare-infra-dev`)
+- **Service Principal**: `sp-gha-infra-{project}-{env}-{phase}-{deployment_id}` (e.g., `sp-gha-infra-ecare-dev-foundation-a1b2c3d4`)
 - **Application Registration**: Same as Service Principal (display name)
 - **Federated Identity Credential**: `GitHub{RepositoryName}Env-{environment}` (e.g., `GitHubHycomInfraFoundationEnv-dev`)
 
 ### Why the `-infra-` Suffix?
 
-The `-infra-` suffix in the Service Principal name (`sp-gha-{project_name}-infra-{environment}`) distinguishes bootstrap Service Principals from service deployment Service Principals:
+The `-infra-` suffix in the Service Principal name (`sp-gha-infra-{project}-{env}-{phase}-{deployment_id}`) distinguishes bootstrap Service Principals from service deployment Service Principals:
 
-- **Bootstrap SPs** (this module): `sp-gha-{project_name}-infra-{environment}` - for Terraform repositories
-- **Service SPs** (`workload`): `sp-gha-{project_name}-{environment}` - for service repositories
+- **Bootstrap SPs** (this module): `sp-gha-infra-{project}-{env}-{phase}-{deployment_id}` - for Terraform repositories
+- **Service SPs** (`workload`): `sp-gha-{project}-{env}-{phase}-{deployment_id}` - for service repositories
 
 This naming convention makes it immediately clear which Service Principal is used for infrastructure management (Terraform operations) versus application deployment (CI/CD workflows).
 
