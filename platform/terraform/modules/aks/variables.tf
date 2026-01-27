@@ -212,3 +212,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "aks_admin_group_object_ids" {
+  description = "Object IDs of Azure AD groups to be added as cluster admins"
+  type        = list(string)
+  default     = []
+}

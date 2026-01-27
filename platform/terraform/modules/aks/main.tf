@@ -6,14 +6,19 @@ locals {
   dns_prefix = var.dns_prefix != null ? var.dns_prefix : "aks-${var.project_name}-${var.environment}"
 }
 
+data "azurerm_client_config" "current" {}
+
 # AKS Cluster
 resource "azurerm_kubernetes_cluster" "this" {
-  name                      = "aks-${var.project_name}-${var.environment}"
-  location                  = var.location
-  resource_group_name       = var.resource_group_name
-  dns_prefix                = local.dns_prefix
-  kubernetes_version        = var.kubernetes_version
-  sku_tier                  = var.sku_tier
+  name                = "aks-${var.project_name}-${var.environment}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  dns_prefix          = local.dns_prefix
+
+  kubernetes_version = var.kubernetes_version
+  sku_tier           = var.sku_tier
+
+  # OIDC issuer + Workload Identity (for K8s -> Azure federation)
   oidc_issuer_enabled       = var.oidc_issuer_enabled
   workload_identity_enabled = var.workload_identity_enabled
 
@@ -27,12 +32,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     type                         = "VirtualMachineScaleSets"
     only_critical_addons_enabled = true
 
-    tags = merge(
-      var.tags,
-      {
-        NodePool = "system"
-      }
-    )
+    tags = merge(var.tags, { NodePool = "system" })
   }
 
   # Network profile
@@ -43,10 +43,24 @@ resource "azurerm_kubernetes_cluster" "this" {
     dns_service_ip = var.dns_service_ip
   }
 
-  # Identity
+  # Managed identity for the cluster (SystemAssigned or UserAssigned)
   identity {
     type = var.identity_type
   }
+
+  # ---------------------------------------------------------------------------
+  # Entra ID (AAD) + Azure RBAC for Kubernetes + Disable local admin accounts
+  # NOTE (azurerm v4.x): Do NOT use `azure_rbac_enabled` at top-level and
+  # do NOT use `role_based_access_control {}` blocks.
+  # ---------------------------------------------------------------------------
+  azure_active_directory_role_based_access_control {
+    azure_rbac_enabled     = true
+    admin_group_object_ids = var.aks_admin_group_object_ids
+    tenant_id              = data.azurerm_client_config.current.tenant_id
+  }
+
+  # Blocks `az aks get-credentials --admin`
+  local_account_disabled = true
 
   # Azure Policy
   azure_policy_enabled = var.azure_policy_enabled
@@ -59,12 +73,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     }
   }
 
-  tags = merge(
-    var.tags,
-    {
-      Module = "aks"
-    }
-  )
+  tags = merge(var.tags, { Module = "aks" })
 
   lifecycle {
     ignore_changes = [

@@ -45,6 +45,8 @@ module "aks" {
 
   tags = local.common_tags
 
+  aks_admin_group_object_ids = var.aks_admin_group_object_ids
+
   depends_on = [
     module.monitoring
   ]

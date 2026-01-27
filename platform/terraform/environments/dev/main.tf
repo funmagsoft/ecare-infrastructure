@@ -70,6 +70,7 @@ module "environment" {
   aks_workload_identity_enabled        = var.aks_workload_identity_enabled
   aks_azure_policy_enabled             = var.aks_azure_policy_enabled
   aks_enable_container_insights        = var.aks_enable_container_insights
+  aks_admin_group_object_ids           = var.aks_admin_group_object_ids
 
   # Bastion
   bastion_vm_size                = var.bastion_vm_size
