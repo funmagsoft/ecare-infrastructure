@@ -59,8 +59,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     tenant_id              = data.azurerm_client_config.current.tenant_id
   }
 
-  # Blocks `az aks get-credentials --admin`
-  local_account_disabled = true
+  # Allow az aks get-credentials --admin and local provider access
+  local_account_disabled = false
 
   # Azure Policy
   azure_policy_enabled = var.azure_policy_enabled

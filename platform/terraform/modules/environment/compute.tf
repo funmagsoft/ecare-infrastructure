@@ -65,7 +65,6 @@ module "aks_namespace" {
   environment  = var.environment
   project_name = var.project_name
   labels = {
-    "app.kubernetes.io/name"       = "ecare"
     "app.kubernetes.io/env"        = var.environment
     "app.kubernetes.io/part-of"    = var.project_name
     "app.kubernetes.io/managed-by" = "terraform"

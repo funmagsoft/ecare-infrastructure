@@ -174,6 +174,30 @@ output "aks_kube_config" {
   sensitive   = true
 }
 
+output "aks_host" {
+  description = "Kubernetes API server host"
+  value       = module.aks.aks_host
+  sensitive   = true
+}
+
+output "aks_client_certificate" {
+  description = "Kubernetes client certificate"
+  value       = module.aks.aks_client_certificate
+  sensitive   = true
+}
+
+output "aks_client_key" {
+  description = "Kubernetes client key"
+  value       = module.aks.aks_client_key
+  sensitive   = true
+}
+
+output "aks_cluster_ca_certificate" {
+  description = "Kubernetes cluster CA certificate"
+  value       = module.aks.aks_cluster_ca_certificate
+  sensitive   = true
+}
+
 output "aks_namespace_names" {
   description = "Names of the shared AKS namespaces for workloads"
   value       = module.aks_namespace.namespace_names

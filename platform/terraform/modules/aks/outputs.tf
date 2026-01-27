@@ -25,6 +25,30 @@ output "aks_kube_config_admin" {
   sensitive   = true
 }
 
+output "aks_host" {
+  description = "Kubernetes API server host"
+  value       = azurerm_kubernetes_cluster.this.kube_admin_config[0].host
+  sensitive   = true
+}
+
+output "aks_client_certificate" {
+  description = "Kubernetes client certificate"
+  value       = azurerm_kubernetes_cluster.this.kube_admin_config[0].client_certificate
+  sensitive   = true
+}
+
+output "aks_client_key" {
+  description = "Kubernetes client key"
+  value       = azurerm_kubernetes_cluster.this.kube_admin_config[0].client_key
+  sensitive   = true
+}
+
+output "aks_cluster_ca_certificate" {
+  description = "Kubernetes cluster CA certificate"
+  value       = azurerm_kubernetes_cluster.this.kube_admin_config[0].cluster_ca_certificate
+  sensitive   = true
+}
+
 output "aks_kubelet_identity_object_id" {
   description = "Object ID of the kubelet identity"
   value       = azurerm_kubernetes_cluster.this.kubelet_identity[0].object_id
