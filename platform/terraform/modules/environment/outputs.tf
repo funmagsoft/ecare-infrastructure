@@ -174,9 +174,9 @@ output "aks_kube_config" {
   sensitive   = true
 }
 
-output "aks_namespace_name" {
-  description = "Name of the shared AKS namespace for workloads"
-  value       = module.aks_namespace.namespace_name
+output "aks_namespace_names" {
+  description = "Names of the shared AKS namespaces for workloads"
+  value       = module.aks_namespace.namespace_names
 }
 
 output "aks_node_resource_group" {

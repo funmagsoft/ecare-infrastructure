@@ -469,6 +469,12 @@ variable "aks_enable_container_insights" {
   default     = true
 }
 
+variable "aks_namespaces" {
+  description = "List of Kubernetes namespaces to create"
+  type        = list(string)
+  default     = ["ecare"]
+}
+
 #------------------------------------------------------------------------------
 # Bastion Variables
 #------------------------------------------------------------------------------

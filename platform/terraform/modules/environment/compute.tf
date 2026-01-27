@@ -61,7 +61,7 @@ module "aks" {
 module "aks_namespace" {
   source = "../aks-namespace"
 
-  namespace    = "ecare"
+  namespaces   = var.aks_namespaces
   environment  = var.environment
   project_name = var.project_name
   labels = {

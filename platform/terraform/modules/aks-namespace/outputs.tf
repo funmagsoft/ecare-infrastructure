@@ -1,4 +1,4 @@
-output "namespace_name" {
-  description = "Name of the created namespace"
-  value       = kubernetes_namespace_v1.this.metadata[0].name
+output "namespace_names" {
+  description = "Names of the created namespaces"
+  value       = [for ns in kubernetes_namespace_v1.this : ns.metadata[0].name]
 }

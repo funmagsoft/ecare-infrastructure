@@ -93,6 +93,7 @@ aks_oidc_issuer_enabled              = true
 aks_workload_identity_enabled        = true
 aks_azure_policy_enabled             = true
 aks_enable_container_insights        = true
+aks_namespaces                       = ["ecare", "keycloak"]
 
 # AKS Admin Group Object IDs
 aks_admin_group_object_ids = [

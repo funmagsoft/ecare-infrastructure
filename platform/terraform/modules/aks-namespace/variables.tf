@@ -1,7 +1,7 @@
-variable "namespace" {
-  description = "Kubernetes namespace to create"
-  type        = string
-  default     = "ecare"
+variable "namespaces" {
+  description = "List of Kubernetes namespaces to create"
+  type        = list(string)
+  default     = ["ecare"]
 }
 
 variable "environment" {

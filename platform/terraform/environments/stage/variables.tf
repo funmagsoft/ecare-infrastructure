@@ -523,3 +523,15 @@ variable "tags" {
     error_message = "Additional tags cannot override required tags: Environment, Project, ManagedBy, Phase, GitRepository, TerraformPath, DeploymentId."
   }
 }
+
+variable "aks_namespaces" {
+  description = "List of Kubernetes namespaces to create"
+  type        = list(string)
+  default     = ["ecare"]
+}
+
+variable "aks_admin_group_object_ids" {
+  description = "Object IDs of Azure AD groups to be added as cluster admins"
+  type        = list(string)
+  default     = []
+}
